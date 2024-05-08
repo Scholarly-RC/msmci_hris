@@ -112,9 +112,10 @@
     <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
           class="bg-gray-50 dark:bg-gray-800">
         {% block content %}{% endblock %}
-        {% block javascript %}{% endblock %}
         <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
         <script src="{% static 'assets/js/dark-mode.js' %}"></script>
         <script src="{% static 'assets/js/htmx.min.js' %}"></script>
+        <script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
+        {% block javascript %}{% endblock %}
     </body>
 </html>

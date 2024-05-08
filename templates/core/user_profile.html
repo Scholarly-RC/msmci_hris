@@ -2,6 +2,21 @@
 {% block content %}
     {% include "navbar.html" %}
     <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
+        {% comment %} <div id="alert-1" class="fixed m-0 sm:m-2 top-16 right-0 flex items-center p-4 mb-4 text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400" role="alert">
+            <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+            </svg>
+            <span class="sr-only">Info</span>
+            <div class="ms-3 text-sm font-medium">
+                A simple info alert with an <a href="#" class="font-semibold underline hover:no-underline">example link</a>. Give it a click if you like.
+            </div>
+            <button type="button" class="ms-auto -mx-1.5 -my-1.5 bg-blue-50 text-blue-500 rounded-lg focus:ring-2 focus:ring-blue-400 p-1.5 hover:bg-blue-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-gray-700" data-dismiss-target="#alert-1" aria-label="Close">
+                <span class="sr-only">Close</span>
+                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                </svg>
+            </button>
+        </div> {% endcomment %}
         <div class="w-full xl:w-[100rem]">
             <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3 mt-10">User settings</h1>
             <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
@@ -128,111 +143,182 @@
                     </div>
                 </form>
             </div>
-            <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                <h3 class="mb-4 text-xl font-semibold dark:text-white">Password information</h3>
-                <form action="#">
-                    <div class="grid grid-cols-6 gap-6">
-                        <div class="col-span-6 sm:col-span-3">
-                            <label for="current-password"
-                                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Current
-                                password
-                            </label>
-                            <input type="text"
-                                   name="current-password"
-                                   id="current-password"
-                                   class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                   placeholder="••••••••"
-                                   required>
-                        </div>
-                        <div class="col-span-6 sm:col-span-3">
-                            <label for="password"
-                                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                New
-                                password
-                            </label>
-                            <input data-popover-target="popover-password"
-                                   data-popover-placement="bottom"
-                                   type="password"
-                                   id="password"
-                                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                   placeholder="••••••••"
-                                   required>
-                            <div data-popover
-                                 id="popover-password"
-                                 role="tooltip"
-                                 class="absolute z-10 invisible inline-block text-sm font-light text-gray-500 transition-opacity duration-300 bg-white border border-gray-200 rounded-lg shadow-sm opacity-0 w-72 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400">
-                                <div class="p-3 space-y-2">
-                                    <h3 class="font-semibold text-gray-900 dark:text-white">
-                                        Must have at least 6
-                                        characters
-                                    </h3>
-                                    <div class="grid grid-cols-4 gap-2">
-                                        <div class="h-1 bg-orange-300 dark:bg-orange-400"></div>
-                                        <div class="h-1 bg-orange-300 dark:bg-orange-400"></div>
-                                        <div class="h-1 bg-gray-200 dark:bg-gray-600"></div>
-                                        <div class="h-1 bg-gray-200 dark:bg-gray-600"></div>
-                                    </div>
-                                    <p>It’s better to have:</p>
-                                    <ul>
-                                        <li class="flex items-center mb-1">
-                                            <svg class="w-4 h-4 mr-2 text-green-400 dark:text-green-500"
-                                                 aria-hidden="true"
-                                                 fill="currentColor"
-                                                 viewBox="0 0 20 20"
-                                                 xmlns="http://www.w3.org/2000/svg">
-                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd">
-                                                </path>
-                                            </svg>
-                                            Upper & lower case letters
-                                        </li>
-                                        <li class="flex items-center mb-1">
-                                            <svg class="w-4 h-4 mr-2 text-gray-300 dark:text-gray-400"
-                                                 aria-hidden="true"
-                                                 fill="currentColor"
-                                                 viewBox="0 0 20 20"
-                                                 xmlns="http://www.w3.org/2000/svg">
-                                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd">
-                                                </path>
-                                            </svg>
-                                            A symbol (#$&)
-                                        </li>
-                                        <li class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-gray-300 dark:text-gray-400"
-                                                 aria-hidden="true"
-                                                 fill="currentColor"
-                                                 viewBox="0 0 20 20"
-                                                 xmlns="http://www.w3.org/2000/svg">
-                                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd">
-                                                </path>
-                                            </svg>
-                                            A longer password (min. 12 chars.)
-                                        </li>
-                                    </ul>
+            {% block password_information_section %}
+                <div id="password_information_section"
+                     class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 relative">
+                    <h3 class="mb-4 text-xl font-semibold dark:text-white">Password Information</h3>
+                    <div id="password_information_alert"
+                         class="{% if show_alert %}absolute{% else %}hidden{% endif %} m-2 top-0 right-0 flex items-center p-4 mb-4 rounded-lg {% if error %}text-red-800 bg-red-50 dark:bg-gray-800 dark:text-red-400{% else %}text-green-800 bg-green-50 dark:bg-gray-800 dark:text-green-400{% endif %}"
+                         role="alert">
+                        <svg class="flex-shrink-0 w-4 h-4"
+                             aria-hidden="true"
+                             xmlns="http://www.w3.org/2000/svg"
+                             fill="currentColor"
+                             viewBox="0 0 20 20">
+                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                        </svg>
+                        <span class="sr-only">Info</span>
+                        <div class="ms-3 text-sm font-medium">{{ alert_message }}</div>
+                        <button id="alert_dismiss_button"
+                                type="button"
+                                class="ms-auto -mx-1.5 -my-1.5 p-1.5 rounded-lg inline-flex items-center justify-center h-8 w-8 {% if error %}bg-red-50 text-red-500 focus:ring-2 focus:ring-red-400 hover:bg-red-200 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700{% else %}bg-green-50 text-green-500 focus:ring-2 focus:ring-green-400 hover:bg-green-200 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-gray-700{% endif %}"
+                                data-dismiss-target="#password_information_alert">
+                            <span class="sr-only">Close</span>
+                            <svg class="w-3 h-3"
+                                 aria-hidden="true"
+                                 xmlns="http://www.w3.org/2000/svg"
+                                 fill="none"
+                                 viewBox="0 0 14 14">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                            </svg>
+                        </button>
+                    </div>
+                    <form hx-post="{% url "core:change_user_password" %}">
+                        <div class="grid grid-cols-6 gap-6">
+                            <div class="col-span-6 sm:col-span-3">
+                                <label for="current_password"
+                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                    Current password
+                                </label>
+                                <div class="relative">
+                                    <input type="password"
+                                           name="current_password"
+                                           id="current_password"
+                                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                           placeholder="••••••••"
+                                           required>
+                                    <button type="button"
+                                            class="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                            id="toggle_current_password_visibility">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                             class="h-5 w-5 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-500"
+                                             viewBox="0 0 20 20"
+                                             fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 12a2 2 0 100-4 2 2 0 000 4zM2 10a8 8 0 1116 0 8 8 0 01-16 0zm18 0a10 10 0 10-20 0 10 10 0 0020 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
                                 </div>
-                                <div data-popper-arrow></div>
+                            </div>
+                            <div class="col-span-6 sm:col-span-3">
+                                <label for="password"
+                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                    New
+                                    password
+                                </label>
+                                <div class="relative">
+                                    <input type="password"
+                                           name="new_password"
+                                           id="new_password"
+                                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                           placeholder="••••••••"
+                                           required>
+                                    <button type="button"
+                                            class="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                            id="toggle_new_password_visibility">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                             class="h-5 w-5 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-500"
+                                             viewBox="0 0 20 20"
+                                             fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 12a2 2 0 100-4 2 2 0 000 4zM2 10a8 8 0 1116 0 8 8 0 01-16 0zm18 0a10 10 0 10-20 0 10 10 0 0020 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-span-6 sm:col-span-3 hidden sm:block"></div>
+                            <div class="col-span-6 sm:col-span-3">
+                                <label for="confirm_password"
+                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                    Confirm
+                                    password
+                                </label>
+                                <div class="relative">
+                                    <input type="password"
+                                           name="confirm_password"
+                                           id="confirm_password"
+                                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                           placeholder="••••••••"
+                                           required>
+                                    <button type="button"
+                                            class="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                            id="toggle_confirm_password_visibility">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                             class="h-5 w-5 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-500"
+                                             viewBox="0 0 20 20"
+                                             fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 12a2 2 0 100-4 2 2 0 000 4zM2 10a8 8 0 1116 0 8 8 0 01-16 0zm18 0a10 10 0 10-20 0 10 10 0 0020 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-span-6 sm:col-full">
+                                <button class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                                        type="submit">Change Password</button>
                             </div>
                         </div>
-                        <div class="col-span-6 sm:col-span-3">
-                            <label for="confirm-password"
-                                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Confirm
-                                password
-                            </label>
-                            <input type="text"
-                                   name="confirm-password"
-                                   id="confirm-password"
-                                   class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                   placeholder="••••••••"
-                                   required>
-                        </div>
-                        <div class="col-span-6 sm:col-full">
-                            <button class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                                    type="submit">Save all</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+                    </form>
+                </div>
+            {% endblock %}
         </div>
     </div>
+{% endblock %}
+{% block javascript %}
+    <script>
+        $(document).ready(function() {
+            $('#toggle_current_password_visibility').click(function() {
+                const passwordInput = $('#current_password');
+                const icon = $('#toggle_current_password_visibility svg');
+
+                if (passwordInput.attr('type') === 'password') {
+                    passwordInput.attr('type', 'text');
+                    icon.removeClass('fa-eye').addClass('fa-eye-slash');
+                } else {
+                    passwordInput.attr('type', 'password');
+                    icon.removeClass('fa-eye-slash').addClass('fa-eye');
+                }
+            });
+
+            $('#toggle_new_password_visibility').click(function() {
+                const passwordInput = $('#new_password');
+                const icon = $('#toggle_new_password_visibility svg');
+
+                if (passwordInput.attr('type') === 'password') {
+                    passwordInput.attr('type', 'text');
+                    icon.removeClass('fa-eye').addClass('fa-eye-slash');
+                } else {
+                    passwordInput.attr('type', 'password');
+                    icon.removeClass('fa-eye-slash').addClass('fa-eye');
+                }
+            });
+
+            $('#toggle_confirm_password_visibility').click(function() {
+                const passwordInput = $('#confirm_password');
+                const icon = $('#toggle_confirm_password_visibility svg');
+
+                if (passwordInput.attr('type') === 'password') {
+                    passwordInput.attr('type', 'text');
+                    icon.removeClass('fa-eye').addClass('fa-eye-slash');
+                } else {
+                    passwordInput.attr('type', 'password');
+                    icon.removeClass('fa-eye-slash').addClass('fa-eye');
+                }
+            });
+
+        });
+    </script>
+    <script>
+        // Function to attach event handlers htmx afterSwap
+        function attachEventHandlers() {
+            $('[data-dismiss-target]').on('click', function() {
+                var dismissTargetId = $(this).attr('data-dismiss-target');
+                var dismissTarget = $(dismissTargetId);
+                if (dismissTarget) {
+                    dismissTarget.toggleClass('hidden');
+                }
+            });
+        }
+
+        $(document).on('htmx:afterSwap', function(event) {
+            attachEventHandlers();
+        });
+    </script>
 {% endblock %}
