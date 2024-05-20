@@ -10,6 +10,7 @@ urlpatterns = [
     path("login", core_views.user_login, name="login"),
     path("logout", core_views.user_logout, name="logout"),
     path("register", core_views.user_register, name="register"),
+    path("set-user-password", core_views.set_new_user_password, name="set_user_password"),
     path(
         "profile/change-user-password",
         core_views.change_user_password,

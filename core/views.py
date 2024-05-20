@@ -7,6 +7,9 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from render_block import render_block_to_string
 
+from core.utils import check_user_has_password, password_validation, string_to_date
+from core.models import UserDetails, Department
+
 
 @login_required(login_url="/login")
 def main(request):
@@ -18,6 +21,7 @@ def user_login(request):
     if request.method == "POST":
         email = request.POST["email"]
         password = request.POST["password"]
+        # check_user_has_password(email=email)
         user = authenticate(request, username=email, password=password)
         response = HttpResponse()
         if user is not None:
@@ -25,9 +29,23 @@ def user_login(request):
             response["HX-Redirect"] = reverse("core:profile")
             return response
         else:
+            if not password:
+                if not check_user_has_password(email=email):
+                    context.update(
+                        {
+                            "user_email": email
+                        }
+                    )
+                    response.content = render_block_to_string(
+                        "core/components/set_password.html", "set_password_form", context
+                    )
+                    response["HX-Retarget"] = "#login_card"
+                    response["HX-Reswap"] = "outerHTML"
+                    return response
+
             context.update(
                 {
-                    "login_error_message": "Email or password is incorrect. Please try again."
+                    "login_error_message": "Email or password is incorrect. Please try again.",
                 }
             )
             response.content = render_block_to_string(
@@ -39,6 +57,44 @@ def user_login(request):
 
     return render(request, "core/login.html", context)
 
+
+def set_new_user_password(request):
+    context = {}
+    password = request.POST["password"]
+    confirm_password = request.POST["confirm_password"]
+    response = HttpResponse()
+
+    errors = password_validation(password, confirm_password)
+
+    if errors:
+        context.update(
+                {
+                    "password_validation_errors": errors
+                }
+            )
+        response.content = render_block_to_string(
+                        "core/components/set_password.html", "set_error_message", context
+                    )
+        response["HX-Retarget"] = "#error_list"
+        response["HX-Reswap"] = "outerHTML"
+        return response
+    
+    user_email = request.POST['email']
+    user = User.objects.get(email=user_email)
+    user.set_password(password)
+    user.save()
+
+    context.update(
+            {
+                "password_successfully_set_message": "Your password has been set. Please login."
+            }
+        )
+    response.content = render_block_to_string(
+                    "core/login.html", "login_card", context
+                )
+    response["HX-Retarget"] = "#login_card"
+    response["HX-Reswap"] = "outerHTML"
+    return response
 
 def user_logout(request):
     logout(request)
@@ -55,11 +111,49 @@ def user_register(request):
 @login_required(login_url="/login")
 def user_profile(request):
     user = request.user
+    user_details, created = UserDetails.objects.get_or_create(user=user, defaults={"user": user})
+    departments = Department.objects.all()
+
+    if request.method == "POST":
+        data = request.POST
+
+        user.first_name = data['first_name']
+        user.last_name = data['last_name']
+        user.save()
+
+        user_details.address = data['address']
+        user_details.phone_number = data['phone_number']
+        if data['birthday']:
+            user_details.date_of_birth = string_to_date(data['birthday'])
+        if data['day_of_hiring']:
+            user_details.date_of_hiring = string_to_date(data['day_of_hiring'])
+        user_details.rank = data['rank']
+        user_details.save()
+    # TODO: Add Educational Attainment
     context = {
         "first_name": user.first_name,
         "last_name": user.last_name,
         "email": user.email,
+        "address": user_details.address or "",
+        "phone_number": user_details.phone_number or "",
+        "birthday": user_details.str_date_of_birth(),
+        "department_list": departments,
+        "department": user_details.department,
+        "date_of_hiring": user_details.str_date_of_hiring(),
+        "employee_number": user_details.employee_number or "",
+        "rank": user_details.rank or ""
     }
+
+    if request.method == "POST":
+        context.update({"show_alert": True, "alert_message": "Profile successfully updated."})
+        response = HttpResponse()
+        response.content = render_block_to_string(
+                "core/user_profile.html", "profile_information_section", context
+        )
+        response["HX-Retarget"] = "#profile_information_section"
+        response["HX-Reswap"] = "outerHTML"
+        return response
+
     return render(request, "core/user_profile.html", context)
 
 
@@ -146,8 +240,6 @@ def add_new_user(request):
                 },
             )
             if created:
-                user.set_password(last_name)
-                # TODO: Create User Details Here
                 response["HX-Redirect"] = reverse("core:user_management")
             else:
                 context.update({"add_user_error_message": "Email already exists."})
