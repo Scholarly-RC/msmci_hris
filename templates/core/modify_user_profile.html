@@ -1,84 +1,11 @@
 {% extends "layout.html" %}
-{% load static %}
 {% block content %}
     {% include "navbar.html" %}
     <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
-        {% comment %} <div id="alert-1" class="fixed m-0 sm:m-2 top-16 right-0 flex items-center p-4 mb-4 text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400" role="alert">
-            <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-            </svg>
-            <span class="sr-only">Info</span>
-            <div class="ms-3 text-sm font-medium">
-                A simple info alert with an <a href="#" class="font-semibold underline hover:no-underline">example link</a>. Give it a click if you like.
-            </div>
-            <button type="button" class="ms-auto -mx-1.5 -my-1.5 bg-blue-50 text-blue-500 rounded-lg focus:ring-2 focus:ring-blue-400 p-1.5 hover:bg-blue-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-gray-700" data-dismiss-target="#alert-1" aria-label="Close">
-                <span class="sr-only">Close</span>
-                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                </svg>
-            </button>
-        </div> {% endcomment %}
         <div class="w-full xl:w-[100rem]">
-            <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3 mt-10">User settings</h1>
-            {% block profile_picture_section %}
-                <div id="profile_picture_section"
-                     class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 relative">
-                    <div id="profile_picture_alert"
-                         class="{% if show_alert %}absolute{% else %}hidden{% endif %} m-2 top-0 right-0 flex items-center p-4 mb-4 rounded-lg {% if error %}text-red-800 bg-red-50 dark:bg-gray-800 dark:text-red-400{% else %}text-green-800 bg-green-50 dark:bg-gray-800 dark:text-green-400{% endif %}"
-                         role="alert">
-                        <svg class="flex-shrink-0 w-4 h-4"
-                             aria-hidden="true"
-                             xmlns="http://www.w3.org/2000/svg"
-                             fill="currentColor"
-                             viewBox="0 0 20 20">
-                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                        </svg>
-                        <span class="sr-only">Info</span>
-                        <div class="ms-3 text-sm font-medium">{{ alert_message }}</div>
-                        <button id="alert_dismiss_button"
-                                type="button"
-                                class="ms-auto -mx-1.5 -my-1.5 p-1.5 rounded-lg inline-flex items-center justify-center h-8 w-8 {% if error %}bg-red-50 text-red-500 focus:ring-2 focus:ring-red-400 hover:bg-red-200 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700{% else %}bg-green-50 text-green-500 focus:ring-2 focus:ring-green-400 hover:bg-green-200 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-gray-700{% endif %}"
-                                data-dismiss-target="#password_information_alert">
-                            <span class="sr-only">Close</span>
-                            <svg class="w-3 h-3"
-                                 aria-hidden="true"
-                                 xmlns="http://www.w3.org/2000/svg"
-                                 fill="none"
-                                 viewBox="0 0 14 14">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="items-center sm:flex xl:block 2xl:flex sm:space-x-4 xl:space-x-0 2xl:space-x-4">
-                        <img class="mb-4 rounded-lg w-28 h-28 sm:mb-0 xl:mb-4 2xl:mb-0"
-                             src="{% if new_profile_picture %}{{ new_profile_picture }}{% else %}{% if request.user.userdetails.profile_picture %}{{ request.user.userdetails.profile_picture.url }}{% else %}{% static "assets\imgs\user-profile-icon.jpg" %}{% endif %}{% endif %}"
-                             alt="User Profile Picture">
-                        <form hx-post="{% url "core:upload_user_profile_picture" %}"
-                              hx-encoding='multipart/form-data'>
-                            <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Profile picture</h3>
-                            <div class="mb-4 text-sm text-gray-500 dark:text-gray-400">JPG or PNG. Max size of 1MB</div>
-                            <div class="flex items-center space-x-4">
-                                <input name="profile_picture"
-                                       class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                                       type="file"
-                                       required>
-                                <button type="submit"
-                                        class="inline-flex items-center px-3 py-3 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
-                                    <svg class="w-4 h-4 mr-2 -ml-1"
-                                         fill="currentColor"
-                                         viewBox="0 0 20 20"
-                                         xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z">
-                                        </path>
-                                        <path d="M9 13h2v5a1 1 0 11-2 0v-5z"></path>
-                                    </svg>
-                                    Upload
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            {% endblock %}
+            <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3 mt-10">
+                User #{{ selected_user.id }}
+            </h1>
             {% block profile_information_section %}
                 <div id="profile_information_section"
                      class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 relative">
@@ -109,7 +36,7 @@
                             </svg>
                         </button>
                     </div>
-                    <form hx-post="{% url "core:profile" %}">
+                    <form hx-post="{% url "core:modify_user_details" selected_user.id %}">
                         <div class="grid grid-cols-6 gap-6">
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="first_name"
@@ -121,7 +48,7 @@
                                        id="first_name"
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                        placeholder="Bonnie"
-                                       value="{{ current_user.first_name }}"
+                                       value="{{ selected_user.first_name }}"
                                        required>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
@@ -134,7 +61,7 @@
                                        id="last_name"
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                        placeholder="Green"
-                                       value="{{ current_user.last_name }}"
+                                       value="{{ selected_user.last_name }}"
                                        required>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
@@ -146,7 +73,7 @@
                                        name="email"
                                        id="email"
                                        class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                       value="{{ current_user.email }}"
+                                       value="{{ selected_user.email }}"
                                        disabled
                                        readonly>
                             </div>
@@ -159,8 +86,9 @@
                                           name="address"
                                           id="address"
                                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                          placeholder="e.g. Mlang">{{ current_user.userdetails.address }}</textarea>
+                                          placeholder="e.g. Mlang">{% if selected_user.userdetails.address %}{{ selected_user.userdetails.address }}{% endif %}</textarea>
                             </div>
+
                             <div class="col-span-6 sm:col-span-3">
                                 <div class="flex flex-row justify-between">
                                     <label for="date_of_birth"
@@ -168,14 +96,14 @@
                                         Birthday
                                     </label>
                                     <p class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                        Age: <u>{{ current_user.userdetails.get_age }}</u>
+                                        Age: <u>{{ selected_user.userdetails.get_age }}</u>
                                     </p>
                                 </div>
                                 <input type="date"
                                        name="date_of_birth"
                                        id="date_of_birth"
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       value="{{ current_user.userdetails.str_date_of_birth }}">
+                                       value="{% if selected_user.userdetails.date_of_birth %}{{ selected_user.userdetails.date_of_birth|date:"Y-m-d" }}{% endif %}">
                             </div>
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="phone_number"
@@ -189,7 +117,7 @@
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                        placeholder="e.g. 09999999999"
                                        maxlength="11"
-                                       value="{{ current_user.userdetails.phone_number }}">
+                                       value="{% if selected_user.userdetails.phone_number %}{{ selected_user.userdetails.phone_number }}{% endif %}">
                             </div>
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="department"
@@ -202,7 +130,7 @@
                                     <option value="">Choose a Department...</option>
                                     {% for department_details in department_list %}
                                         <option value="{{ department_details.id }}"
-                                                {% if department_details.id == current_user.userdetails.department.id %}selected{% endif %}>
+                                                {% if department_details.id == selected_user.userdetails.department.id %}selected{% endif %}>
                                             {{ department_details.name }}
                                         </option>
                                     {% endfor %}
@@ -219,7 +147,7 @@
                                     <option value="">Choose Civil Status...</option>
                                     {% for civil_status_detail in civil_status_list %}
                                         <option value="{{ civil_status_detail.0 }}"
-                                                {% if civil_status_detail.0 == current_user.userdetails.civil_status %}selected{% endif %}>
+                                                {% if civil_status_detail.0 == selected_user.userdetails.civil_status %}selected{% endif %}>
                                             {{ civil_status_detail.1 }}
                                         </option>
                                     {% endfor %}
@@ -236,7 +164,7 @@
                                     <option value="">Choose Educational Attainment...</option>
                                     {% for education_detail in education_list %}
                                         <option value="{{ education_detail.0 }}"
-                                                {% if education_detail.0 == current_user.userdetails.education %}selected{% endif %}>
+                                                {% if education_detail.0 == selected_user.userdetails.education %}selected{% endif %}>
                                             {{ education_detail.1 }}
                                         </option>
                                     {% endfor %}
@@ -252,7 +180,7 @@
                                        id="rank"
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                        placeholder="Upper Moon"
-                                       value="{{ current_user.userdetails.rank }}">
+                                       value="{% if selected_user.userdetails.rank %}{{ selected_user.userdetails.rank }}{% endif %}">
                             </div>
                             <div class="col-span-6 sm:col-span-3">
                                 <div class="flex flex-row justify-between">
@@ -261,14 +189,14 @@
                                         Day of Hiring
                                     </label>
                                     <p class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                        Year in Service: <u>{{ current_user.userdetails.get_years_in_service }}</u>
+                                        Year in Service: <u>{{ selected_user.userdetails.get_years_in_service }}</u>
                                     </p>
                                 </div>
                                 <input type="date"
                                        name="date_of_hiring"
                                        id="date_of_hiring"
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       value="{{ current_user.userdetails.str_date_of_hiring }}">
+                                       value="{{ selected_user.userdetails.str_date_of_hiring }}">
                             </div>
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="employee_number"
@@ -278,7 +206,7 @@
                                 <input type="text"
                                        id="employee_number"
                                        class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                       value="{{ current_user.userdetails.employee_number }}"
+                                       value="{% if selected_user.userdetails.employee_number %}{{ selected_user.userdetails.employee_number }}{% endif %}"
                                        disabled
                                        readonly>
                             </div>
@@ -290,12 +218,14 @@
                     </form>
                 </div>
             {% endblock %}
-            {% block password_information_section %}
-                <div id="password_information_section"
-                     class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 relative">
-                    <h3 class="mb-4 text-xl font-semibold dark:text-white">Password Information</h3>
-                    <div id="password_information_alert"
-                         class="{% if show_alert %}absolute{% else %}hidden{% endif %} m-2 top-0 right-0 flex items-center p-4 mb-4 rounded-lg {% if error %}text-red-800 bg-red-50 dark:bg-gray-800 dark:text-red-400{% else %}text-green-800 bg-green-50 dark:bg-gray-800 dark:text-green-400{% endif %}"
+
+
+            {% block biometric_configuration_section %}
+                <div id="biometric_configuration_section"
+                     class="lg:w-[50%] p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 relative">
+                    <h3 class="mb-4 text-xl font-semibold dark:text-white">Biometric Configuration</h3>
+                    <div id="general_information_alert"
+                         class="{% if show_alert %}absolute{% else %}hidden{% endif %} m-2 top-0 right-0 flex items-center p-4 mb-4 rounded-lg text-green-800 bg-green-50 dark:bg-gray-800 dark:text-green-400"
                          role="alert">
                         <svg class="flex-shrink-0 w-4 h-4"
                              aria-hidden="true"
@@ -308,8 +238,8 @@
                         <div class="ms-3 text-sm font-medium">{{ alert_message }}</div>
                         <button id="alert_dismiss_button"
                                 type="button"
-                                class="ms-auto -mx-1.5 -my-1.5 p-1.5 rounded-lg inline-flex items-center justify-center h-8 w-8 {% if error %}bg-red-50 text-red-500 focus:ring-2 focus:ring-red-400 hover:bg-red-200 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700{% else %}bg-green-50 text-green-500 focus:ring-2 focus:ring-green-400 hover:bg-green-200 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-gray-700{% endif %}"
-                                data-dismiss-target="#password_information_alert">
+                                class="ms-auto -mx-1.5 -my-1.5 p-1.5 rounded-lg inline-flex items-center justify-center h-8 w-8 bg-green-50 text-green-500 focus:ring-2 focus:ring-green-400 hover:bg-green-200 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-gray-700"
+                                data-dismiss-target="#general_information_alert">
                             <span class="sr-only">Close</span>
                             <svg class="w-3 h-3"
                                  aria-hidden="true"
@@ -320,86 +250,24 @@
                             </svg>
                         </button>
                     </div>
-                    <form hx-post="{% url "core:change_user_password" %}">
+                    <form hx-post="{% url "core:modify_user_details" selected_user.id %}">
                         <div class="grid grid-cols-6 gap-6">
                             <div class="col-span-6 sm:col-span-3">
-                                <label for="current_password"
+                                <label for="first_name"
                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Current password
+                                    Biometric Device User ID
                                 </label>
-                                <div class="relative">
-                                    <input type="password"
-                                           name="current_password"
-                                           id="current_password"
-                                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                           placeholder="••••••••"
-                                           required>
-                                    <button type="button"
-                                            class="absolute inset-y-0 right-0 pr-3 flex items-center"
-                                            id="toggle_current_password_visibility">
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                             class="h-5 w-5 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-500"
-                                             viewBox="0 0 20 20"
-                                             fill="currentColor">
-                                            <path fill-rule="evenodd" d="M10 12a2 2 0 100-4 2 2 0 000 4zM2 10a8 8 0 1116 0 8 8 0 01-16 0zm18 0a10 10 0 10-20 0 10 10 0 0020 0z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="col-span-6 sm:col-span-3">
-                                <label for="password"
-                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    New
-                                    password
-                                </label>
-                                <div class="relative">
-                                    <input type="password"
-                                           name="new_password"
-                                           id="new_password"
-                                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                           placeholder="••••••••"
-                                           required>
-                                    <button type="button"
-                                            class="absolute inset-y-0 right-0 pr-3 flex items-center"
-                                            id="toggle_new_password_visibility">
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                             class="h-5 w-5 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-500"
-                                             viewBox="0 0 20 20"
-                                             fill="currentColor">
-                                            <path fill-rule="evenodd" d="M10 12a2 2 0 100-4 2 2 0 000 4zM2 10a8 8 0 1116 0 8 8 0 01-16 0zm18 0a10 10 0 10-20 0 10 10 0 0020 0z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="col-span-6 sm:col-span-3 hidden sm:block"></div>
-                            <div class="col-span-6 sm:col-span-3">
-                                <label for="confirm_password"
-                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Confirm
-                                    password
-                                </label>
-                                <div class="relative">
-                                    <input type="password"
-                                           name="confirm_password"
-                                           id="confirm_password"
-                                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                           placeholder="••••••••"
-                                           required>
-                                    <button type="button"
-                                            class="absolute inset-y-0 right-0 pr-3 flex items-center"
-                                            id="toggle_confirm_password_visibility">
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                             class="h-5 w-5 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-500"
-                                             viewBox="0 0 20 20"
-                                             fill="currentColor">
-                                            <path fill-rule="evenodd" d="M10 12a2 2 0 100-4 2 2 0 000 4zM2 10a8 8 0 1116 0 8 8 0 01-16 0zm18 0a10 10 0 10-20 0 10 10 0 0020 0z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </div>
+                                <input type="text"
+                                       name="first_name"
+                                       id="first_name"
+                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                       placeholder="Bonnie"
+                                       value="{{ selected_user.first_name }}"
+                                       required>
                             </div>
                             <div class="col-span-6 sm:col-full">
                                 <button class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                                        type="submit">Change Password</button>
+                                        type="submit">Save Details</button>
                             </div>
                         </div>
                     </form>
@@ -409,49 +277,6 @@
     </div>
 {% endblock %}
 {% block javascript %}
-    <script>
-        $(document).ready(function() {
-            $('#toggle_current_password_visibility').click(function() {
-                const passwordInput = $('#current_password');
-                const icon = $('#toggle_current_password_visibility svg');
-
-                if (passwordInput.attr('type') === 'password') {
-                    passwordInput.attr('type', 'text');
-                    icon.removeClass('fa-eye').addClass('fa-eye-slash');
-                } else {
-                    passwordInput.attr('type', 'password');
-                    icon.removeClass('fa-eye-slash').addClass('fa-eye');
-                }
-            });
-
-            $('#toggle_new_password_visibility').click(function() {
-                const passwordInput = $('#new_password');
-                const icon = $('#toggle_new_password_visibility svg');
-
-                if (passwordInput.attr('type') === 'password') {
-                    passwordInput.attr('type', 'text');
-                    icon.removeClass('fa-eye').addClass('fa-eye-slash');
-                } else {
-                    passwordInput.attr('type', 'password');
-                    icon.removeClass('fa-eye-slash').addClass('fa-eye');
-                }
-            });
-
-            $('#toggle_confirm_password_visibility').click(function() {
-                const passwordInput = $('#confirm_password');
-                const icon = $('#toggle_confirm_password_visibility svg');
-
-                if (passwordInput.attr('type') === 'password') {
-                    passwordInput.attr('type', 'text');
-                    icon.removeClass('fa-eye').addClass('fa-eye-slash');
-                } else {
-                    passwordInput.attr('type', 'password');
-                    icon.removeClass('fa-eye-slash').addClass('fa-eye');
-                }
-            });
-
-        });
-    </script>
     <script>
         // Function to attach event handlers htmx afterSwap
         function attachEventHandlers() {

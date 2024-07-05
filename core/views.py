@@ -5,10 +5,25 @@ from django.db.utils import IntegrityError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django_htmx.http import (
+    HttpResponseClientRedirect,
+    reswap,
+    retarget,
+    trigger_client_event,
+)
 from render_block import render_block_to_string
 
-from core.utils import check_user_has_password, password_validation, string_to_date
-from core.models import UserDetails, Department
+from core.models import Department, UserDetails, BiometricDetail
+from core.utils import (
+    check_user_has_password,
+    password_validation,
+    profile_picture_validation,
+    string_to_date,
+    update_user_and_user_details,
+    get_education_list,
+    get_civil_status_list,
+    get_or_create_intial_user_one_to_one_fields,
+)
 
 
 @login_required(login_url="/login")
@@ -26,21 +41,19 @@ def user_login(request):
         response = HttpResponse()
         if user is not None:
             login(request, user)
-            response["HX-Redirect"] = reverse("core:profile")
+            response = HttpResponseClientRedirect(reverse("core:profile"))
             return response
         else:
             if not password:
                 if not check_user_has_password(email=email):
-                    context.update(
-                        {
-                            "user_email": email
-                        }
-                    )
+                    context.update({"user_email": email})
                     response.content = render_block_to_string(
-                        "core/components/set_password.html", "set_password_form", context
+                        "core/components/set_password.html",
+                        "set_password_form",
+                        context,
                     )
-                    response["HX-Retarget"] = "#login_card"
-                    response["HX-Reswap"] = "outerHTML"
+                    response = retarget(response, "#login_card")
+                    response = reswap(response, "outerHTML")
                     return response
 
             context.update(
@@ -51,8 +64,8 @@ def user_login(request):
             response.content = render_block_to_string(
                 "core/login.html", "login_error_message", context
             )
-            response["HX-Retarget"] = "#login_error_message"
-            response["HX-Reswap"] = "outerHTML"
+            response = retarget(response, "#login_error_message")
+            response = reswap(response, "outerHTML")
             return response
 
     return render(request, "core/login.html", context)
@@ -67,39 +80,34 @@ def set_new_user_password(request):
     errors = password_validation(password, confirm_password)
 
     if errors:
-        context.update(
-                {
-                    "password_validation_errors": errors
-                }
-            )
+        context.update({"password_validation_errors": errors})
         response.content = render_block_to_string(
-                        "core/components/set_password.html", "set_error_message", context
-                    )
-        response["HX-Retarget"] = "#error_list"
-        response["HX-Reswap"] = "outerHTML"
+            "core/components/set_password.html", "set_error_message", context
+        )
+        response = retarget(response, "#error_list")
+        response = reswap(response, "outerHTML")
         return response
-    
-    user_email = request.POST['email']
+
+    user_email = request.POST["email"]
     user = User.objects.get(email=user_email)
     user.set_password(password)
     user.save()
 
     context.update(
-            {
-                "password_successfully_set_message": "Your password has been set. Please login."
-            }
-        )
-    response.content = render_block_to_string(
-                    "core/login.html", "login_card", context
-                )
-    response["HX-Retarget"] = "#login_card"
-    response["HX-Reswap"] = "outerHTML"
+        {
+            "password_successfully_set_message": "Your password has been set. Please login."
+        }
+    )
+    response.content = render_block_to_string("core/login.html", "login_card", context)
+    response = retarget(response, "#login_card")
+    response = reswap(response, "outerHTML")
     return response
+
 
 def user_logout(request):
     logout(request)
     response = HttpResponse()
-    response["HX-Redirect"] = reverse("core:login")
+    response = HttpResponseClientRedirect(reverse("core:login"))
     return response
 
 
@@ -108,50 +116,33 @@ def user_register(request):
     return render(request, "core/register.html", context)
 
 
+### USER PROFILE ###
 @login_required(login_url="/login")
 def user_profile(request):
     user = request.user
-    user_details, created = UserDetails.objects.get_or_create(user=user, defaults={"user": user})
-    departments = Department.objects.all()
-
-    if request.method == "POST":
-        data = request.POST
-
-        user.first_name = data['first_name']
-        user.last_name = data['last_name']
-        user.save()
-
-        user_details.address = data['address']
-        user_details.phone_number = data['phone_number']
-        if data['birthday']:
-            user_details.date_of_birth = string_to_date(data['birthday'])
-        if data['day_of_hiring']:
-            user_details.date_of_hiring = string_to_date(data['day_of_hiring'])
-        user_details.rank = data['rank']
-        user_details.save()
-    # TODO: Add Educational Attainment
+    departments = Department.objects.filter(is_active=True)
+    education_list = get_education_list()
+    civil_status_list = get_civil_status_list()
     context = {
-        "first_name": user.first_name,
-        "last_name": user.last_name,
-        "email": user.email,
-        "address": user_details.address or "",
-        "phone_number": user_details.phone_number or "",
-        "birthday": user_details.str_date_of_birth(),
+        "current_user": user,
         "department_list": departments,
-        "department": user_details.department,
-        "date_of_hiring": user_details.str_date_of_hiring(),
-        "employee_number": user_details.employee_number or "",
-        "rank": user_details.rank or ""
+        "civil_status_list": civil_status_list,
+        "education_list": education_list,
     }
-
+    get_or_create_intial_user_one_to_one_fields(user)
     if request.method == "POST":
-        context.update({"show_alert": True, "alert_message": "Profile successfully updated."})
+        updated_user = update_user_and_user_details(
+            user_instance=user, querydict=request.POST
+        )
+        context.update(
+            {"show_alert": True, "alert_message": "Profile successfully updated."}
+        )
         response = HttpResponse()
         response.content = render_block_to_string(
-                "core/user_profile.html", "profile_information_section", context
+            "core/user_profile.html", "profile_information_section", context
         )
-        response["HX-Retarget"] = "#profile_information_section"
-        response["HX-Reswap"] = "outerHTML"
+        response = retarget(response, "#profile_information_section")
+        response = reswap(response, "outerHTML")
         return response
 
     return render(request, "core/user_profile.html", context)
@@ -166,8 +157,8 @@ def change_user_password(request):
         confirm_password = request.POST["confirm_password"]
 
         response = HttpResponse()
-        response["HX-Retarget"] = "#password_information_section"
-        response["HX-Reswap"] = "outerHTML"
+        response = retarget(response, "#password_information_section")
+        response = reswap(response, "outerHTML")
 
         if new_password != confirm_password:
             context.update(
@@ -214,6 +205,45 @@ def change_user_password(request):
 
 
 @login_required(login_url="/login")
+def upload_user_profile_picture(request):
+    context = {"show_alert": True}
+    if request.FILES:
+        profile_picture = request.FILES.get("profile_picture")
+        error = profile_picture_validation(profile_picture)
+
+        response = HttpResponse()
+        response = retarget(response, "#profile_picture_section")
+        response = reswap(response, "outerHTML")
+
+        if error:
+            context.update({"error": True, "alert_message": error})
+            response.content = render_block_to_string(
+                "core/user_profile.html", "profile_picture_section", context
+            )
+
+        if error is None:
+            user = request.user
+            user_details = request.user.userdetails
+            user_details.profile_picture = profile_picture
+            user_details.save()
+            context.update(
+                {
+                    "error": False,
+                    "alert_message": "Profile picture successfully uploaded.",
+                    "new_profile_picture": user_details.profile_picture.url,
+                }
+            )
+            response.content = render_block_to_string(
+                "core/user_profile.html", "profile_picture_section", context
+            )
+            response = retarget(response, "#profile_picture_section")
+            response = reswap(response, "outerHTML")
+
+    return response
+
+
+### USER MANAGEMENT ###
+@login_required(login_url="/login")
 def user_management(request):
     users = User.objects.exclude(id=request.user.id)
     context = {"users": users}
@@ -223,8 +253,8 @@ def user_management(request):
 @login_required(login_url="/login")
 def add_new_user(request):
     context = {}
-    first_name = request.POST["first_name"].lower()
-    last_name = request.POST["last_name"].lower()
+    first_name = request.POST["first_name"]
+    last_name = request.POST["last_name"]
     email = request.POST["email"].lower()
 
     if request.method == "POST":
@@ -240,14 +270,15 @@ def add_new_user(request):
                 },
             )
             if created:
-                response["HX-Redirect"] = reverse("core:user_management")
+                get_or_create_intial_user_one_to_one_fields(user)
+                response = HttpResponseClientRedirect(reverse("core:user_management"))
             else:
                 context.update({"add_user_error_message": "Email already exists."})
                 response.content = render_block_to_string(
                     "core/user_management.html", "add_user_error_message", context
                 )
-                response["HX-Retarget"] = "#add_user_error_message"
-                response["HX-Reswap"] = "outerHTML"
+                response = retarget(response, "#add_user_error_message")
+                response = reswap(response, "outerHTML")
         except IntegrityError:
             context.update(
                 {"add_user_error_message": "User credentials already exists."}
@@ -255,8 +286,8 @@ def add_new_user(request):
             response.content = render_block_to_string(
                 "core/user_management.html", "add_user_error_message", context
             )
-            response["HX-Retarget"] = "#add_user_error_message"
-            response["HX-Reswap"] = "outerHTML"
+            response = retarget(response, "#add_user_error_message")
+            response = reswap(response, "outerHTML")
     return response
 
 
@@ -271,5 +302,40 @@ def toggle_user_status(request, pk):
     response.content = render_block_to_string(
         "core/user_management.html", "user_table_record", context
     )
-    response["HX-Reswap"] = "outerHTML"
+    response = reswap(response, "outerHTML")
     return response
+
+
+@login_required(login_url="/login")
+def modify_user_details(request, pk):
+    user = User.objects.get(id=pk)
+    departments = Department.objects.all()
+    civil_status_list = get_civil_status_list()
+    education_list = get_education_list()
+    context = {
+        "selected_user": user,
+        "department_list": departments,
+        "civil_status_list": civil_status_list,
+        "education_list": education_list,
+    }
+    if request.POST:
+        response = HttpResponse()
+        updated_user = update_user_and_user_details(
+            user_instance=user, querydict=request.POST
+        )
+        context.update(
+            {
+                "show_alert": True,
+                "error": False,
+                "alert_message": "User successfully updated.",
+                "selected_user": updated_user,
+            }
+        )
+        response.content = render_block_to_string(
+            "core\modify_user_profile.html", "profile_information_section", context
+        )
+        response = retarget(response, "#profile_information_section")
+        response = reswap(response, "outerHTML")
+        return response
+
+    return render(request, "core/modify_user_profile.html", context)

@@ -1,3 +1,4 @@
+{% load static %}
 <header>
     <nav class="fixed z-30 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700 py-3 px-4">
         <div class="flex justify-between items-center max-w-screen-2xl mx-auto">
@@ -272,27 +273,27 @@
                         id="userMenuDropdownButton"
                         aria-expanded="false"
                         data-dropdown-toggle="userMenuDropdown">
-                    <span class="sr-only">Open user menu</span>
                     <img class="w-8 h-8 rounded-full"
-                         src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
-                         alt="user photo" />
+                         src="{% if request.user.userdetails.profile_picture %}{{ request.user.userdetails.profile_picture.url }}{% else %}{% static "assets\imgs\user-profile-icon.jpg" %}{% endif %}"
+                         alt="User Profile Pic" />
                 </button>
                 <!-- Dropdown menu -->
                 <div class="hidden z-50 my-4 w-56 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600"
                      id="userMenuDropdown">
                     <div class="py-3 px-4">
-                        <span class="block text-sm font-semibold text-gray-900 dark:text-white">Admin Account</span>
-                        <span class="block text-sm font-light text-gray-500 truncate dark:text-gray-400">admin@account.com</span>
+                        <span class="block text-sm font-semibold text-gray-900 dark:text-white">{{ request.user.get_short_name }} Account</span>
+                        <span class="block text-sm font-light text-gray-500 truncate dark:text-gray-400">{{ request.user.email }}</span>
                     </div>
                     <ul class="py-1 font-light text-gray-500 dark:text-gray-400"
                         aria-labelledby="userMenuDropdownButton">
                         <li>
                             <a href="{% url "core:profile" %}"
-                               class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">My profile</a>
+                               class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">My Profile</a>
                         </li>
                         <li>
-                            <!-- <a href="#" class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Account
-                                settings</a> -->
+                            <a hx-get="{% url "chat:toggle_chat_window" True %}"
+                               href=""
+                               class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Messages</a>
                         </li>
                     </ul>
                     <!-- <ul class="py-1 font-light text-gray-500 dark:text-gray-400" aria-labelledby="userMenuDropdownButton">

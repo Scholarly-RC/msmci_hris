@@ -1,31 +1,65 @@
 import datetime
-from django.utils.translation import gettext_lazy as _
+
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
-from core.utils import date_to_string
+from core.utils import date_to_string, get_user_profile_picture_directory_path
+
 
 class UserDetails(models.Model):
-
     class EducationalAttainment(models.TextChoices):
-        KINDERGARTEN = 'KG', _('Kindergarten')
-        ELEMENTARY = 'EL', _('Elementary')
-        HIGH_SCHOOL = 'HS', _('High School')
-        BACHELOR = 'BA', _('Bachelor')
-        MASTER = 'MA', _('Master')
-        DOCTORATE = 'DR', _('Doctorate')
+        KINDERGARTEN = "KG", _("Kindergarten")
+        ELEMENTARY = "EL", _("Elementary")
+        HIGH_SCHOOL = "HS", _("High School")
+        BACHELOR = "BA", _("Bachelor")
+        MASTER = "MA", _("Master")
+        DOCTORATE = "DR", _("Doctorate")
 
+    class CivilStatus(models.TextChoices):
+        SINGLE = "SI", _("Single")
+        MARRIED = "MA", _("Married")
+        DIVORCED = "DI", _("Divorced")
+        WIDOWED = "WI", _("Widowed")
+        SEPARATED = "SE", _("Separated")
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    date_of_birth = models.DateField(null=True, blank=True)
-    phone_number = models.CharField(max_length=500, null=True, blank=True)
-    address = models.CharField(max_length=500, null=True, blank=True)
-    education = models.CharField(max_length=2, choices=EducationalAttainment.choices, default=EducationalAttainment.BACHELOR)
-    date_of_hiring = models.DateField(null=True, blank=True)
-    employee_number = models.CharField(max_length=500, null=True, blank=True)
-    rank = models.CharField(max_length=500, null=True, blank=True)
+    user = models.OneToOneField(User, on_delete=models.RESTRICT, primary_key=True)
+    profile_picture = models.FileField(
+        _("User Profile Picture"),
+        null=True,
+        blank=True,
+        upload_to=get_user_profile_picture_directory_path,
+    )
+    date_of_birth = models.DateField(_("User Date of Birth"), null=True, blank=True)
+    phone_number = models.CharField(
+        _("User Phone Number"), max_length=500, null=True, blank=True
+    )
+    address = models.CharField(_("User Address"), max_length=500, null=True, blank=True)
+    education = models.CharField(
+        _("User Educational Attainment"),
+        max_length=2,
+        choices=EducationalAttainment.choices,
+        default=None,
+        null=True,
+        blank=True,
+    )
+    civil_status = models.CharField(
+        _("User Civil Status"),
+        max_length=2,
+        choices=CivilStatus.choices,
+        default=None,
+        null=True,
+        blank=True,
+    )
+    date_of_hiring = models.DateField(_("User Date of Hiring"), null=True, blank=True)
+    employee_number = models.CharField(
+        _("User Employee Number"), max_length=500, null=True, blank=True
+    )
+    rank = models.CharField(_("User Rank"), max_length=500, null=True, blank=True)
 
-    department = models.ForeignKey("Department", on_delete=models.SET_NULL, null=True, blank=True)
+    department = models.ForeignKey(
+        "Department", on_delete=models.RESTRICT, null=True, blank=True
+    )
 
     updated = models.DateField(auto_now=True, null=True, blank=True)
 
@@ -34,15 +68,62 @@ class UserDetails(models.Model):
 
     def __str__(self):
         return self.user.get_full_name()
-    
+
+    def get_age(self):
+        if self.date_of_birth:
+            today = datetime.date.today()
+            age = (
+                today.year
+                - self.date_of_birth.year
+                - (
+                    (today.month, today.day)
+                    < (self.date_of_birth.month, self.date_of_birth.day)
+                )
+            )
+            return age
+        return None
+
+    def get_years_in_service(self):
+        if self.date_of_hiring:
+            today = datetime.date.today()
+            years_in_service = (
+                today.year
+                - self.date_of_hiring.year
+                - (
+                    (today.month, today.day)
+                    < (self.date_of_hiring.month, self.date_of_hiring.day)
+                )
+            )
+            return years_in_service
+        return None
+
     def str_date_of_birth(self):
         return date_to_string(self.date_of_birth)
-    
+
     def str_date_of_hiring(self):
         return date_to_string(self.date_of_hiring)
 
 
+class BiometricDetail(models.Model):
+    user = models.OneToOneField(User, on_delete=models.RESTRICT, null=True, blank=True)
+    device_uid = models.IntegerField(_("Biometric UID"), null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Biometric Details"
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} - {self.device_uid}"
+
+
 class Department(models.Model):
-    name = models.CharField(max_length=500, null=True, blank=True)
+    name = models.CharField(_("Department Name"), max_length=500, null=True, blank=True)
+    code = models.CharField(_("Department Code"), max_length=500, null=True, blank=True)
+    is_active = models.BooleanField(_("Is Department Active"), default=True)
     created = models.DateField(auto_now_add=True, null=True, blank=True)
-    updated = models.DateField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Departments"
+
+    def __str__(self):
+        return self.name
