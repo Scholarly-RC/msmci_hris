@@ -6,7 +6,8 @@ from django_htmx.http import reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
 
 from chat.models import Message
-from chat.utils import get_conversation, get_unseen_messages, mark_messages_as_seen
+from chat.utils import (get_conversation, get_unseen_messages,
+                        mark_messages_as_seen)
 
 
 # Create your views here.

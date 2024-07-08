@@ -135,3 +135,12 @@ def get_or_create_intial_user_one_to_one_fields(user):
         (user_details, user_details_created),
         (biometric_details, biometric_details_created),
     ]
+
+
+def check_if_biometric_uid_exists(current_user, uid):
+    biometric_detail_model = apps.get_model("core", "BiometricDetail")
+    return (
+        biometric_detail_model.objects.filter(uid_in_device=uid)
+        .exclude(user=current_user)
+        .exists()
+    )

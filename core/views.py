@@ -5,25 +5,16 @@ from django.db.utils import IntegrityError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django_htmx.http import (
-    HttpResponseClientRedirect,
-    reswap,
-    retarget,
-    trigger_client_event,
-)
+from django_htmx.http import (HttpResponseClientRedirect, reswap, retarget,
+                              trigger_client_event)
 from render_block import render_block_to_string
 
-from core.models import Department, UserDetails, BiometricDetail
-from core.utils import (
-    check_user_has_password,
-    password_validation,
-    profile_picture_validation,
-    string_to_date,
-    update_user_and_user_details,
-    get_education_list,
-    get_civil_status_list,
-    get_or_create_intial_user_one_to_one_fields,
-)
+from core.models import BiometricDetail, Department, UserDetails
+from core.utils import (check_if_biometric_uid_exists, check_user_has_password,
+                        get_civil_status_list, get_education_list,
+                        get_or_create_intial_user_one_to_one_fields,
+                        password_validation, profile_picture_validation,
+                        string_to_date, update_user_and_user_details)
 
 
 @login_required(login_url="/login")
@@ -309,6 +300,7 @@ def toggle_user_status(request, pk):
 @login_required(login_url="/login")
 def modify_user_details(request, pk):
     user = User.objects.get(id=pk)
+    get_or_create_intial_user_one_to_one_fields(user)
     departments = Department.objects.all()
     civil_status_list = get_civil_status_list()
     education_list = get_education_list()
@@ -339,3 +331,38 @@ def modify_user_details(request, pk):
         return response
 
     return render(request, "core/modify_user_profile.html", context)
+
+
+@login_required(login_url="/login")
+def modify_user_biometric_details(request, pk):
+    context = {}
+    if request.htmx and request.POST:
+        data = request.POST
+        user = User.objects.get(id=pk)
+        uid_in_device = data.get("uid_in_device", None)
+        context.update(
+            {
+                "show_alert": True,
+                "error": False,
+                "alert_message": "User biometric configuration successfully updated.",
+                "selected_user": user,
+            }
+        )
+        if not check_if_biometric_uid_exists(current_user=user, uid=uid_in_device):
+            biometric_details = user.biometricdetail
+            biometric_details.uid_in_device = data.get("uid_in_device", None)
+            biometric_details.save()
+        else:
+            context.update(
+                {
+                    "error": True,
+                    "alert_message": "Provided ID is already in use by another user.",
+                }
+            )
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "core\modify_user_profile.html", "biometric_configuration_section", context
+        )
+        response = retarget(response, "#biometric_configuration_section")
+        response = reswap(response, "outerHTML")
+        return response
