@@ -81,6 +81,29 @@ def select_chat_users(request):
         return response
 
 
+def get_updated_messages(request):
+    context = {}
+    if request.htmx and request.POST:
+        response = HttpResponse()
+        selected_user_id = request.POST.get("selected_user")
+        selected_user = User.objects.get(id=selected_user_id)
+        conversation = get_conversation(request.user, selected_user)
+        context = {
+            "current_user": request.user,
+            "selected_user": selected_user,
+            "conversation": conversation,
+        }
+        mark_messages_as_seen(sender=selected_user, receiver=request.user)
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "chat/conversation.html", "scrollable_conversation_container", context
+        )
+        response = retarget(response, "#scrollable_conversation_container")
+        response = reswap(response, "outerHTML")
+    return response
+    
+
+
 def send_chat_message(request):
     context = {}
     if request.htmx and request.POST:

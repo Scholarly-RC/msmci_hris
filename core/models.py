@@ -23,6 +23,11 @@ class UserDetails(models.Model):
         WIDOWED = "WI", _("Widowed")
         SEPARATED = "SE", _("Separated")
 
+    class Role(models.TextChoices):
+        HR = "HR", _("Human Resource")
+        DEPARTMENT_HEAD = "DH", _("Department Head")
+        EMPLOYEE = "EMP", _("Employee")
+
     user = models.OneToOneField(User, on_delete=models.RESTRICT, primary_key=True)
     profile_picture = models.FileField(
         _("User Profile Picture"),
@@ -59,6 +64,15 @@ class UserDetails(models.Model):
 
     department = models.ForeignKey(
         "Department", on_delete=models.RESTRICT, null=True, blank=True
+    )
+
+    user_role = models.CharField(
+        _("User Role"),
+        max_length=3,
+        choices=Role.choices,
+        default=None,
+        null=True,
+        blank=True,
     )
 
     updated = models.DateField(auto_now=True, null=True, blank=True)
@@ -102,6 +116,15 @@ class UserDetails(models.Model):
 
     def str_date_of_hiring(self):
         return date_to_string(self.date_of_hiring)
+
+    def is_hr(self):
+        return self.user_role == self.Role.HR
+
+    def is_department_head(self):
+        return self.user_role == self.Role.DEPARTMENT_HEAD
+
+    def is_employee(self):
+        return self.user_role == self.Role.EMPLOYEE | self.user_role is None
 
 
 class BiometricDetail(models.Model):

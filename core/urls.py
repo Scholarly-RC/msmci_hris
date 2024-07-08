@@ -44,5 +44,10 @@ urlpatterns = [
         core_views.toggle_user_status,
         name="toggle_user_status",
     ),
+    path(
+        "user-management/bulk-add-new-users",
+        core_views.bulk_add_new_users,
+        name="bulk_add_new_users",
+    ),
     path("user-management", core_views.user_management, name="user_management"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

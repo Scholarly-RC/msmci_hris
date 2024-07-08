@@ -5,16 +5,29 @@ from django.db.utils import IntegrityError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django_htmx.http import (HttpResponseClientRedirect, reswap, retarget,
-                              trigger_client_event)
+from django.contrib import messages
+from django_htmx.http import (
+    HttpResponseClientRedirect,
+    reswap,
+    retarget,
+    trigger_client_event,
+)
 from render_block import render_block_to_string
 
 from core.models import BiometricDetail, Department, UserDetails
-from core.utils import (check_if_biometric_uid_exists, check_user_has_password,
-                        get_civil_status_list, get_education_list,
-                        get_or_create_intial_user_one_to_one_fields,
-                        password_validation, profile_picture_validation,
-                        string_to_date, update_user_and_user_details)
+from core.utils import (
+    check_if_biometric_uid_exists,
+    check_user_has_password,
+    get_civil_status_list,
+    get_education_list,
+    get_or_create_intial_user_one_to_one_fields,
+    password_validation,
+    profile_picture_validation,
+    string_to_date,
+    update_user_and_user_details,
+)
+
+from openpyxl import load_workbook
 
 
 @login_required(login_url="/login")
@@ -324,7 +337,7 @@ def modify_user_details(request, pk):
             }
         )
         response.content = render_block_to_string(
-            "core\modify_user_profile.html", "profile_information_section", context
+            "core/modify_user_profile.html", "profile_information_section", context
         )
         response = retarget(response, "#profile_information_section")
         response = reswap(response, "outerHTML")
@@ -361,8 +374,40 @@ def modify_user_biometric_details(request, pk):
             )
         response = HttpResponse()
         response.content = render_block_to_string(
-            "core\modify_user_profile.html", "biometric_configuration_section", context
+            "core/modify_user_profile.html", "biometric_configuration_section", context
         )
         response = retarget(response, "#biometric_configuration_section")
         response = reswap(response, "outerHTML")
         return response
+
+
+def bulk_add_new_users(request):
+    context = {}
+    if request.htmx and request.method == "POST" and request.FILES:
+        excel_file = request.FILES["user_list"]
+
+        try:
+            wb = load_workbook(excel_file)
+            sheet = wb.active
+
+            new_user_counter = 0
+            for row in sheet.iter_rows(min_row=2, values_only=True):
+                email, employee_id = row[0], row[1]
+
+                user, created = User.objects.get_or_create(
+                    email=email,
+                    defaults={"email": email, "username": f"emp-id-{employee_id}"},
+                )
+                if created:
+                    new_user_counter += 1
+                    get_or_create_intial_user_one_to_one_fields(user)
+
+            if new_user_counter > 0:
+                messages.success(
+                    request, message=f"{new_user_counter} users successfully added."
+                )
+
+            response = HttpResponseClientRedirect(reverse("core:user_management"))
+            return response
+        except Exception as e:
+            raise e

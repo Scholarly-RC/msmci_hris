@@ -12,8 +12,8 @@ class Message(models.Model):
     )
     message = models.TextField(_("User Message"), null=True, blank=True)
     seen = models.BooleanField(_("Is User Message Seen"), default=False)
-    created = models.DateField(auto_now_add=True, null=True, blank=True)
-    updated = models.DateField(auto_now=True, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Messages"

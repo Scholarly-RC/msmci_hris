@@ -25,16 +25,21 @@
         </div>
         <div id="conversation_window_content" class="flex flex-col gap-1 w-full">
             {% if conversation %}
-                <div id="scrollable_conversation_container"
-                     class="z-10 bg-white shadow w-full dark:bg-gray-700 h-96 overflow-y-scroll w-full flex flex-col gap-1 rounded-md">
-                    {% for message in conversation %}
-                        <div class="w-full flex {% if message.sender == current_user %}justify-end{% endif %}">
-                            <div class="rounded-lg w-96 max-w-[50%] px-2 mx-1 text-gray-800 break-words {% if message.sender == current_user %}bg-blue-50 dark:bg-gray-800 dark:text-blue-400{% else %}bg-gray-100 dark:bg-gray-800 dark:text-gray-300{% endif %} {% if forloop.last %}mb-2{% endif %}">
-                                {{ message.message }}
+                {% block scrollable_conversation_container %}
+                    <div id="scrollable_conversation_container"
+                         class="z-10 bg-white shadow w-full dark:bg-gray-700 h-96 overflow-y-scroll w-full flex flex-col gap-1 rounded-md"
+                         hx-post="{% url "chat:get_updated_messages" %}"
+                         hx-vals='{"selected_user": {{ selected_user.id }}}'
+                         hx-trigger="every 10s">
+                        {% for message in conversation %}
+                            <div class="w-full flex {% if message.sender == current_user %}justify-end{% endif %}">
+                                <div class="rounded-lg w-96 max-w-[50%] px-2 mx-1 text-gray-800 break-words {% if message.sender == current_user %}bg-blue-50 dark:bg-gray-800 dark:text-blue-400{% else %}bg-gray-100 dark:bg-gray-800 dark:text-gray-300{% endif %} {% if forloop.last %}mb-2{% endif %}">
+                                    {{ message.message }}
+                                </div>
                             </div>
-                        </div>
-                    {% endfor %}
-                </div>
+                        {% endfor %}
+                    </div>
+                {% endblock %}
             {% else %}
                 <div class="w-full text-center font-semibold text-gray-900 dark:text-white">Send a message</div>
             {% endif %}

@@ -9,14 +9,14 @@ app_name = "chat"
 
 urlpatterns = [
     path(
+        "get-updated-messages",
+        chat_views.get_updated_messages,
+        name="get_updated_messages",
+    ),
+    path(
         "toggle/<str:open>",
         chat_views.toggle_chat_window,
         name="toggle_chat_window",
-    ),
-    path(
-        "users",
-        chat_views.search_chat_users,
-        name="search_chat_users",
     ),
     path(
         "users/select",
@@ -27,5 +27,10 @@ urlpatterns = [
         "users/send-chat-message",
         chat_views.send_chat_message,
         name="send_chat_message",
+    ),
+    path(
+        "users",
+        chat_views.search_chat_users,
+        name="search_chat_users",
     ),
 ]

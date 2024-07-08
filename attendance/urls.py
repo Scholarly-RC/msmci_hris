@@ -15,4 +15,9 @@ urlpatterns = [
         attendance_views.get_attendance_request,
         name="get_attendance_request",
     ),
+    path(
+        "",
+        attendance_views.attendance_management,
+        name="attendance_management",
+    ),
 ]

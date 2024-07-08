@@ -1,39 +1,9 @@
 {% extends "layout.html" %}
 {% block content %}
     {% include "navbar.html" %}
-    <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900 relative">
-        {% if messages %}
-            {% for message in messages %}
-                <div id="user_management_list_alert"
-                     class="absolute z-20 m-2 top-16 right-0 flex items-center p-4 mb-4 rounded-lg text-green-800 bg-green-50 dark:bg-gray-800 dark:text-green-400"
-                     role="alert">
-                    <svg class="flex-shrink-0 w-4 h-4"
-                         aria-hidden="true"
-                         xmlns="http://www.w3.org/2000/svg"
-                         fill="currentColor"
-                         viewBox="0 0 20 20">
-                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                    </svg>
-                    <span class="sr-only">Info</span>
-                    <div class="ms-3 text-sm font-medium">{{ message }}</div>
-                    <button id="alert_dismiss_button"
-                            type="button"
-                            class="ms-auto -mx-1.5 -my-1.5 p-1.5 rounded-lg inline-flex items-center justify-center h-8 w-8 bg-green-50 text-green-500 focus:ring-2 focus:ring-green-400 hover:bg-green-200 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-gray-700"
-                            data-dismiss-target="#user_management_list_alert">
-                        <span class="sr-only">Close</span>
-                        <svg class="w-3 h-3"
-                             aria-hidden="true"
-                             xmlns="http://www.w3.org/2000/svg"
-                             fill="none"
-                             viewBox="0 0 14 14">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                        </svg>
-                    </button>
-                </div>
-            {% endfor %}
-        {% endif %}
+    <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
         <div class="w-full xl:w-[100rem]">
-            <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3 mt-10">User Management</h1>
+            <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3 mt-10">Attendace Management</h1>
             <div class="flex flex-col gap-6 p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                 <div class="sm:flex">
                     <div class="items-center hidden mb-3 sm:flex sm:divide-x sm:divide-gray-100 sm:mb-0 dark:divide-gray-700">
@@ -62,9 +32,8 @@
                             </svg>
                             Add user
                         </button>
-                        <button data-modal-target="import-user-modal"
-                                data-modal-toggle="import-user-modal"
-                                class="inline-flex items-center justify-center w-1/2 px-3 py-2 text-sm font-medium text-center text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-primary-300 sm:w-auto dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-700">
+                        <a href="#"
+                           class="inline-flex items-center justify-center w-1/2 px-3 py-2 text-sm font-medium text-center text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-primary-300 sm:w-auto dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-700">
                             <svg class="w-5 h-5 mr-2 -ml-1"
                                  fill="currentColor"
                                  viewBox="0 0 20 20"
@@ -73,7 +42,7 @@
                                 </path>
                             </svg>
                             Import
-                        </button>
+                        </a>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
@@ -200,6 +169,129 @@
             </div>
         </div>
     </div>
+    <!-- Edit User Modal -->
+    {% block edit_user_modal %}
+        <div class="fixed left-0 right-0 z-50 items-center justify-center hidden overflow-x-hidden overflow-y-auto top-4 md:inset-0 h-modal sm:h-full"
+             id="edit-user-modal">
+            <div class="relative w-full h-full max-w-2xl px-4 md:h-auto">
+                <!-- Modal content -->
+                <div class="relative bg-white rounded-lg shadow dark:bg-gray-800">
+                    <!-- Modal header -->
+                    <div class="flex items-start justify-between p-5 border-b rounded-t dark:border-gray-700">
+                        <h3 class="text-xl font-semibold dark:text-white">Edit user</h3>
+                        <button type="button"
+                                class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-700 dark:hover:text-white"
+                                data-modal-toggle="edit-user-modal">
+                            <svg class="w-5 h-5"
+                                 fill="currentColor"
+                                 viewBox="0 0 20 20"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- Modal body -->
+                    <div class="p-6 space-y-6">
+                        <form action="#">
+                            <div class="grid grid-cols-6 gap-6">
+                                <div class="col-span-6 sm:col-span-3">
+                                    <label for="first-name"
+                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        First Name
+                                    </label>
+                                    <input type="text"
+                                           name="first-name"
+                                           value="{{ selected_user.first_name }}"
+                                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                           placeholder="Bonnie"
+                                           required>
+                                </div>
+                                <div class="col-span-6 sm:col-span-3">
+                                    <label for="last-name"
+                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        Last Name
+                                    </label>
+                                    <input type="text"
+                                           name="last-name"
+                                           value="Green"
+                                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                           placeholder="Green"
+                                           required>
+                                </div>
+                                <div class="col-span-6 sm:col-span-3">
+                                    <label for="email"
+                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        Email
+                                    </label>
+                                    <input type="email"
+                                           name="email"
+                                           value="bonnie@flowbite.com"
+                                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                           placeholder="example@company.com"
+                                           required>
+                                </div>
+                                <div class="col-span-6 sm:col-span-3">
+                                    <label for="position"
+                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        Position
+                                    </label>
+                                    <input type="text"
+                                           name="position"
+                                           value="React Developer"
+                                           id="position"
+                                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                           placeholder="e.g. React developer"
+                                           required>
+                                </div>
+                                <div class="col-span-6 sm:col-span-3">
+                                    <label for="current-password"
+                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        Current Password
+                                    </label>
+                                    <input type="password"
+                                           name="current-password"
+                                           value="••••••••"
+                                           id="current-password"
+                                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                           placeholder="••••••••"
+                                           required>
+                                </div>
+                                <div class="col-span-6 sm:col-span-3">
+                                    <label for="new-password"
+                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        New Password
+                                    </label>
+                                    <input type="password"
+                                           name="new-password"
+                                           value="••••••••"
+                                           id="new-password"
+                                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                           placeholder="••••••••"
+                                           required>
+                                </div>
+                                <div class="col-span-6">
+                                    <label for="biography"
+                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        Biography
+                                    </label>
+                                    <textarea id="biography"
+                                              rows="4"
+                                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                              placeholder="👨‍💻Full-stack web developer. Open-source contributor.">Full-stack web developer. Open-source contributor.</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Modal footer -->
+                        <div class="items-center p-6 border-t border-gray-200 rounded-b dark:border-gray-700">
+                            <button class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                                    type="submit">Save all</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endblock %}
     <!-- Add User Modal -->
     <div class="fixed left-0 right-0 z-50 items-center justify-center hidden overflow-x-hidden overflow-y-auto top-4 md:inset-0 h-modal sm:h-full"
          id="add-user-modal">
@@ -270,61 +362,6 @@
                     <div class="items-center p-6 border-t border-gray-200 rounded-b dark:border-gray-700">
                         <button class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
                                 type="submit">Add user</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <div class="fixed left-0 right-0 z-50 items-center justify-center hidden overflow-x-hidden overflow-y-auto top-4 md:inset-0 h-modal sm:h-full"
-         id="import-user-modal">
-        <div class="relative w-full h-full max-w-2xl px-4 md:h-auto">
-            <!-- Modal content -->
-            <div class="relative bg-white rounded-lg shadow dark:bg-gray-800">
-                <!-- Modal header -->
-                <div class="flex items-start justify-between p-5 border-b rounded-t dark:border-gray-700">
-                    <h3 class="text-xl font-semibold dark:text-white">Import Users</h3>
-                    <button type="button"
-                            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-700 dark:hover:text-white"
-                            data-modal-toggle="import-user-modal">
-                        <svg class="w-5 h-5"
-                             fill="currentColor"
-                             viewBox="0 0 20 20"
-                             xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd">
-                            </path>
-                        </svg>
-                    </button>
-                </div>
-                <!-- Modal body -->
-                <div class="p-6">
-                    <form hx-post="{% url "core:bulk_add_new_users" %}"
-                          hx-encoding='multipart/form-data'>
-                        <div class="grid grid-cols-6">
-                            <div class="col-span-6 sm:col-span-3">
-                                <label for="user_list"
-                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Excel File
-                                </label>
-                                <div class="flex items-center">
-                                    <input name="user_list"
-                                           class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                                           type="file"
-                                           accept=".xls, .xlsx, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                                           required>
-                                </div>
-                            </div>
-                        </div>
-                        {% block import_user_error_message %}
-                            <div id="import_user_error_message"
-                                 class="text-sm text-red-500 font-bold w-full text-center mt-5">
-                                {{ import_user_error_message }}
-                            </div>
-                        {% endblock %}
-                    </div>
-                    <!-- Modal footer -->
-                    <div class="items-center p-6 border-t border-gray-200 rounded-b dark:border-gray-700">
-                        <button class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                                type="submit">Import Users</button>
                     </div>
                 </form>
             </div>

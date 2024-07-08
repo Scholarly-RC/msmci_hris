@@ -201,10 +201,10 @@
                 <div class="hidden overflow-hidden z-50 my-4 max-w-sm text-base list-none bg-white rounded divide-y divide-gray-100 shadow-lg dark:bg-gray-700 dark:divide-gray-600"
                      id="apps-dropdown">
                     <div class="block py-2 px-4 text-base font-medium text-center text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                        Modules
+                        Account Modules
                     </div>
                     <div class="grid grid-cols-2 gap-4 p-4">
-                        <a href="attendance-management.html"
+                        <a href="{% url "attendance:attendance_management" %}"
                            class="block p-4 text-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 group">
                             <svg aria-hidden="true"
                                  class="mx-auto mb-1 w-7 h-7 text-gray-400 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-400"
@@ -252,7 +252,12 @@
                             </svg>
                             <div class="text-sm text-gray-900 dark:text-white">Leave Management</div>
                         </a>
-                        {% if user.is_staff %}
+                    </div>
+                    {% if user.userdetails.is_hr %}
+                        <div class="block py-2 px-4 text-base font-medium text-center text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                            Admin Modules
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 p-4">
                             <a href="{% url "core:user_management" %}"
                                class="block p-4 text-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 group">
                                 <svg aria-hidden="true"
@@ -265,8 +270,8 @@
                                 </svg>
                                 <div class="text-sm text-gray-900 dark:text-white">User Management</div>
                             </a>
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% endif %}
                 </div>
                 <button type="button"
                         class="flex mx-3 text-sm bg-gray-800 rounded-full md:mr-0 flex-shrink-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"

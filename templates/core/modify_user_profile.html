@@ -88,7 +88,6 @@
                                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                           placeholder="e.g. Mlang">{% if selected_user.userdetails.address %}{{ selected_user.userdetails.address }}{% endif %}</textarea>
                             </div>
-
                             <div class="col-span-6 sm:col-span-3">
                                 <div class="flex flex-row justify-between">
                                     <label for="date_of_birth"
@@ -218,8 +217,6 @@
                     </form>
                 </div>
             {% endblock %}
-
-
             {% block biometric_configuration_section %}
                 <div id="biometric_configuration_section"
                      class="lg:w-[50%] p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 relative">
