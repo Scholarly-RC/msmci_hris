@@ -28,6 +28,20 @@ class UserDetails(models.Model):
         DEPARTMENT_HEAD = "DH", _("Department Head")
         EMPLOYEE = "EMP", _("Employee")
 
+    class Religion(models.TextChoices):
+        ROMAN_CATHOLIC = "RC", _("Roman Catholic")
+        ISLAM = "IS", _("Islam")
+        EVANGELICAL = "EV", _("Evangelical")
+        IGLESIA_NI_CRISTO = "INC", _("Iglesia ni Cristo")
+        AGLIPAYAN = "AG", _("Aglipayan")
+        JEHOVAH_WITNESSES = "JW", _("Jehovah's Witnesses")
+        BORN_AGAIN_CHRISTIAN = "BAC", _("Born Again Christian")
+        SEVENTH_DAY_ADVENTIST = "SDA", _("Seventh-day Adventist")
+        UNITED_PENTECOSTAL = "UPC", _("United Pentecostal Church")
+        BAPTIST = "BAP", _("Baptist")
+        METHODIST = "MET", _("Methodist")
+        CHURCH_OF_CHRIST = "COC", _("Church of Christ")
+
     user = models.OneToOneField(User, on_delete=models.RESTRICT, primary_key=True)
     profile_picture = models.FileField(
         _("User Profile Picture"),
@@ -48,10 +62,19 @@ class UserDetails(models.Model):
         null=True,
         blank=True,
     )
+    degrees_earned = models.CharField(_("User Degrees Earned"), max_length=1000, null=True, blank=True)
     civil_status = models.CharField(
         _("User Civil Status"),
         max_length=2,
         choices=CivilStatus.choices,
+        default=None,
+        null=True,
+        blank=True,
+    )
+    religion = models.CharField(
+        _("User Religious Affiliation"),
+        max_length=3,
+        choices=Religion.choices,
         default=None,
         null=True,
         blank=True,
@@ -81,7 +104,7 @@ class UserDetails(models.Model):
         verbose_name_plural = "User Details"
 
     def __str__(self):
-        return self.user.get_full_name()
+        return f"User Details of USER {self.user.id}"
 
     def get_age(self):
         if self.date_of_birth:

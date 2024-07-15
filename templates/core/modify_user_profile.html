@@ -119,23 +119,6 @@
                                        value="{% if selected_user.userdetails.phone_number %}{{ selected_user.userdetails.phone_number }}{% endif %}">
                             </div>
                             <div class="col-span-6 sm:col-span-3">
-                                <label for="department"
-                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Department
-                                </label>
-                                <select id="department"
-                                        name="department"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                                    <option value="">Choose a Department...</option>
-                                    {% for department_details in department_list %}
-                                        <option value="{{ department_details.id }}"
-                                                {% if department_details.id == selected_user.userdetails.department.id %}selected{% endif %}>
-                                            {{ department_details.name }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-span-6 sm:col-span-3">
                                 <label for="civil_status"
                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                     Civil Status
@@ -148,6 +131,23 @@
                                         <option value="{{ civil_status_detail.0 }}"
                                                 {% if civil_status_detail.0 == selected_user.userdetails.civil_status %}selected{% endif %}>
                                             {{ civil_status_detail.1 }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-span-6 sm:col-span-3">
+                                <label for="religion"
+                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                    Religious Affiliation
+                                </label>
+                                <select id="religion"
+                                        name="religion"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                    <option value="">Choose Religious Affiliation...</option>
+                                    {% for religion_detail in religion_list %}
+                                        <option value="{{ religion_detail.0 }}"
+                                                {% if religion_detail.0 == selected_user.userdetails.religion %}selected{% endif %}>
+                                            {{ religion_detail.1 }}
                                         </option>
                                     {% endfor %}
                                 </select>
@@ -170,6 +170,17 @@
                                 </select>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
+                                <label for="degrees_earned"
+                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                    Degree/s Earned (Optional)
+                                </label>
+                                <textarea type="text"
+                                          name="degrees_earned"
+                                          id="degrees_earned"
+                                          class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                          placeholder="Enter degrees earned (separate with comma if multiple)">{% if selected_user.userdetails.degrees_earned %}{{ selected_user.userdetails.degrees_earned }}{% endif %}</textarea>
+                            </div>
+                            <div class="col-span-6 sm:col-span-3">
                                 <label for="rank"
                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                     Rank
@@ -178,7 +189,7 @@
                                        name="rank"
                                        id="rank"
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       placeholder="Upper Moon"
+                                       placeholder="Enter your rank"
                                        value="{% if selected_user.userdetails.rank %}{{ selected_user.userdetails.rank }}{% endif %}">
                             </div>
                             <div class="col-span-6 sm:col-span-3">
@@ -188,7 +199,9 @@
                                         Day of Hiring
                                     </label>
                                     <p class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                        Year in Service: <u>{{ selected_user.userdetails.get_years_in_service }}</u>
+                                        {% if selected_user.userdetails.get_years_in_service %}
+                                            Year in Service: <u>{{ selected_user.userdetails.get_years_in_service }}</u>
+                                        {% endif %}
                                     </p>
                                 </div>
                                 <input type="date"
@@ -196,6 +209,23 @@
                                        id="date_of_hiring"
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                        value="{{ selected_user.userdetails.str_date_of_hiring }}">
+                            </div>
+                            <div class="col-span-6 sm:col-span-3">
+                                <label for="department"
+                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                    Department
+                                </label>
+                                <select id="department"
+                                        name="department"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                    <option value="">Choose a Department...</option>
+                                    {% for department_details in department_list %}
+                                        <option value="{{ department_details.id }}"
+                                                {% if department_details.id == selected_user.userdetails.department.id %}selected{% endif %}>
+                                            {{ department_details.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="employee_number"

@@ -20,11 +20,13 @@ from core.utils import (
     check_user_has_password,
     get_civil_status_list,
     get_education_list,
+    get_religion_list,
     get_or_create_intial_user_one_to_one_fields,
     password_validation,
     profile_picture_validation,
     string_to_date,
     update_user_and_user_details,
+    generate_username_from_employee_id,
 )
 
 from openpyxl import load_workbook
@@ -117,6 +119,63 @@ def user_logout(request):
 
 def user_register(request):
     context = {}
+    if request.htmx and request.POST:
+        data = request.POST
+        response = HttpResponse()
+        email = data.get("email")
+        employee_id = data.get("employee_id")
+        password = data.get("password")
+        confirm_password = data.get("confirm_password")
+        errors = password_validation(password, confirm_password)
+        if errors:
+            context.update(
+                {
+                    "register_error_message": errors[0],
+                }
+            )
+            response.content = render_block_to_string(
+                "core/register.html", "register_error_message", context
+            )
+            response = retarget(response, "#register_error_message")
+            response = reswap(response, "outerHTML")
+            return response
+
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={"username": generate_username_from_employee_id(employee_id)},
+        )
+        if not created:
+            context.update(
+                {
+                    "register_error_message": "The email address you entered is already registered. Please use a different email address or try logging in.",
+                }
+            )
+            response.content = render_block_to_string(
+                "core/register.html", "register_error_message", context
+            )
+            response = retarget(response, "#register_error_message")
+            response = reswap(response, "outerHTML")
+            return response
+
+        user.set_password(password)
+        user.save()
+
+        user_details, _ = get_or_create_intial_user_one_to_one_fields(user)
+        user_details[0].employee_number = employee_id
+        user_details[0].save()
+
+        context.update(
+            {
+                "account_successfully_created_message": "Account successfully created. Please login.",
+            }
+        )
+        response.content = render_block_to_string(
+            "core/register.html", "register_card", context
+        )
+        response = retarget(response, "#register_card")
+        response = reswap(response, "outerHTML")
+        return response
+
     return render(request, "core/register.html", context)
 
 
@@ -127,11 +186,13 @@ def user_profile(request):
     departments = Department.objects.filter(is_active=True)
     education_list = get_education_list()
     civil_status_list = get_civil_status_list()
+    religion_list = get_religion_list()
     context = {
         "current_user": user,
         "department_list": departments,
         "civil_status_list": civil_status_list,
         "education_list": education_list,
+        "religion_list": religion_list,
     }
     get_or_create_intial_user_one_to_one_fields(user)
     if request.method == "POST":
@@ -257,9 +318,11 @@ def user_management(request):
 @login_required(login_url="/login")
 def add_new_user(request):
     context = {}
-    first_name = request.POST["first_name"]
-    last_name = request.POST["last_name"]
-    email = request.POST["email"].lower()
+    data = request.POST
+    first_name = data["first_name"]
+    last_name = data["last_name"]
+    email = data["email"].lower()
+    employee_id = data["employee_id"]
 
     if request.method == "POST":
         response = HttpResponse()
@@ -269,12 +332,13 @@ def add_new_user(request):
                 defaults={
                     "first_name": first_name,
                     "last_name": last_name,
-                    "email": email,
-                    "username": f"{first_name}_{last_name}",
+                    "username": generate_username_from_employee_id(employee_id),
                 },
             )
             if created:
-                get_or_create_intial_user_one_to_one_fields(user)
+                user_details, _ = get_or_create_intial_user_one_to_one_fields(user)
+                user_details[0].employee_number = employee_id
+                user_details[0].save()
                 response = HttpResponseClientRedirect(reverse("core:user_management"))
             else:
                 context.update({"add_user_error_message": "Email already exists."})
@@ -317,11 +381,13 @@ def modify_user_details(request, pk):
     departments = Department.objects.all()
     civil_status_list = get_civil_status_list()
     education_list = get_education_list()
+    religion_list = get_religion_list()
     context = {
         "selected_user": user,
         "department_list": departments,
         "civil_status_list": civil_status_list,
         "education_list": education_list,
+        "religion_list": religion_list,
     }
     if request.POST:
         response = HttpResponse()
@@ -396,7 +462,9 @@ def bulk_add_new_users(request):
 
                 user, created = User.objects.get_or_create(
                     email=email,
-                    defaults={"email": email, "username": f"emp-id-{employee_id}"},
+                    defaults={
+                        "username": generate_username_from_employee_id(employee_id)
+                    },
                 )
                 if created:
                     new_user_counter += 1

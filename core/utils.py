@@ -15,6 +15,10 @@ def check_user_has_password(email):
         return False
 
 
+def generate_username_from_employee_id(employee_id):
+    return f"emp-id-{employee_id}"
+
+
 def password_validation(password, confirm_password):
     errors = []
 
@@ -64,13 +68,16 @@ def get_dict_for_user_and_user_details(querydict):
         "rank",
         "date_of_hiring",
         "civil_status",
+        "religion",
+        "degrees_earned",
         "education",
+        "employee_number",
     ]
 
     data = querydict.dict()
 
     user_dict = {field: data[field] for field in user_fields}
-    user_details_dict = {field: data[field] for field in user_details_fields}
+    user_details_dict = {field: data[field] if field in data else None for field in user_details_fields}
 
     if "department" in user_details_dict:
         department = user_details_dict["department"]
@@ -98,12 +105,13 @@ def update_user_and_user_details(user_instance, querydict):
         date_fields = ["date_of_birth", "date_of_hiring"]
 
         processed_user_details = {
-            attr: string_to_date(value) if attr in date_fields else value
+            attr: string_to_date(value) if attr in date_fields and value else value
             for attr, value in user_details_payload.items()
-            if value
         }
 
         for attr, value in processed_user_details.items():
+            if attr in date_fields and not value:
+                value = None
             setattr(user_details, attr, value)
 
         user_details.save()
@@ -122,6 +130,9 @@ def get_civil_status_list():
     user_details_model = apps.get_model("core", "UserDetails")
     return user_details_model.CivilStatus.choices
 
+def get_religion_list():
+    user_details_model = apps.get_model("core", "UserDetails")
+    return user_details_model.Religion.choices
 
 def get_or_create_intial_user_one_to_one_fields(user):
     user_details, user_details_created = apps.get_model(
