@@ -1,6 +1,6 @@
 {% block conversation_window %}
     <div id="conversation_window"
-         class="fixed right-5 top-20 p-4 min-w-[25rem] bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+         class="fixed right-5 top-20 p-4 w-[90%] sm:w-[25rem] min-w-[20rem] bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
         <div class="flex flex-row justify-between border-b border-gray-200 dark:border-gray-600 mb-2">
             <button class="flex"
                     hx-get="{% url "chat:toggle_chat_window" True %}"
@@ -43,12 +43,12 @@
             {% else %}
                 <div class="w-full text-center font-semibold text-gray-900 dark:text-white">Send a message</div>
             {% endif %}
-            <form class="flex items-center mx-auto"
+            <form class="w-full flex items-center mx-auto"
                   hx-post="{% url "chat:send_chat_message" %}"
                   hx-vals='{"selected_user": {{ selected_user.id }}}'>
                 <textarea name="chat_message"
                           placeholder="Message"
-                          class="w-96 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
+                          class="w-[90%] bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
                 <button type="submit"
                         class="p-2.5 ms-2 text-sm font-medium text-white bg-blue-700 rounded-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                     <svg class="w-4 h-4"

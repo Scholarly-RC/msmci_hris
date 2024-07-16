@@ -61,8 +61,10 @@
                                 <input name="profile_picture"
                                        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
                                        type="file"
-                                       required>
+                                       required 
+                                       disabled>
                                 <button type="submit"
+                                disabled
                                         class="inline-flex items-center px-3 py-3 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
                                     <svg class="w-4 h-4 mr-2 -ml-1"
                                          fill="currentColor"
@@ -263,7 +265,7 @@
                                        id="rank"
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                        placeholder="Enter your rank"
-                                       value="{% if current_user.userdetails.rank %}{{ current_user.userdetails.rank }}{% endif %}">
+                                       value="{% if current_user.userdetails.rank %}{{ current_user.userdetails.rank }}{% endif %}" disabled readonly>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
                                 <div class="flex flex-row justify-between">
@@ -329,7 +331,7 @@
                     </form>
                 </div>
             {% endblock %}
-            {% block biometric_configuration_section %}
+            {% comment %} {% block biometric_configuration_section %}
                 <div id="biometric_configuration_section"
                      class="lg:w-[50%] p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 relative">
                     <h3 class="mb-4 text-xl font-semibold dark:text-white">Biometric Configuration</h3>
@@ -381,7 +383,7 @@
                         </div>
                     </form>
                 </div>
-            {% endblock %}
+            {% endblock %} {% endcomment %}
             {% block password_information_section %}
                 <div id="password_information_section"
                      class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 relative">

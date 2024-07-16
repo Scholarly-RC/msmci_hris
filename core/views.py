@@ -38,6 +38,9 @@ def main(request):
 
 
 def user_login(request):
+    if request.user.is_authenticated:
+        return redirect(reverse("core:profile"))
+    
     context = {}
     if request.method == "POST":
         email = request.POST["email"]
@@ -118,6 +121,9 @@ def user_logout(request):
 
 
 def user_register(request):
+    if request.user.is_authenticated:
+        return redirect(reverse("core:profile"))
+    
     context = {}
     if request.htmx and request.POST:
         data = request.POST
