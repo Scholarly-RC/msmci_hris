@@ -189,7 +189,7 @@ def user_register(request):
 @login_required(login_url="/login")
 def user_profile(request):
     user = request.user
-    departments = Department.objects.filter(is_active=True)
+    departments = Department.objects.filter(is_active=True).order_by("name")
     education_list = get_education_list()
     civil_status_list = get_civil_status_list()
     religion_list = get_religion_list()
@@ -405,7 +405,7 @@ def toggle_user_status(request, pk):
 def modify_user_details(request, pk):
     user = User.objects.get(id=pk)
     get_or_create_intial_user_one_to_one_fields(user)
-    departments = Department.objects.all()
+    departments = Department.objects.filter(is_active=True).order_by("name")
     civil_status_list = get_civil_status_list()
     education_list = get_education_list()
     religion_list = get_religion_list()
