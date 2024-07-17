@@ -132,6 +132,7 @@ def get_education_list():
 def get_education_list_with_degrees_earned():
     user_details_model = apps.get_model("core", "UserDetails")
     return [
+        user_details_model.EducationalAttainment.VOCATIONAL.value,
         user_details_model.EducationalAttainment.BACHELOR.value,
         user_details_model.EducationalAttainment.MASTER.value,
         user_details_model.EducationalAttainment.DOCTORATE.value,
