@@ -9,9 +9,8 @@ from core.utils import date_to_string, get_user_profile_picture_directory_path
 
 class UserDetails(models.Model):
     class EducationalAttainment(models.TextChoices):
-        KINDERGARTEN = "KG", _("Kindergarten")
-        ELEMENTARY = "EL", _("Elementary")
         HIGH_SCHOOL = "HS", _("High School")
+        VOCATIONAL = "VC", _("Vocational")
         BACHELOR = "BA", _("Bachelor")
         MASTER = "MA", _("Master")
         DOCTORATE = "DR", _("Doctorate")
