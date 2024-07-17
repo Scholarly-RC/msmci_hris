@@ -2,6 +2,7 @@ import calendar
 import datetime
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
 from attendance.utils.biometric_utils import get_biometric_data
@@ -9,28 +10,68 @@ from attendance.utils.date_utils import get_list_of_months
 
 from core.models import Department
 
+from render_block import render_block_to_string
+
+from django_htmx.http import (
+    HttpResponseClientRedirect,
+    reswap,
+    retarget,
+    trigger_client_event,
+    push_url,
+)
+
 
 def attendance_management(request):
     context = {}
     return render(request, "attendance/attendance_management.html", context)
 
 
-def shift_management(request):
+def shift_management(request, department="", year="", month=""):
     context = {"list_of_months": get_list_of_months()}
     now = datetime.datetime.now()
-    current_year = now.year
-    current_month = now.month
+    shift_year = request.POST.get("shift_year") or year or now.year
+    shift_month = request.POST.get("shift_month") or month or now.month
+
+    if isinstance(shift_year, str):
+        shift_year = int(shift_year)
+
+    if isinstance(shift_month, str):
+        shift_month = int(shift_month)
+
     calendar.setfirstweekday(calendar.SUNDAY)
-    list_of_days = calendar.monthcalendar(current_year, current_month)
+    list_of_days = calendar.monthcalendar(shift_year, shift_month)
     list_of_departments = Department.objects.filter(is_active=True).order_by("name")
     context.update(
         {
             "list_of_days": list_of_days,
-            "selected_month": current_month,
-            "selected_year": current_year,
+            "selected_month": shift_month,
+            "selected_year": shift_year,
             "list_of_departments": list_of_departments,
         }
     )
+    if request.htmx and request.POST:
+        data = request.POST
+        shift_department = data.get("shift_department")
+
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "attendance/shift_management.html", "shift_calendar", context
+        )
+        response = push_url(
+            response,
+            reverse(
+                "attendance:shift_management_filtered",
+                kwargs={
+                    "year": shift_year,
+                    "month": shift_month,
+                    "department": shift_department,
+                },
+            ),
+        )
+        response = retarget(response, "#shift_calendar")
+        response = reswap(response, "outerHTML")
+        return response
+
     return render(request, "attendance/shift_management.html", context)
 
 
