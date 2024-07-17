@@ -6,8 +6,7 @@ from django_htmx.http import reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
 
 from chat.models import Message
-from chat.utils import (get_conversation, get_unseen_messages,
-                        mark_messages_as_seen)
+from chat.utils import get_conversation, get_unseen_messages, mark_messages_as_seen
 
 
 # Create your views here.
@@ -101,7 +100,6 @@ def get_updated_messages(request):
         response = retarget(response, "#scrollable_conversation_container")
         response = reswap(response, "outerHTML")
     return response
-    
 
 
 def send_chat_message(request):

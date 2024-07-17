@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -5,31 +6,30 @@ from django.db.utils import IntegrityError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.contrib import messages
 from django_htmx.http import (
     HttpResponseClientRedirect,
     reswap,
     retarget,
     trigger_client_event,
 )
+from openpyxl import load_workbook
 from render_block import render_block_to_string
 
 from core.models import BiometricDetail, Department, UserDetails
 from core.utils import (
     check_if_biometric_uid_exists,
     check_user_has_password,
+    generate_username_from_employee_id,
     get_civil_status_list,
     get_education_list,
-    get_religion_list,
+    get_education_list_with_degrees_earned,
     get_or_create_intial_user_one_to_one_fields,
+    get_religion_list,
     password_validation,
     profile_picture_validation,
     string_to_date,
     update_user_and_user_details,
-    generate_username_from_employee_id,
 )
-
-from openpyxl import load_workbook
 
 
 @login_required(login_url="/login")
@@ -40,7 +40,7 @@ def main(request):
 def user_login(request):
     if request.user.is_authenticated:
         return redirect(reverse("core:profile"))
-    
+
     context = {}
     if request.method == "POST":
         email = request.POST["email"]
@@ -123,7 +123,7 @@ def user_logout(request):
 def user_register(request):
     if request.user.is_authenticated:
         return redirect(reverse("core:profile"))
-    
+
     context = {}
     if request.htmx and request.POST:
         data = request.POST
@@ -201,18 +201,39 @@ def user_profile(request):
         "religion_list": religion_list,
     }
     get_or_create_intial_user_one_to_one_fields(user)
+
+    if (
+        not request.htmx
+        and user.userdetails.education in get_education_list_with_degrees_earned()
+    ):
+        context.update({"show_degrees_earned_section": True})
+
     if request.method == "POST":
-        updated_user = update_user_and_user_details(
-            user_instance=user, querydict=request.POST
-        )
-        context.update(
-            {"show_alert": True, "alert_message": "Profile successfully updated."}
-        )
+        data = request.POST
         response = HttpResponse()
-        response.content = render_block_to_string(
-            "core/user_profile.html", "profile_information_section", context
-        )
-        response = retarget(response, "#profile_information_section")
+        if "toggle_degrees_earned" in data:
+            if data.get("education") in get_education_list_with_degrees_earned():
+                context.update({"show_degrees_earned_section": True})
+            response.content = render_block_to_string(
+                "core/user_profile.html", "degrees_earned_section", context
+            )
+            response = retarget(response, "#degrees_earned_section")
+        else:
+            updated_user = update_user_and_user_details(
+                user_instance=user, querydict=data
+            )
+
+            if user.userdetails.education in get_education_list_with_degrees_earned():
+                context.update({"show_degrees_earned_section": True})
+
+            context.update(
+                {"show_alert": True, "alert_message": "Profile successfully updated."}
+            )
+            response.content = render_block_to_string(
+                "core/user_profile.html", "profile_information_section", context
+            )
+
+            response = retarget(response, "#profile_information_section")
         response = reswap(response, "outerHTML")
         return response
 

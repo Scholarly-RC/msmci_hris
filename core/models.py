@@ -43,6 +43,9 @@ class UserDetails(models.Model):
         CHURCH_OF_CHRIST = "COC", _("Church of Christ")
 
     user = models.OneToOneField(User, on_delete=models.RESTRICT, primary_key=True)
+    middle_name = models.CharField(
+        _("User Middle Name"), max_length=100, null=True, blank=True
+    )
     profile_picture = models.FileField(
         _("User Profile Picture"),
         null=True,
@@ -62,7 +65,9 @@ class UserDetails(models.Model):
         null=True,
         blank=True,
     )
-    degrees_earned = models.CharField(_("User Degrees Earned"), max_length=1000, null=True, blank=True)
+    degrees_earned = models.CharField(
+        _("User Degrees Earned"), max_length=1000, null=True, blank=True
+    )
     civil_status = models.CharField(
         _("User Civil Status"),
         max_length=2,
@@ -106,6 +111,22 @@ class UserDetails(models.Model):
     def __str__(self):
         return f"User Details of USER {self.user.id}"
 
+    def get_user_fullname(self):
+        user_name_values = [
+            self.user.first_name,
+            f"{self.middle_name[0]}." if self.middle_name else "",
+            self.user.last_name,
+        ]
+        return " ".join(user_name_values)
+
+    def get_user_complete_fullname(self):
+        user_name_values = [
+            self.user.first_name,
+            self.middle_name if self.middle_name else "",
+            self.user.last_name,
+        ]
+        return " ".join(user_name_values)
+
     def get_age(self):
         if self.date_of_birth:
             today = datetime.date.today()
@@ -120,18 +141,23 @@ class UserDetails(models.Model):
             return age
         return None
 
-    def get_years_in_service(self):
+    def get_years_and_months_in_service(self):
         if self.date_of_hiring:
             today = datetime.date.today()
-            years_in_service = (
-                today.year
-                - self.date_of_hiring.year
-                - (
-                    (today.month, today.day)
-                    < (self.date_of_hiring.month, self.date_of_hiring.day)
-                )
-            )
-            return years_in_service
+            years_in_service = today.year - self.date_of_hiring.year
+            months_in_service = today.month - self.date_of_hiring.month
+
+            # Adjust for the case where the day of the month hasn't been reached yet
+            if today.day < self.date_of_hiring.day:
+                months_in_service -= 1
+
+            # Adjust the years and months if necessary
+            if months_in_service < 0:
+                years_in_service -= 1
+                months_in_service += 12
+
+            return years_in_service, months_in_service
+
         return None
 
     def str_date_of_birth(self):

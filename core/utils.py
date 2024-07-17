@@ -61,6 +61,7 @@ def get_user_profile_picture_directory_path(instance, filename):
 def get_dict_for_user_and_user_details(querydict):
     user_fields = ["first_name", "last_name"]
     user_details_fields = [
+        "middle_name",
         "address",
         "phone_number",
         "date_of_birth",
@@ -77,7 +78,9 @@ def get_dict_for_user_and_user_details(querydict):
     data = querydict.dict()
 
     user_dict = {field: data[field] for field in user_fields}
-    user_details_dict = {field: data[field] if field in data else None for field in user_details_fields}
+    user_details_dict = {
+        field: data[field] if field in data else None for field in user_details_fields
+    }
 
     if "department" in user_details_dict:
         department = user_details_dict["department"]
@@ -126,13 +129,24 @@ def get_education_list():
     return user_details_model.EducationalAttainment.choices
 
 
+def get_education_list_with_degrees_earned():
+    user_details_model = apps.get_model("core", "UserDetails")
+    return [
+        user_details_model.EducationalAttainment.BACHELOR.value,
+        user_details_model.EducationalAttainment.MASTER.value,
+        user_details_model.EducationalAttainment.DOCTORATE.value,
+    ]
+
+
 def get_civil_status_list():
     user_details_model = apps.get_model("core", "UserDetails")
     return user_details_model.CivilStatus.choices
 
+
 def get_religion_list():
     user_details_model = apps.get_model("core", "UserDetails")
     return user_details_model.Religion.choices
+
 
 def get_or_create_intial_user_one_to_one_fields(user):
     user_details, user_details_created = apps.get_model(
