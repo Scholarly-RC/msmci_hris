@@ -416,23 +416,40 @@ def modify_user_details(request, pk):
         "education_list": education_list,
         "religion_list": religion_list,
     }
+
+    if (
+        not request.htmx
+        and user.userdetails.education in get_education_list_with_degrees_earned()
+    ):
+        context.update({"show_degrees_earned_section": True})
+
     if request.POST:
+        data = request.POST
         response = HttpResponse()
-        updated_user = update_user_and_user_details(
-            user_instance=user, querydict=request.POST
-        )
-        context.update(
-            {
-                "show_alert": True,
-                "error": False,
-                "alert_message": "User successfully updated.",
-                "selected_user": updated_user,
-            }
-        )
-        response.content = render_block_to_string(
-            "core/modify_user_profile.html", "profile_information_section", context
-        )
-        response = retarget(response, "#profile_information_section")
+        if "toggle_degrees_earned" in data:
+            if data.get("education") in get_education_list_with_degrees_earned():
+                context.update({"show_degrees_earned_section": True})
+            response.content = render_block_to_string(
+                "core/modify_user_profile.html", "degrees_earned_section", context
+            )
+            response = retarget(response, "#degrees_earned_section")
+        else:
+            updated_user = update_user_and_user_details(user_instance=user, querydict=data)
+            if user.userdetails.education in get_education_list_with_degrees_earned():
+                context.update({"show_degrees_earned_section": True})
+
+            context.update(
+                {
+                    "show_alert": True,
+                    "error": False,
+                    "alert_message": "User successfully updated.",
+                    "selected_user": updated_user,
+                }
+            )
+            response.content = render_block_to_string(
+                "core/modify_user_profile.html", "profile_information_section", context
+            )
+            response = retarget(response, "#profile_information_section")
         response = reswap(response, "outerHTML")
         return response
 

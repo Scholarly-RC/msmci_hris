@@ -52,6 +52,19 @@
                                        required>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
+                                <label for="middle_name"
+                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                    Middle Name
+                                </label>
+                                <input type="text"
+                                       name="middle_name"
+                                       id="middle_name"
+                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                       placeholder="Enter your middle name"
+                                       value="{% if selected_user.userdetails.middle_name %}{{ selected_user.userdetails.middle_name }}{% endif %}"
+                                       required>
+                            </div>
+                            <div class="col-span-6 sm:col-span-3">
                                 <label for="last_name"
                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                     Last Name
@@ -159,7 +172,9 @@
                                 </label>
                                 <select id="education"
                                         name="education"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                        hx-post="{% url "core:modify_user_details" selected_user.id %}"
+                                        hx-vals='{"toggle_degrees_earned": "True"}'>
                                     <option value="">Choose Educational Attainment...</option>
                                     {% for education_detail in education_list %}
                                         <option value="{{ education_detail.0 }}"
@@ -168,17 +183,22 @@
                                         </option>
                                     {% endfor %}
                                 </select>
-                            </div>
-                            <div class="col-span-6 sm:col-span-3">
-                                <label for="degrees_earned"
-                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Degree/s Earned (Optional)
-                                </label>
-                                <textarea type="text"
-                                          name="degrees_earned"
-                                          id="degrees_earned"
-                                          class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                          placeholder="Enter degrees earned (separate with comma if multiple)">{% if selected_user.userdetails.degrees_earned %}{{ selected_user.userdetails.degrees_earned }}{% endif %}</textarea>
+                                {% block degrees_earned_section %}
+                                    <div id="degrees_earned_section" class="mt-2">
+                                        {% if show_degrees_earned_section %}
+                                            <label for="degrees_earned"
+                                                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                Degree/s Earned
+                                            </label>
+                                            <textarea type="text"
+                                                      name="degrees_earned"
+                                                      id="degrees_earned"
+                                                      required
+                                                      class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                      placeholder="Enter degrees earned (separate with newline if multiple)">{% if selected_user.userdetails.degrees_earned %}{{ selected_user.userdetails.degrees_earned }}{% endif %}</textarea>
+                                        {% endif %}
+                                    </div>
+                                {% endblock %}
                             </div>
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="rank"
@@ -190,26 +210,35 @@
                                        id="rank"
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                        placeholder="Enter your rank"
-                                       value="{% if selected_user.userdetails.rank %}{{ selected_user.userdetails.rank }}{% endif %}">
+                                       value="{% if selected_user.userdetails.rank %}{{ selected_user.userdetails.rank }}{% endif %}"
+                                       disabled
+                                       readonly>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
                                 <div class="flex flex-row justify-between">
                                     <label for="date_of_hiring"
                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                        Day of Hiring
+                                        Date Hired
                                     </label>
                                     <p class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                        {% if selected_user.userdetails.get_years_in_service %}
-                                            Year in Service: <u>{{ selected_user.userdetails.get_years_in_service }}</u>
-                                        {% endif %}
-                                    </p>
-                                </div>
-                                <input type="date"
-                                       name="date_of_hiring"
-                                       id="date_of_hiring"
-                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       value="{{ selected_user.userdetails.str_date_of_hiring }}">
+                                        {% if selected_user.userdetails.get_years_and_months_in_service.0 or selected_user.userdetails.get_years_and_months_in_service.1 %}
+                                            Length of Service: <u>
+                                            {% with years=selected_user.userdetails.get_years_and_months_in_service.0 %}
+                                                {% with months=selected_user.userdetails.get_years_and_months_in_service.1 %}
+                                                    {% if years %}{{ years }} {{ years|pluralize:"year,years" }}{% endif %}
+                                                    {% if months %}{{ months }} {{ months|pluralize:"month,months" }}{% endif %}
+                                                {% endwith %}
+                                            {% endwith %}
+                                        </u>
+                                    {% endif %}
+                                </p>
                             </div>
+                            <input type="date"
+                                   name="date_of_hiring"
+                                   id="date_of_hiring"
+                                   class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                   value="{{ selected_user.userdetails.str_date_of_hiring }}">
+                        </div>
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="department"
                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">

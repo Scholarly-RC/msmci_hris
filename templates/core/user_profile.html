@@ -309,7 +309,7 @@
                                     {% endif %}
                                 </p>
                             </div>
-                            {% if current_user.userdetails.str_date_of_hiring %}
+                            {% if current_user.userdetails.str_date_of_hiring and not current_user.userdetails.is_hr %}
                                 <input type="date"
                                        name="date_of_hiring"
                                        id="date_of_hiring"
