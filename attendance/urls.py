@@ -16,6 +16,11 @@ urlpatterns = [
         name="get_attendance_request",
     ),
     path(
+        "shift",
+        attendance_views.shift_management,
+        name="shift_management",
+    ),
+    path(
         "",
         attendance_views.attendance_management,
         name="attendance_management",
