@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -39,17 +40,16 @@ class Attendance(models.Model):
 
 
 class Shift(models.Model):
+    description = models.TextField(_("Shift Description"), null=True, blank=True)
     start_time = models.TimeField(_("Shift Start Time"), null=True, blank=True)
     end_time = models.TimeField(_("Shift End Time"), null=True, blank=True)
+    is_active = models.BooleanField(_("Shift Is Active"), default=True)
 
     class Meta:
         verbose_name_plural = "Shifts"
 
     def __str__(self):
-        start_to_end = f"{self.start_time} - {self.end_time}"
-        if self.start_time and self.end_time:
-            start_to_end + f" ({str(self.start_time - self.end_time)})"
-        return start_to_end
+        return f"{self.description} - {self.start_time} to {self.end_time}"
 
 
 class DailyAttendanceRecord(models.Model):
@@ -64,3 +64,47 @@ class DailyAttendanceRecord(models.Model):
 
     def __str__(self):
         return f"{self.shift} - {self.attendace}"
+
+
+class DailyShiftSchedule(models.Model):
+    shift = models.ForeignKey(
+        Shift, on_delete=models.RESTRICT, related_name="daily_shift_schedules"
+    )
+    user = models.ForeignKey(User, on_delete=models.RESTRICT)
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Daily Shift Schedules"
+
+    def __str__(self):
+        return f"{self.shift} - {self.user.userdetails.get_user_fullname()}"
+
+
+class DailyShiftRecords(models.Model):
+    class RecordStatus(models.TextChoices):
+        PENDING = "PND", _("Pending")
+        APPROVED = "APV", _("Approved")
+
+    date = models.DateField(_("Daily Shift Record Date"), null=True, blank=True)
+    shifts = models.ManyToManyField(
+        DailyShiftSchedule, related_name="daily_shift_records"
+    )
+    status = models.CharField(
+        _("Daily Shift Record Status"),
+        choices=RecordStatus.choices,
+        max_length=3,
+        default=None,
+        null=True,
+        blank=True,
+    )
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Daily Shift Records"
+
+    def __str__(self):
+        return f"{self.date} - {self.shifts} - {self.status}"

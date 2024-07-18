@@ -434,7 +434,9 @@ def modify_user_details(request, pk):
             )
             response = retarget(response, "#degrees_earned_section")
         else:
-            updated_user = update_user_and_user_details(user_instance=user, querydict=data)
+            updated_user = update_user_and_user_details(
+                user_instance=user, querydict=data
+            )
             if user.userdetails.education in get_education_list_with_degrees_earned():
                 context.update({"show_degrees_earned_section": True})
 
