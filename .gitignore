@@ -7,6 +7,6 @@ local_settings.py
 venv
 
 .env
-.sqlite3
+*.sqlite3
 
 fixtures
