@@ -3,13 +3,13 @@ from django.contrib import admin
 from attendance.models import (
     Attendance,
     DailyAttendanceRecord,
-    DailyShiftRecords,
+    DailyShiftRecord,
     DailyShiftSchedule,
     Shift,
 )
 
 admin.site.register(Attendance)
 admin.site.register(DailyAttendanceRecord)
-admin.site.register(DailyShiftRecords)
+admin.site.register(DailyShiftRecord)
 admin.site.register(DailyShiftSchedule)
 admin.site.register(Shift)

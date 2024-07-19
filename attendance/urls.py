@@ -16,6 +16,11 @@ urlpatterns = [
         name="get_attendance_request",
     ),
     path(
+        "shift/asign/user/<str:department>/<str:year>/<str:month>/<str:day>",
+        attendance_views.assign_user_to_shift,
+        name="assign_user_to_shift",
+    ),
+    path(
         "shift/asign/<str:department>/<str:year>/<str:month>/<str:day>",
         attendance_views.assign_shift,
         name="assign_shift",

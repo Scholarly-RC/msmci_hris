@@ -2,7 +2,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from core.models import BiometricDetail
+from attendance.utils.date_utils import get_readable_date_from_date_oject
+from core.models import BiometricDetail, Department
 
 
 # Create your models here.
@@ -82,22 +83,21 @@ class DailyShiftSchedule(models.Model):
         return f"{self.shift} - {self.user.userdetails.get_user_fullname()}"
 
 
-class DailyShiftRecords(models.Model):
-    class RecordStatus(models.TextChoices):
-        PENDING = "PND", _("Pending")
-        APPROVED = "APV", _("Approved")
-
+class DailyShiftRecord(models.Model):
     date = models.DateField(_("Daily Shift Record Date"), null=True, blank=True)
     shifts = models.ManyToManyField(
-        DailyShiftSchedule, related_name="daily_shift_records"
+        DailyShiftSchedule, related_name="daily_shift_records", blank=True
     )
-    status = models.CharField(
-        _("Daily Shift Record Status"),
-        choices=RecordStatus.choices,
-        max_length=3,
-        default=None,
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.RESTRICT,
+        related_name="daily_shift_records",
         null=True,
         blank=True,
+    )
+
+    is_approved = models.BooleanField(
+        _("Daily Shift Record Is Approved"), default=False
     )
 
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
@@ -107,4 +107,9 @@ class DailyShiftRecords(models.Model):
         verbose_name_plural = "Daily Shift Records"
 
     def __str__(self):
-        return f"{self.date} - {self.shifts} - {self.status}"
+        str_details = [
+            get_readable_date_from_date_oject(self.date) if self.date else "",
+            self.department.name if self.department else "",
+            "Approved" if self.is_approved else "",
+        ]
+        return " ".join(str_details)
