@@ -22,7 +22,7 @@ from attendance.actions import (
 )
 from attendance.models import DailyShiftRecord, Shift
 from attendance.utils.assign_shift_utils import get_employee_assignments
-from attendance.utils.biometric_utils import get_biometric_data
+from attendance.biometric_device import get_biometric_data
 from attendance.utils.date_utils import (
     get_date_object,
     get_list_of_months,

@@ -7,8 +7,7 @@ from core.models import BiometricDetail, Department
 
 
 # Create your models here.
-class Attendance(models.Model):
-
+class AttendanceRecord(models.Model):
     class Punch(models.TextChoices):
         TIME_IN = "IN", _("Time In")
         TIME_OUT = "OUT", _("Time Out")
@@ -19,11 +18,11 @@ class Attendance(models.Model):
         BiometricDetail, on_delete=models.RESTRICT, null=True, blank=True
     )
     user_id_from_device = models.IntegerField(
-        _("Attendance UID From Device"), null=True, blank=True
+        _("Attendance Record User ID From Device"), null=True, blank=True
     )
     timestamp = models.DateTimeField(_("Attendance Timestamp"), null=True, blank=True)
     punch = models.CharField(
-        _("Attendance Punch"),
+        _("Attendance Record Punch"),
         choices=Punch.choices,
         max_length=6,
         default=None,
@@ -34,10 +33,10 @@ class Attendance(models.Model):
     updated = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     class Meta:
-        verbose_name_plural = "Attendances"
+        verbose_name_plural = "Attendance Records"
 
     def __str__(self):
-        return f"{self.user_id_from_device} - {self.punch} - {self.timestamp}"
+        return f"User ID: {self.user_id_from_device} - {self.punch} - {self.timestamp}"
 
 
 class Shift(models.Model):
@@ -51,20 +50,6 @@ class Shift(models.Model):
 
     def __str__(self):
         return f"{self.description} - {self.start_time} to {self.end_time}"
-
-
-class DailyAttendanceRecord(models.Model):
-    shift = models.ForeignKey(Shift, on_delete=models.RESTRICT)
-    attendace = models.ForeignKey(Attendance, on_delete=models.RESTRICT)
-
-    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
-
-    class Meta:
-        verbose_name_plural = "Daily Attendance Records"
-
-    def __str__(self):
-        return f"{self.shift} - {self.attendace}"
 
 
 class DailyShiftSchedule(models.Model):

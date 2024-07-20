@@ -177,13 +177,13 @@ class UserDetails(models.Model):
 
 class BiometricDetail(models.Model):
     user = models.OneToOneField(User, on_delete=models.RESTRICT, null=True, blank=True)
-    uid_in_device = models.IntegerField(_("Biometric UID"), null=True, blank=True)
+    user_id_in_device = models.IntegerField(_("Biometric UID"), null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Biometric Details"
 
     def __str__(self):
-        return f"{self.user.get_full_name()} - {self.uid_in_device}"
+        return f"{self.user.get_full_name()} - {self.user_id_in_device}"
 
 
 class Department(models.Model):
