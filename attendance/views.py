@@ -66,7 +66,6 @@ def attendance_management(request, year="", month=""):
             day=day,
             shift=current_shift,
         )
-
         monthly_record_data.append(
             {
                 "day": day,
@@ -121,7 +120,21 @@ def sync_user_attendance(request, year="", month=""):
             month=selected_month,
             day=day,
         )
-        monthly_record_data.append({"day": day, "daily_user_shift": daily_user_shift})
+        current_shift = daily_user_shift.shift if daily_user_shift else None
+        clocked_time = get_user_clocked_time(
+            user=current_user,
+            year=selected_year,
+            month=selected_month,
+            day=day,
+            shift=current_shift,
+        )
+        monthly_record_data.append(
+            {
+                "day": day,
+                "daily_user_shift": daily_user_shift,
+                "clocked_time": clocked_time,
+            }
+        )
     context.update({"monthly_record_data": monthly_record_data})
 
     if request.htmx and request.method == "POST":

@@ -56,6 +56,7 @@ def get_user_clocked_time(user, year: int, month: int, day: int, shift):
                 .order_by("time_diff")
                 .first()
             )
+            records_with_punch.exclude(id=record.id).delete()
         else:
             record = current_attendance_record.filter(punch=punch).first()
         return record.get_timestamp_localtime().time() if record else None
