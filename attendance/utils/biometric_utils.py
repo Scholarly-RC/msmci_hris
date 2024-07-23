@@ -1,5 +1,5 @@
 from django.apps import apps
-from django.contrib.auth.models import User
+from django.utils.timezone import make_aware
 
 
 def process_biometric_data_from_device(attendance_data):
@@ -10,15 +10,11 @@ def process_biometric_data_from_device(attendance_data):
     """
 
     user_id = attendance_data.user_id
-    user_biometric_detail = _get_user_from_biometric_device_user_id(user_id)
-
-    current_user = None
-    if user_biometric_detail:
-        current_user = user_biometric_detail.user
+    user_biometric_detail = _get_biometric_detail_from_device_user_id(user_id)
 
     punch = _get_punch_value(attendance_data.punch)
 
-    timestamp = attendance_data.timestamp
+    timestamp = make_aware(attendance_data.timestamp)
 
     # TODO: Reserve for future usage
     status = attendance_data.status
@@ -26,16 +22,23 @@ def process_biometric_data_from_device(attendance_data):
     uid = attendance_data.uid
 
     return [
-        current_user,
+        user_biometric_detail,
         user_id,
         timestamp,
         punch,
     ]
 
 
-def _get_user_from_biometric_device_user_id(user_id):
+def get_biometric_detail_from_user_id(user_id):
     biometric_detail_model = apps.get_model("core", "BiometricDetail")
-    return biometric_detail_model.objects.filter(user_id_in_device=user_id).first()
+    return biometric_detail_model.objects.filter(id=user_id).first()
+
+
+def _get_biometric_detail_from_device_user_id(device_user_id):
+    biometric_detail_model = apps.get_model("core", "BiometricDetail")
+    return biometric_detail_model.objects.filter(
+        user_id_in_device=device_user_id
+    ).first()
 
 
 def _get_punch_value(value):

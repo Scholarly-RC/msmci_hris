@@ -18,3 +18,7 @@ def get_readable_date_from_date_oject(dateobject: datetime.date) -> str:
 
 def get_date_object(year: int, month: int, day: int) -> datetime.date:
     return datetime.date(year, month, day)
+
+
+def get_number_of_days_in_a_month(year: int, month: int):
+    return calendar.monthrange(year, month)

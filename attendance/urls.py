@@ -36,6 +36,16 @@ urlpatterns = [
         name="shift_management",
     ),
     path(
+        "sync-user-attendance-data",
+        attendance_views.sync_user_attendance,
+        name="sync_user_attendance",
+    ),
+    path(
+        "<str:year>/<str:month>",
+        attendance_views.attendance_management,
+        name="attendance_management_filtered",
+    ),
+    path(
         "",
         attendance_views.attendance_management,
         name="attendance_management",

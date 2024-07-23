@@ -20,21 +20,144 @@ from attendance.actions import (
     process_bulk_daily_shift_schedule,
     process_daily_shift_schedule,
 )
-from attendance.models import DailyShiftRecord, Shift
+from attendance.models import DailyShiftRecord, Shift, AttendanceRecord
 from attendance.utils.assign_shift_utils import get_employee_assignments
 from attendance.biometric_device import get_biometric_data
+from attendance.utils.attendance_utils import (
+    get_user_daily_shift_record,
+    get_user_clocked_time,
+)
 from attendance.utils.date_utils import (
     get_date_object,
     get_list_of_months,
     get_readable_date,
+    get_number_of_days_in_a_month,
 )
-from core.models import Department
+from core.models import Department, BiometricDetail
 
 
 ### Attendance Management ###
-def attendance_management(request):
-    context = {}
+def attendance_management(request, year="", month=""):
+    context = {"list_of_months": get_list_of_months()}
+    current_user = request.user
+    now = datetime.datetime.now()
+    selected_year = request.POST.get("attendance_year") or year or now.year
+    selected_month = request.POST.get("attendance_month") or month or now.month
+    selected_year = int(selected_year)
+    selected_month = int(selected_month)
+
+    context.update({"selected_year": selected_year, "selected_month": selected_month})
+    number_of_days = get_number_of_days_in_a_month(
+        year=selected_year, month=selected_month
+    )[1]
+    monthly_record_data = []
+    for day in range(1, number_of_days + 1):
+        daily_user_shift = get_user_daily_shift_record(
+            user=current_user,
+            year=selected_year,
+            month=selected_month,
+            day=day,
+        )
+        current_shift = daily_user_shift.shift if daily_user_shift else None
+        clocked_time = get_user_clocked_time(
+            user=current_user,
+            year=selected_year,
+            month=selected_month,
+            day=day,
+            shift=current_shift,
+        )
+
+        monthly_record_data.append(
+            {
+                "day": day,
+                "daily_user_shift": daily_user_shift,
+                "clocked_time": clocked_time,
+            }
+        )
+    context.update({"monthly_record_data": monthly_record_data})
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "attendance/attendance_management.html",
+            "attendance_management_section",
+            context,
+        )
+        response = push_url(
+            response,
+            reverse(
+                "attendance:attendance_management_filtered",
+                kwargs={
+                    "year": selected_year,
+                    "month": selected_month,
+                },
+            ),
+        )
+        response = retarget(response, "#attendance_management_section")
+        response = reswap(response, "outerHTML")
+        return response
+
     return render(request, "attendance/attendance_management.html", context)
+
+
+def sync_user_attendance(request, year="", month=""):
+    context = {"list_of_months": get_list_of_months()}
+    current_user = request.user
+    now = datetime.datetime.now()
+    selected_year = request.POST.get("attendance_year") or now.year
+    selected_month = request.POST.get("attendance_month") or now.month
+    selected_year = int(selected_year)
+    selected_month = int(selected_month)
+
+    context.update({"selected_year": selected_year, "selected_month": selected_month})
+
+    number_of_days = get_number_of_days_in_a_month(
+        year=selected_year, month=selected_month
+    )[1]
+    monthly_record_data = []
+    for day in range(1, number_of_days + 1):
+        daily_user_shift = get_user_daily_shift_record(
+            user=current_user,
+            year=selected_year,
+            month=selected_month,
+            day=day,
+        )
+        monthly_record_data.append({"day": day, "daily_user_shift": daily_user_shift})
+    context.update({"monthly_record_data": monthly_record_data})
+
+    if request.htmx and request.method == "POST":
+        current_biometric_data = BiometricDetail.objects.get(user=current_user)
+
+        if current_biometric_data.user_id_in_device:
+            attendance_records = AttendanceRecord.objects.filter(
+                user_biometric_detail__isnull=True,
+                user_id_from_device=current_biometric_data.user_id_in_device,
+            )
+
+            if attendance_records.exists():
+                for attendance_record in attendance_record:
+                    setattr(
+                        attendance_record,
+                        "user_biometric_detail",
+                        current_biometric_data,
+                    )
+                    attendance_record.save()
+
+            context.update(
+                {
+                    "show_alert": True,
+                    "error": False,
+                    "alert_message": "Attendance data successfully synced.",
+                }
+            )
+            response = HttpResponse()
+            response.content = render_block_to_string(
+                "attendance/attendance_management.html",
+                "attendance_management_section",
+                context,
+            )
+            response = retarget(response, "#attendance_management_section")
+            response = reswap(response, "outerHTML")
+            return response
 
 
 ### Shift Management ###

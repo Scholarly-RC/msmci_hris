@@ -152,10 +152,10 @@ def get_religion_list():
 def get_or_create_intial_user_one_to_one_fields(user):
     user_details, user_details_created = apps.get_model(
         "core", "UserDetails"
-    ).objects.get_or_create(user=user, defaults={"user": user})
+    ).objects.get_or_create(user=user)
     biometric_details, biometric_details_created = apps.get_model(
         "core", "BiometricDetail"
-    ).objects.get_or_create(user=user, defaults={"user": user})
+    ).objects.get_or_create(user=user)
 
     return [
         (user_details, user_details_created),
@@ -166,7 +166,7 @@ def get_or_create_intial_user_one_to_one_fields(user):
 def check_if_biometric_uid_exists(current_user, uid):
     biometric_detail_model = apps.get_model("core", "BiometricDetail")
     return (
-        biometric_detail_model.objects.filter(uid_in_device=uid)
+        biometric_detail_model.objects.filter(user_id_in_device=uid)
         .exclude(user=current_user)
         .exists()
     )

@@ -309,16 +309,16 @@
                 <form hx-post="{% url "core:modify_user_biometric_details" selected_user.id %}">
                     <div class="grid grid-cols-6 gap-6">
                         <div class="col-span-6 sm:col-span-3">
-                            <label for="uid_in_device"
+                            <label for="user_id_in_device"
                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                 Biometric Device User ID
                             </label>
                             <input type="text"
-                                   name="uid_in_device"
-                                   id="uid_in_device"
+                                   name="user_id_in_device"
+                                   id="user_id_in_device"
                                    class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                    placeholder="UID In Biometric Device"
-                                   value="{% if selected_user.biometricdetail.uid_in_device %}{{ selected_user.biometricdetail.uid_in_device }}{% endif %}"
+                                   value="{% if selected_user.biometricdetail.user_id_in_device %}{{ selected_user.biometricdetail.user_id_in_device }}{% endif %}"
                                    required>
                         </div>
                         <div class="col-span-6 sm:col-full">

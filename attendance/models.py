@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.timezone import localtime
 from django.utils.translation import gettext_lazy as _
 
 from attendance.utils.date_utils import get_readable_date_from_date_oject
@@ -14,7 +15,7 @@ class AttendanceRecord(models.Model):
         OVERTIME_IN = "OT_IN", _("Overtime In")
         OVERTIME_OUT = "OT_OUT", _("Overtime Out")
 
-    user = models.ForeignKey(
+    user_biometric_detail = models.ForeignKey(
         BiometricDetail, on_delete=models.RESTRICT, null=True, blank=True
     )
     user_id_from_device = models.IntegerField(
@@ -36,7 +37,10 @@ class AttendanceRecord(models.Model):
         verbose_name_plural = "Attendance Records"
 
     def __str__(self):
-        return f"User ID: {self.user_id_from_device} - {self.punch} - {self.timestamp}"
+        return f"User ID: {self.user_id_from_device} - {self.punch} - {self.get_timestamp_localtime()}"
+
+    def get_timestamp_localtime(self):
+        return localtime(self.timestamp)
 
 
 class Shift(models.Model):
@@ -50,6 +54,23 @@ class Shift(models.Model):
 
     def __str__(self):
         return f"{self.description} - {self.start_time} to {self.end_time}"
+
+    def get_twelve_hour_format_start_time(self):
+        if self.start_time:
+            return self.start_time.strftime("%I:%M %p")
+        return None
+
+    def get_twelve_hour_format_end_time(self):
+        if self.end_time:
+            return self.end_time.strftime("%I:%M %p")
+        return None
+
+    def get_twelve_hour_format_shift_range(self):
+        start_time = self.get_twelve_hour_format_start_time()
+        end_time = self.get_twelve_hour_format_end_time()
+        if start_time and end_time:
+            return f"{start_time} to {end_time}"
+        return None
 
 
 class DailyShiftSchedule(models.Model):

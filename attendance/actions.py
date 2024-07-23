@@ -80,12 +80,13 @@ def process_bulk_daily_shift_schedule(
 
 @transaction.atomic
 def add_user_attendance_record(attendance_data):
-    user, user_id_from_device, timestamp, punch = process_biometric_data_from_device(
-        attendance_data
+    user_biometric_detail, user_id_from_device, timestamp, punch = (
+        process_biometric_data_from_device(attendance_data)
     )
 
-    attendane_record, attendane_record_created = AttendanceRecord.objects.get_or_create(
+    attendane_record = AttendanceRecord.objects.create(
         user_id_from_device=user_id_from_device,
         punch=punch,
-        defaults={"timestamp": timestamp, "user": user},
+        timestamp=timestamp,
+        user_biometric_detail=user_biometric_detail,
     )

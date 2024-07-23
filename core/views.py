@@ -464,7 +464,7 @@ def modify_user_biometric_details(request, pk):
     if request.htmx and request.POST:
         data = request.POST
         user = User.objects.get(id=pk)
-        uid_in_device = data.get("uid_in_device", None)
+        user_id_in_device = data.get("user_id_in_device", None)
         context.update(
             {
                 "show_alert": True,
@@ -473,9 +473,9 @@ def modify_user_biometric_details(request, pk):
                 "selected_user": user,
             }
         )
-        if not check_if_biometric_uid_exists(current_user=user, uid=uid_in_device):
+        if not check_if_biometric_uid_exists(current_user=user, uid=user_id_in_device):
             biometric_details = user.biometricdetail
-            biometric_details.uid_in_device = data.get("uid_in_device", None)
+            biometric_details.user_id_in_device = data.get("user_id_in_device", None)
             biometric_details.save()
         else:
             context.update(
