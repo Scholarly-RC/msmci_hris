@@ -1,6 +1,6 @@
+from django.conf import settings
 from zk import ZK
 
-from django.conf import settings
 from attendance.actions import add_user_attendance_record
 
 DEVICE_IP = settings.BIOMETRIC_DEVICE_IP

@@ -1,11 +1,10 @@
 from django.apps import apps
 from django.db import transaction
 
-from attendance.utils.assign_shift_utils import get_employee_assignments
-from attendance.utils.date_utils import get_date_object
-from attendance.utils.biometric_utils import process_biometric_data_from_device
-
 from attendance.models import AttendanceRecord
+from attendance.utils.assign_shift_utils import get_employee_assignments
+from attendance.utils.biometric_utils import process_biometric_data_from_device
+from attendance.utils.date_utils import get_date_object
 
 
 @transaction.atomic

@@ -20,20 +20,20 @@ from attendance.actions import (
     process_bulk_daily_shift_schedule,
     process_daily_shift_schedule,
 )
-from attendance.models import DailyShiftRecord, Shift, AttendanceRecord
-from attendance.utils.assign_shift_utils import get_employee_assignments
 from attendance.biometric_device import get_biometric_data
+from attendance.models import AttendanceRecord, DailyShiftRecord, Shift
+from attendance.utils.assign_shift_utils import get_employee_assignments
 from attendance.utils.attendance_utils import (
-    get_user_daily_shift_record,
     get_user_clocked_time,
+    get_user_daily_shift_record,
 )
 from attendance.utils.date_utils import (
     get_date_object,
     get_list_of_months,
-    get_readable_date,
     get_number_of_days_in_a_month,
+    get_readable_date,
 )
-from core.models import Department, BiometricDetail
+from core.models import BiometricDetail, Department
 
 
 ### Attendance Management ###

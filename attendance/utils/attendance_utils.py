@@ -1,13 +1,13 @@
 import datetime
+
 from django.apps import apps
+from django.db.models import DurationField, ExpressionWrapper, F, Func, Min, Value
 from django.db.models.functions import Abs
-from django.db.models import F, Func, ExpressionWrapper, DurationField, Min, Value
-from attendance.utils.date_utils import get_date_object
 from django.utils.timezone import make_aware
 
 from attendance.models import AttendanceRecord
-
 from attendance.utils.biometric_utils import get_biometric_detail_from_user_id
+from attendance.utils.date_utils import get_date_object
 
 
 def get_user_daily_shift_record(user, year: int, month: int, day: int):
