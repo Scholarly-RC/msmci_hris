@@ -8,8 +8,8 @@
                 <div id="shift_management_content"
                      class="flex flex-col gap-6 p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                     <div class="sm:flex">
-                        <div class="items-center hidden mb-3 sm:flex gap-2">
-                            <form class="max-w-sm mx-auto">
+                        <div class="items-start mb-3 flex flex-col sm:flex-row gap-5 sm:gap-2">
+                            <form class="max-w-sm">
                                 <label for="shift_department"
                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                     Department
@@ -28,8 +28,8 @@
                                     {% endfor %}
                                 </select>
                             </form>
-                            <div class="flex flex-row gap-2">
-                                <div class="max-w-sm mx-auto">
+                            <div class="flex flex-row gap-5 sm:gap-2 max-w-sm">
+                                <div class="max-w-sm">
                                     <label for="shift_year"
                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                         Year
@@ -44,7 +44,7 @@
                                            hx-trigger="input changed delay:200ms"
                                            hx-include="[name='shift_department'], [name='shift_month']">
                                 </div>
-                                <div class="max-w-sm mx-auto">
+                                <div class="max-w-sm">
                                     <label for="shift_month"
                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                         Month
@@ -69,7 +69,7 @@
                     {% block shift_calendar %}
                         <div id="shift_calendar" class="overflow-x-auto">
                             <div class="inline-block min-w-full align-middle">
-                                <div class="overflow-hidden shadow grid grid-cols-3 md:grid-cols-7 gap-2">
+                                <div class="overflow-hidden shadow grid md:grid-cols-7 gap-2">
                                     <div class="hidden md:block max-w-sm text-center bg-white border-b-2 border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                                         <h5 class="mb-2 text-lg lg:text-2xl font-bold text-gray-900 dark:text-white">Sunday</h5>
                                     </div>
@@ -96,12 +96,19 @@
                                             {% if day > 0 %}
                                                 <a href=""
                                                    hx-get="{% url "attendance:assign_shift" selected_department.id selected_year selected_month day %}"
-                                                   class="max-w-sm p-4 md:p-6 border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 bg-white flex flex-col items-center">
+                                                   class="max-w-full md:max-w-sm p-4 md:p-6 border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 bg-white flex flex-col items-center">
                                                     <div class="w-auto mb-2">
                                                         <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ day }}</h5>
                                                     </div>
-                                                    <p class="font-normal text-gray-700 dark:text-gray-400">Status: Finalized</p>
-                                                    <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Note: Holiday</p>
+                                                    <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 text-center">
+                                                        {% for holiday in holidays %}
+                                                            {% if day == holiday.0 %}
+                                                                Holiday
+                                                                <br>
+                                                                ({{ holiday.1 }})
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </p>
                                                 </a>
                                             {% else %}
                                                 <div></div>

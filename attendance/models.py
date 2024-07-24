@@ -1,9 +1,15 @@
+import datetime
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.timezone import localtime
 from django.utils.translation import gettext_lazy as _
 
-from attendance.utils.date_utils import get_readable_date_from_date_oject
+from attendance.utils.date_utils import (
+    get_date_object,
+    get_months_dict,
+    get_readable_date_from_date_oject,
+)
 from core.models import BiometricDetail, Department
 
 
@@ -119,3 +125,27 @@ class DailyShiftRecord(models.Model):
             "Approved" if self.is_approved else "",
         ]
         return " ".join(str_details)
+
+
+class Holiday(models.Model):
+    name = models.CharField(_("Holiday Name"), max_length=500, null=True, blank=True)
+
+    day = models.IntegerField(_("Holiday Day"), null=True, blank=True)
+    month = models.IntegerField(_("Holiday Month"), null=True, blank=True)
+    year = models.IntegerField(_("Holiday Year"), null=True, blank=True)
+
+    is_regular = models.BooleanField(_("Is Holiday Regular"), default=False)
+
+    class Meta:
+        verbose_name_plural = "Holidays"
+
+    def __str__(self):
+        holiday_str = f"{self.name} - {get_months_dict().get(self.month)} {self.day}"
+        if not self.is_regular:
+            holiday_str += f", {self.year}"
+        return holiday_str
+
+    def get_holiday_date(self):
+        return get_date_object(
+            self.year or datetime.datetime.now().year, self.month, self.day
+        )

@@ -1,34 +1,54 @@
 import datetime
 
 from django.apps import apps
-from django.db.models import DurationField, ExpressionWrapper, F, Func, Min, Value
+from django.contrib.auth.models import User
+from django.db.models import (
+    BooleanField,
+    Case,
+    DurationField,
+    ExpressionWrapper,
+    F,
+    Value,
+    When,
+)
 from django.db.models.functions import Abs
 from django.utils.timezone import make_aware
 
-from attendance.models import AttendanceRecord
 from attendance.utils.biometric_utils import get_biometric_detail_from_user_id
-from attendance.utils.date_utils import get_date_object
+from attendance.utils.date_utils import (
+    get_date_object,
+    get_twenty_four_hour_time_str_from_time_object,
+)
 
 
-def get_user_daily_shift_record(user, year: int, month: int, day: int):
+def get_user_daily_shift_record(department, year: int, month: int, day: int):
     daily_shift_record_model = apps.get_model("attendance", "DailyShiftRecord")
     selected_date = get_date_object(year=year, month=month, day=day)
     selected_daily_shift_record = daily_shift_record_model.objects.filter(
-        date=selected_date, department=user.userdetails.department
+        date=selected_date, department=department
     ).first()
 
-    if selected_daily_shift_record:
-        shift = selected_daily_shift_record.shifts.filter(user=user).first()
-        return shift
+    return selected_daily_shift_record
+
+
+def get_user_daily_shift_record_shifts(user, year: int, month: int, day: int):
+    user_daily_shift_record = get_user_daily_shift_record(
+        user.userdetails.department, year, month, day
+    )
+
+    if user_daily_shift_record:
+        return user_daily_shift_record.shifts.filter(user=user).first()
 
 
 def get_user_clocked_time(user, year: int, month: int, day: int, shift):
+    attendance_record_model = apps.get_model("attendance", "AttendanceRecord")
+
     selected_date = get_date_object(year=year, month=month, day=day)
     user_biometric_detail = get_biometric_detail_from_user_id(user_id=user.id)
-    clock_in_punch = AttendanceRecord.Punch.TIME_IN.value
-    clock_out_punch = AttendanceRecord.Punch.TIME_OUT.value
+    clock_in_punch = attendance_record_model.Punch.TIME_IN.value
+    clock_out_punch = attendance_record_model.Punch.TIME_OUT.value
 
-    current_attendance_record = AttendanceRecord.objects.filter(
+    current_attendance_record = attendance_record_model.objects.filter(
         user_biometric_detail=user_biometric_detail, timestamp__date=selected_date
     )
 
@@ -61,12 +81,12 @@ def get_user_clocked_time(user, year: int, month: int, day: int, shift):
             record = current_attendance_record.filter(punch=punch).first()
         return record.get_timestamp_localtime().time() if record else None
 
-    clock_in_timestamp = _get_timestamp_time(
-        clock_in_punch, shift.start_time if shift else None
+    clock_in_timestamp = (
+        _get_timestamp_time(clock_in_punch, shift.start_time) if shift else None
     )
 
-    clock_out_timestamp = _get_timestamp_time(
-        clock_out_punch, shift.end_time if shift else None
+    clock_out_timestamp = (
+        _get_timestamp_time(clock_out_punch, shift.end_time) if shift else None
     )
 
     def _get_time_difference(from_time, to_time):
@@ -90,7 +110,7 @@ def get_user_clocked_time(user, year: int, month: int, day: int, shift):
     )
     clock_out_time_difference = (
         _get_time_difference(shift.end_time, clock_out_timestamp)
-        if clock_in_timestamp
+        if clock_out_timestamp
         else None
     )
 
@@ -115,11 +135,64 @@ def get_user_clocked_time(user, year: int, month: int, day: int, shift):
         else None
     )
 
+    clock_in_time_str = (
+        get_twenty_four_hour_time_str_from_time_object(clock_in_timestamp)
+        if clock_in_timestamp
+        else ""
+    )
+
+    clock_out_time_str = (
+        get_twenty_four_hour_time_str_from_time_object(clock_out_timestamp)
+        if clock_out_timestamp
+        else ""
+    )
+
     clocked_time = {
         "clock_in": clock_in_timestamp,
         "clock_out": clock_out_timestamp,
+        "clock_in_str": clock_in_time_str,
+        "clock_out_str": clock_out_time_str,
         "clock_in_time_diff_formatted": clock_in_time_diff_formatted,
         "clock_out_time_diff_formatted": clock_out_time_diff_formatted,
     }
 
     return clocked_time
+
+
+def get_all_holidays_list():
+    holiday_model = apps.get_model("attendance", "Holiday")
+    all_holidays = holiday_model.objects.all()
+    return all_holidays
+
+
+def get_holiday_for_specific_month_and_year(month: int, year: int):
+    holidays_for_this_specific_month_and_year = (
+        get_all_holidays_list()
+        .filter(month=month, year=year, is_regular=False)
+        .values_list("day", "name")
+    )
+    regular_holidays_for_this_specific_month_and_year = (
+        get_all_holidays_list()
+        .filter(month=month, is_regular=True)
+        .values_list("day", "name")
+    )
+    combined_holidays = (
+        holidays_for_this_specific_month_and_year
+        | regular_holidays_for_this_specific_month_and_year
+    )
+    return combined_holidays
+
+
+def get_employees_list_per_department():
+    all_users = (
+        User.objects.filter(is_active=True)
+        .annotate(
+            department_exists=Case(
+                When(userdetails__department__isnull=True, then=Value(False)),
+                default=Value(True),
+                output_field=BooleanField(),
+            )
+        )
+        .order_by("-userdetails__department", "first_name", "-department_exists")
+    )
+    return all_users

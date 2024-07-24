@@ -1,10 +1,11 @@
+import datetime
+
 from django.apps import apps
 from django.db import transaction
 
-from attendance.models import AttendanceRecord
 from attendance.utils.assign_shift_utils import get_employee_assignments
 from attendance.utils.biometric_utils import process_biometric_data_from_device
-from attendance.utils.date_utils import get_date_object
+from attendance.utils.date_utils import get_date_object, get_time_object
 
 
 @transaction.atomic
@@ -79,13 +80,55 @@ def process_bulk_daily_shift_schedule(
 
 @transaction.atomic
 def add_user_attendance_record(attendance_data):
+    attendance_record_model = apps.get_model("attendance", "AttendanceRecord")
+
     user_biometric_detail, user_id_from_device, timestamp, punch = (
         process_biometric_data_from_device(attendance_data)
     )
 
-    attendane_record = AttendanceRecord.objects.create(
+    attendane_record = attendance_record_model.objects.create(
         user_id_from_device=user_id_from_device,
         punch=punch,
         timestamp=timestamp,
         user_biometric_detail=user_biometric_detail,
     )
+
+
+@transaction.atomic
+def manually_set_user_clocked_time(user, selected_date, clock_in_time, clock_out_time):
+    attendance_record_model = apps.get_model("attendance", "AttendanceRecord")
+    clock_in_punch = attendance_record_model.Punch.TIME_IN.value
+    clock_out_punch = attendance_record_model.Punch.TIME_OUT.value
+
+    biometric_detail_model = apps.get_model("core", "BiometricDetail")
+    user_biometric_detail = biometric_detail_model.objects.get(user=user)
+
+    current_modified_clock_in_record, current_modified_clock_in_record_created = (
+        attendance_record_model.objects.get_or_create(
+            user_biometric_detail=user_biometric_detail,
+            user_id_from_device=user_biometric_detail.user_id_in_device,
+            timestamp__date=selected_date,
+            punch=clock_in_punch,
+        )
+    )
+
+    if clock_in_time:
+        clock_in_time = get_time_object(clock_in_time)
+        clock_in_datetime = datetime.datetime.combine(selected_date, clock_in_time)
+        current_modified_clock_in_record.timestamp = clock_in_datetime
+        current_modified_clock_in_record.save()
+
+    current_modified_clock_out_record, current_modified_clock_out_record_created = (
+        attendance_record_model.objects.get_or_create(
+            user_biometric_detail=user_biometric_detail,
+            user_id_from_device=user_biometric_detail.user_id_in_device,
+            timestamp__date=selected_date,
+            punch=clock_out_punch,
+        )
+    )
+
+    if clock_out_time:
+        clock_out_time = get_time_object(clock_out_time)
+        clock_out_datetime = datetime.datetime.combine(selected_date, clock_out_time)
+        current_modified_clock_out_record.timestamp = clock_out_datetime
+        current_modified_clock_out_record.save()
