@@ -65,8 +65,6 @@ def process_bulk_daily_shift_schedule(
                     user_id__in=list_of_assigned_users
                 )
 
-                print(shift_schedules)
-
                 daily_shift_record.shifts.add(*shift_schedules)
             else:
                 shift_schedules = shift_schedules.filter(

@@ -9,5 +9,5 @@ venv
 .env
 *.sqlite3
 
-fixtures
+fixtures/
 media/

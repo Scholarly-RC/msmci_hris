@@ -1,3 +1,7 @@
 from django.contrib import admin
 
-# Register your models here.
+from performance.models import Evaluation, Questionnaire, UserEvaluation
+
+admin.site.register(Questionnaire)
+admin.site.register(Evaluation)
+admin.site.register(UserEvaluation)

@@ -23,7 +23,9 @@ class UserDetails(models.Model):
         SEPARATED = "SE", _("Separated")
 
     class Role(models.TextChoices):
+        BOARD_OF_DIRECTOR = "BOD", _("Board of Director")
         HR = "HR", _("Human Resource")
+        MANAGER = "MGR", _("Manager")
         DEPARTMENT_HEAD = "DH", _("Department Head")
         EMPLOYEE = "EMP", _("Employee")
 
@@ -108,7 +110,7 @@ class UserDetails(models.Model):
         verbose_name_plural = "User Details"
 
     def __str__(self):
-        return f"User Details of USER {self.user.id}"
+        return f"User Details of USER {self.get_user_fullname() if self.get_user_fullname().strip() != "" else self.user.id}"
 
     def get_user_fullname(self):
         user_name_values = [
@@ -165,14 +167,29 @@ class UserDetails(models.Model):
     def str_date_of_hiring(self):
         return date_to_string(self.date_of_hiring)
 
+    def is_board_of_director(self):
+        return self.user_role == self.Role.BOARD_OF_DIRECTOR
+
     def is_hr(self):
         return self.user_role == self.Role.HR
+
+    def is_manager(self):
+        return self.user_role == self.Role.MANAGER
 
     def is_department_head(self):
         return self.user_role == self.Role.DEPARTMENT_HEAD
 
     def is_employee(self):
-        return self.user_role == self.Role.EMPLOYEE | self.user_role is None
+        return self.user_role == self.Role.EMPLOYEE or self.user_role is None
+
+    def get_user_full_user_role(self):
+        user_role = (
+            self.Role.EMPLOYEE.name
+            if self.is_employee()
+            else self.Role(self.user_role).name
+        )
+        user_role = user_role.replace("_", " ")
+        return user_role
 
 
 class BiometricDetail(models.Model):
