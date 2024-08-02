@@ -55,6 +55,31 @@ class Evaluation(models.Model):
         year_and_quarter = f"({self.user_evaluation.year} - {UserEvaluation.Quarter(self.user_evaluation.quarter).name})".replace("_", " ")
         return f"{year_and_quarter} - {self.user_evaluation.evaluatee.userdetails.get_user_fullname() if self.user_evaluation else ""} by {self.evaluator.userdetails.get_user_fullname()}"
 
+    def was_modified(self):
+        return self.questionnaire.content.get("questionnaire_content") != self.content_data
+    
+    def get_content_data_with_mean_per_domain(self):
+        for domain in self.content_data:
+            domain_questions = domain.get("questions")
+            question_count = len(domain_questions)
+            current_rating = 0
+            for question in domain_questions:
+                current_question_rating = question.get("rating")
+                if current_question_rating:
+                    current_rating += int(current_question_rating)
+            current_mean = current_rating / question_count
+            domain.update({"mean": current_mean})
+        return self.content_data
+    
+    def get_overall_content_data_mean(self):
+        content_data_with_mean = self.get_content_data_with_mean_per_domain()
+        domain_count = len(content_data_with_mean)
+        current_mean = 0
+        for domain in content_data_with_mean:
+            current_domain_mean = domain.get("mean")
+            current_mean += current_domain_mean
+        overall_mean = current_mean/domain_count
+        return overall_mean
 
 class UserEvaluation(models.Model):
     class Quarter(models.TextChoices):
@@ -85,4 +110,4 @@ class UserEvaluation(models.Model):
         verbose_name_plural = "User Evaluations"
 
     def __str__(self):
-        return f"({self.evaluatee.userdetails.get_user_fullname()}) - {self.quarter} - {self.is_finalized}"
+        return f"({self.evaluatee.userdetails.get_user_fullname()}) - ({self.year} - {self.quarter}) - {"Finalized" if self.is_finalized else "Pending"}"

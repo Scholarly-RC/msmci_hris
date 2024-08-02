@@ -16,9 +16,14 @@ urlpatterns = [
         name="finalize_user_evaluation_toggle",
     ),
     path(
-        "user-evaluation-management/modify/<str:pk>/<str:quarter>",
+        "user-evaluation-management/modify/<str:pk>/<str:quarter>/<str:year>",
         performance_views.modify_user_evaluation,
         name="modify_user_evaluation",
+    ),
+    path(
+        "user-evaluation-management/<str:year>",
+        performance_views.user_evaluation_management,
+        name="user_evaluation_management_filtered",
     ),
     path(
         "user-evaluation-management",

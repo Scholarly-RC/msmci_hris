@@ -25,21 +25,52 @@ def performance_management(request):
     return render(request, "performance/performance_management.html", context)
 
 
-def user_evaluation_management(request):
+def user_evaluation_management(request, year=""):
     users = User.objects.filter(is_superuser=False, is_active=True).order_by(
         "-userdetails__department"
     )
+
+    selected_year = (
+        request.POST.get("evaluation_year") or year or datetime.datetime.now().year
+    )
+    selected_year = int(selected_year)
+
+    first_quarter_value = UserEvaluation.Quarter.FIRST_QUARTER.value
+    second_quarter_value = UserEvaluation.Quarter.SECOND_QUARTER.value
+
     context = {
         "employee_details": [
             {
                 "user": user,
-                "current_user_evaluation": user.evaluatee_evaluations.filter(
-                    is_finalized=False
+                "current_first_quarter_user_evaluation": user.evaluatee_evaluations.filter(
+                    quarter=first_quarter_value, year=selected_year
+                ).first(),
+                "current_second_quarter_user_evaluation": user.evaluatee_evaluations.filter(
+                    quarter=second_quarter_value, year=selected_year
                 ).first(),
             }
             for user in users
-        ]
+        ],
+        "selected_year": selected_year,
     }
+
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/user_evaluation_management.html",
+            "user_evaluation_management_section",
+            context,
+        )
+        response = push_url(
+            response,
+            reverse(
+                "performance:user_evaluation_management_filtered",
+                kwargs={"year": selected_year},
+            ),
+        )
+        response = retarget(response, "#user_evaluation_management_section")
+        response = reswap(response, "outerHTML")
+        return response
 
     return render(request, "performance/user_evaluation_management.html", context)
 
@@ -50,11 +81,8 @@ def modify_user_evaluation(request, pk, quarter, year=""):
 
     evaluator_choices = get_user_evaluator_choices(selected_user)
 
-    context.update(
-        {"selected_user": selected_user, "evaluator_choices": evaluator_choices}
-    )
-
     selected_year = year or datetime.datetime.now().year
+    selected_year = int(selected_year)
 
     user_evaluation, user_evaluation_created = UserEvaluation.objects.get_or_create(
         evaluatee=selected_user, quarter=quarter, year=selected_year
@@ -64,8 +92,17 @@ def modify_user_evaluation(request, pk, quarter, year=""):
 
     existing_evaluators = get_existing_evaluators(user_evaluation)
 
+    if user_evaluation.is_finalized:
+        evaluator_choices = evaluator_choices.filter(id__in=existing_evaluators)
+
+        existing_evaluations = user_evaluation.evaluations.all()
+        context.update({"existing_evaluation_data": existing_evaluations})
+
     context.update(
         {
+            "selected_user": selected_user,
+            "evaluator_choices": evaluator_choices.exclude(pk__in=existing_evaluators),
+            "selected_choices": evaluator_choices.filter(pk__in=existing_evaluators),
             "year_and_quarter": year_and_quarter,
             "user_evaluation": user_evaluation,
             "existing_evaluators": existing_evaluators,
@@ -83,7 +120,7 @@ def modify_user_evaluation(request, pk, quarter, year=""):
             response,
             reverse(
                 "performance:modify_user_evaluation",
-                kwargs={"pk": pk, "quarter": quarter},
+                kwargs={"pk": pk, "quarter": quarter, "year": selected_year},
             ),
         )
         response = retarget(response, "#user_evaluation_management_section")
@@ -107,12 +144,19 @@ def finalize_user_evaluation_toggle(request, user_evaluation_id):
 
     existing_evaluators = get_existing_evaluators(user_evaluation)
 
+    if user_evaluation.is_finalized:
+        evaluator_choices = evaluator_choices.filter(id__in=existing_evaluators)
+
+        existing_evaluations = user_evaluation.evaluations.all()
+        context.update({"existing_evaluation_data": existing_evaluations})
+
     context.update(
         {
             "selected_user": selected_user,
-            "user_evaluation": user_evaluation,
-            "evaluator_choices": evaluator_choices,
+            "evaluator_choices": evaluator_choices.exclude(pk__in=existing_evaluators),
+            "selected_choices": evaluator_choices.filter(pk__in=existing_evaluators),
             "year_and_quarter": year_and_quarter,
+            "user_evaluation": user_evaluation,
             "existing_evaluators": existing_evaluators,
         }
     )
@@ -149,13 +193,31 @@ def modify_user_evaluation_evaluators(request, user_evaluation_id):
             "ALL" if deselect_all else "ONE" if to_remove_evaluator else "",
         )
 
-        evaluator_choices = get_user_evaluator_choices(user_evaluation.evaluatee)
+        selected_user = user_evaluation.evaluatee
+
+        evaluator_choices = get_user_evaluator_choices(selected_user)
+
+        year_and_quarter = get_year_and_quarter_from_user_evaluation(user_evaluation)
+
         existing_evaluators = get_existing_evaluators(user_evaluation)
+
+        if user_evaluation.is_finalized:
+            evaluator_choices = evaluator_choices.filter(id__in=existing_evaluators)
+
+            existing_evaluations = user_evaluation.evaluations.all()
+            context.update({"existing_evaluation_data": existing_evaluations})
 
         context.update(
             {
+                "selected_user": selected_user,
+                "evaluator_choices": evaluator_choices.exclude(
+                    pk__in=existing_evaluators
+                ),
+                "selected_choices": evaluator_choices.filter(
+                    pk__in=existing_evaluators
+                ),
+                "year_and_quarter": year_and_quarter,
                 "user_evaluation": user_evaluation,
-                "evaluator_choices": evaluator_choices,
                 "existing_evaluators": existing_evaluators,
             }
         )
@@ -163,10 +225,10 @@ def modify_user_evaluation_evaluators(request, user_evaluation_id):
         response = HttpResponse()
         response.content = render_block_to_string(
             "performance/modify_user_evaluation.html",
-            "select_evaluator_section",
+            "modify_user_evaluation_section",
             context,
         )
 
-        response = retarget(response, "#select_evaluator_section")
+        response = retarget(response, "#modify_user_evaluation_section")
         response = reswap(response, "outerHTML")
         return response

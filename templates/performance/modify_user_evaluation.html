@@ -60,6 +60,27 @@
                                 <div class="text-lg font-bold text-gray-900 dark:text-white text-center mb-2">Select Evaluators</div>
                                 <div class="z-10 bg-white rounded-lg shadow w-full dark:bg-gray-700 border border-gray-200 dark:border-gray-700">
                                     <ul class="h-48 px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200 p-2">
+                                        {% for evaluator_choice in selected_choices %}
+                                            <li>
+                                                <div class="flex items-center ps-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+                                                    <input id="employee_{{ evaluator_choice.id }}"
+                                                           name="selected_evaluator"
+                                                           type="checkbox"
+                                                           value="{{ evaluator_choice.id }}"
+                                                           {% if evaluator_choice.id in existing_evaluators %}checked{% endif %}
+                                                           hx-trigger="input"
+                                                           hx-post="{% url "performance:modify_user_evaluation_evaluators" user_evaluation.id %}"
+                                                           hx-vals='{"evaluator_to_remove": {{ evaluator_choice.id }}}'
+                                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                                                           {% if user_evaluation.is_finalized %}disabled{% endif %}>
+                                                    <label for="employee_{{ evaluator_choice.id }}"
+                                                           class="w-full py-2 ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">
+                                                        {{ evaluator_choice.userdetails.get_user_fullname|title }}
+                                                        ({{ evaluator_choice.userdetails.get_user_full_user_role|title }})
+                                                    </label>
+                                                </div>
+                                            </li>
+                                        {% endfor %}
                                         {% for evaluator_choice in evaluator_choices %}
                                             <li>
                                                 <div class="flex items-center ps-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
@@ -71,7 +92,8 @@
                                                            hx-trigger="input"
                                                            hx-post="{% url "performance:modify_user_evaluation_evaluators" user_evaluation.id %}"
                                                            hx-vals='{"evaluator_to_remove": {{ evaluator_choice.id }}}'
-                                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                                                           {% if user_evaluation.is_finalized %}disabled{% endif %}>
                                                     <label for="employee_{{ evaluator_choice.id }}"
                                                            class="w-full py-2 ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">
                                                         {{ evaluator_choice.userdetails.get_user_fullname|title }}
@@ -81,21 +103,23 @@
                                             </li>
                                         {% endfor %}
                                     </ul>
-                                    <div class="w-full flex items-center gap-2 p-3 text-sm font-medium border-t border-gray-200 rounded-b-lg bg-gray-50 dark:border-gray-600 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-red-500">
-                                        <button type="button"
-                                                hx-post="{% url "performance:modify_user_evaluation_evaluators" user_evaluation.id %}"
-                                                hx-vals='{"deselect_all": "True"}'
-                                                class="flex hover:underline text-red-600">
-                                            <svg class="w-4 h-4 me-2"
-                                                 aria-hidden="true"
-                                                 xmlns="http://www.w3.org/2000/svg"
-                                                 fill="currentColor"
-                                                 viewBox="0 0 20 18">
-                                                <path d="M6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Zm11-3h-6a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2Z" />
-                                            </svg>
-                                            Deselect All
-                                        </button>
-                                    </div>
+                                    {% if not user_evaluation.is_finalized %}
+                                        <div class="w-full flex items-center gap-2 p-3 text-sm font-medium border-t border-gray-200 rounded-b-lg bg-gray-50 dark:border-gray-600 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-red-500">
+                                            <button type="button"
+                                                    hx-post="{% url "performance:modify_user_evaluation_evaluators" user_evaluation.id %}"
+                                                    hx-vals='{"deselect_all": "True"}'
+                                                    class="flex hover:underline text-red-600">
+                                                <svg class="w-4 h-4 me-2"
+                                                     aria-hidden="true"
+                                                     xmlns="http://www.w3.org/2000/svg"
+                                                     fill="currentColor"
+                                                     viewBox="0 0 20 18">
+                                                    <path d="M6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Zm11-3h-6a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2Z" />
+                                                </svg>
+                                                Deselect All
+                                            </button>
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         {% endblock %}
@@ -107,14 +131,83 @@
                                     Cancel
                                 </button>
                             {% else %}
-                                <button type="button"
-                                        hx-post="{% url "performance:finalize_user_evaluation_toggle" user_evaluation.id %}"
-                                        class="w-1/2 px-5 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 sm:w-auto dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
-                                    Finalize
-                                </button>
+                                {% if existing_evaluators %}
+                                    <button type="button"
+                                            hx-post="{% url "performance:finalize_user_evaluation_toggle" user_evaluation.id %}"
+                                            class="w-1/2 px-5 py-2.5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 sm:w-auto dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                                        Finalize
+                                    </button>
+                                {% else %}
+                                    <button type="button"
+                                            class="text-white bg-blue-400 dark:bg-blue-500 cursor-not-allowed font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                                            disabled>Finalize</button>
+                                {% endif %}
                             {% endif %}
                         </div>
                     </div>
+                    {% if user_evaluation.is_finalized %}
+                        <div class="grid grid-cols-2 w-full gap-4">
+                            {% for evaluation in existing_evaluation_data %}
+                                <div class="p-2 bg-white rounded-lg shadow dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                                    <div class="my-2 text-lg font-bold text-gray-900 dark:text-white px-2">
+                                        {{ evaluation.evaluator.userdetails.get_user_fullname }}
+                                    </div>
+                                    <div class="w-full h-96 overflow-y-scroll rounded-lg border shadow border border-gray-200 dark:border-gray-700">
+                                        {% for content in evaluation.get_content_data_with_mean_per_domain %}
+                                            <div class="px-8 py-6 dark:bg-gray-800">
+                                                <h2 class="mb-3 text-2xl font-extrabold text-gray-900 dark:text-white">Domain #{{ content.domain_number }}</h2>
+                                                <div class="relative overflow-x-auto">
+                                                    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                            <tr>
+                                                                <th scope="col" class="px-6 py-3 text-center">No.</th>
+                                                                <th scope="col" class="px-6 py-3 text-center">Indicator</th>
+                                                                <th scope="col" class="px-6 py-3 text-center">Score</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                                                <td colspan="3"
+                                                                    class="w-full px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                                                    {{ content.name }}
+                                                                    {% if content.description %}- {{ content.description }}{% endif %}
+                                                                </td>
+                                                            </tr>
+                                                            {% if evaluation.questionnaire.content.questionnaire_code == "NEPET" %}
+                                                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                                                    <td colspan="3"
+                                                                        class="max-w-sm px-6 py-2 font-medium text-gray-900 dark:text-white">
+                                                                        The employee...
+                                                                    </td>
+                                                                </tr>
+                                                            {% endif %}
+                                                            {% for question in content.questions %}
+                                                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                                                    <th scope="row"
+                                                                        class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                                        {{ question.indicator_number }}.
+                                                                    </th>
+                                                                    <td class="px-6 py-4">{{ question.indicator }}.</td>
+                                                                    <td class="px-6 py-4 font-bold underline">{{ question.rating }}</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                        <tfoot>
+                                                            <tr class="font-semibold text-gray-900 dark:text-white border-b-2 dark:border-gray-700">
+                                                                <td></td>
+                                                                <td class="px-6 py-3 text-end text-base font-bold">Mean</td>
+                                                                <td class="px-6 py-3 text-base font-bold">{{ content.mean|floatformat:2 }}</td>
+                                                            </tr>
+                                                        </tfoot>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </div>
             {% endblock %}
         </div>
