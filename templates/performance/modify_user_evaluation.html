@@ -154,7 +154,7 @@
                                     </div>
                                     <div class="w-full h-96 overflow-y-scroll rounded-lg border shadow border border-gray-200 dark:border-gray-700">
                                         {% for content in evaluation.get_content_data_with_mean_per_domain %}
-                                            <div class="px-8 py-6 dark:bg-gray-800">
+                                            <div class="px-8 dark:bg-gray-800 {% if forloop.last %}pt-6{% else %}py-6{% endif %}">
                                                 <h2 class="mb-3 text-2xl font-extrabold text-gray-900 dark:text-white">Domain #{{ content.domain_number }}</h2>
                                                 <div class="relative overflow-x-auto">
                                                     <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -184,11 +184,11 @@
                                                             {% for question in content.questions %}
                                                                 <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                                                                     <th scope="row"
-                                                                        class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                                        class="px-6 py-4 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                                                         {{ question.indicator_number }}.
                                                                     </th>
                                                                     <td class="px-6 py-4">{{ question.indicator }}.</td>
-                                                                    <td class="px-6 py-4 font-bold underline">{{ question.rating }}</td>
+                                                                    <td class="px-6 py-4 text-center font-bold underline">{{ question.rating }}</td>
                                                                 </tr>
                                                             {% endfor %}
                                                         </tbody>
@@ -196,13 +196,16 @@
                                                             <tr class="font-semibold text-gray-900 dark:text-white border-b-2 dark:border-gray-700">
                                                                 <td></td>
                                                                 <td class="px-6 py-3 text-end text-base font-bold">Mean</td>
-                                                                <td class="px-6 py-3 text-base font-bold">{{ content.mean|floatformat:2 }}</td>
+                                                                <td class="px-6 py-3 text-center text-base font-bold">{{ content.mean|floatformat:2 }}</td>
                                                             </tr>
                                                         </tfoot>
                                                     </table>
                                                 </div>
                                             </div>
                                         {% endfor %}
+                                        <div class="font-semibold text-gray-900 dark:text-white border-b-2 dark:border-gray-700">
+                                            <div class="py-6 text-center text-lg font-bold">Overall Mean: <u>{{ evaluation.get_overall_content_data_mean|floatformat:2 }}</u></div>
+                                        </div>
                                     </div>
                                 </div>
                             {% endfor %}
