@@ -1,4 +1,5 @@
 from django.apps import apps
+
 from performance.enums import QuestionnaireTypes
 
 
@@ -45,3 +46,25 @@ def get_user_questionnaire(user):
     return questionaire_model.objects.get(
         content__questionnaire_code=QuestionnaireTypes.NAPES.value
     )
+
+
+def get_question_rating_mean_from_evaluations(
+    evalutaions, domain_number: str, indicator_number: str
+):
+    current_ratings = []
+    for evaluation in evalutaions:
+        rating = evaluation.get_specific_rating(domain_number, indicator_number)
+        if rating:
+            rating = int(rating)
+            current_ratings.append(rating)
+    rating_mean = get_list_mean(current_ratings)
+    return rating_mean
+
+
+def get_list_mean(values_list):
+    if values_list:
+        mean = sum(values_list) / len(values_list)
+        if mean.is_integer():
+            return int(mean)
+        return mean
+    return 0

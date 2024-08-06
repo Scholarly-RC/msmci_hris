@@ -87,72 +87,155 @@
                                                 {% block evaluation_counter_and_submit_section %}
                                                     <div id="evaluation_counter_and_submit_section"
                                                          class="flex gap-5 self-center align-center ms-auto p-1">
-                                                        <span class="text-lg p-2 font-medium text-gray-900 dark:text-white">{{ current_evaluation.get_total_answered_questions_count.0 }} | {{ current_evaluation.get_total_answered_questions_count.1 }}</span>
-                                                        {% if current_evaluation.is_all_questions_answered %}
-                                                            <button type="button"
-                                                                    class="w-96 md:w-auto px-5 py-2.5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
-                                                                Submit
-                                                            </button>
+                                                        {% if current_evaluation.is_submitted %}
+                                                            <span class="flex self-center text-md p-2 font-medium text-gray-900 dark:text-white">Date Submitted: {{ current_evaluation.date_submitted.date }}</span>
                                                         {% else %}
-                                                            <button type="button"
-                                                                    class="w-96 md:w-auto text-white bg-blue-400 dark:bg-blue-500 cursor-not-allowed font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-                                                                    disabled>Submit</button>
+                                                            <span class="text-lg p-2 font-medium text-gray-900 dark:text-white">{{ current_evaluation.get_total_answered_questions_count.0 }} | {{ current_evaluation.get_total_answered_questions_count.1 }}</span>
+                                                            {% if current_evaluation.is_all_questions_answered %}
+                                                                <button type="button"
+                                                                        hx-post="{% url "performance:submit_user_evaluation" %}"
+                                                                        hx-vals='{"current_evaluation": {{ current_evaluation.id }}}'
+                                                                        class="w-96 md:w-auto px-5 py-2.5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                                                                    Submit
+                                                                </button>
+                                                            {% else %}
+                                                                <button type="button"
+                                                                        class="w-96 md:w-auto text-white bg-blue-400 dark:bg-blue-500 cursor-not-allowed font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                                                                        disabled>Submit</button>
+                                                            {% endif %}
                                                         {% endif %}
                                                     </div>
                                                 {% endblock %}
                                             </div>
                                             <div class="h-[35rem] overflow-y-scroll grid grid-cols-1">
-                                                {% for content in current_evaluation.content_data %}
-                                                    <div class="p-4 bg-white rounded-lg md:px-10 dark:bg-gray-800">
-                                                        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                                                            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                                                                <caption class="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white dark:text-white dark:bg-gray-800">
-                                                                    Domain #{{ content.domain_number }} - {{ content.name|title }}
-                                                                    <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
-                                                                        {% if content.description %}({{ content.description|capfirst }}){% endif %}
-                                                                    </p>
-                                                                </caption>
-                                                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                                                    <tr>
-                                                                        <th scope="col" class="px-6 py-3">#</th>
-                                                                        <th scope="col" class="px-6 py-3">Indicator</th>
-                                                                        <th scope="col" class="px-6 py-3">1</th>
-                                                                        <th scope="col" class="px-6 py-3">2</th>
-                                                                        <th scope="col" class="px-6 py-3">3</th>
-                                                                        <th scope="col" class="px-6 py-3">4</th>
-                                                                        <th scope="col" class="px-6 py-3">5</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {% for question in content.questions %}
-                                                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                                                            <th scope="row"
-                                                                                class="px-6 py- ">
-                                                                                {{ question.indicator_number }}
-                                                                            </th>
-                                                                            <td class="px-6 py-4">{{ question.indicator }}</td>
-                                                                            <td class="px-6 py-4">
-                                                                                <input type="radio" value="1" {% if question.rating == '1' %}checked{% endif %} hx-post="{% url "performance:submit_evaluation_rating" %}" hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}' name="{{ content.domain_number }}_{{ question.indicator_number }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                                                            </td>
-                                                                            <td class="px-6 py-4">
-                                                                                <input type="radio" value="2" {% if question.rating == '2' %}checked{% endif %} hx-post="{% url "performance:submit_evaluation_rating" %}" name="{{ content.domain_number }}_{{ question.indicator_number }}" hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}' class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                                                            </td>
-                                                                            <td class="px-6 py-4">
-                                                                                <input type="radio" value="3" {% if question.rating == '3' %}checked{% endif %} hx-post="{% url "performance:submit_evaluation_rating" %}" name="{{ content.domain_number }}_{{ question.indicator_number }}" hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}' class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                                                            </td>
-                                                                            <td class="px-6 py-4">
-                                                                                <input type="radio" value="4" {% if question.rating == '4' %}checked{% endif %} hx-post="{% url "performance:submit_evaluation_rating" %}" hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}' name="{{ content.domain_number }}_{{ question.indicator_number }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                                                            </td>
-                                                                            <td class="px-6 py-4">
-                                                                                <input type="radio" value="5" {% if question.rating == '5' %}checked{% endif %} hx-post="{% url "performance:submit_evaluation_rating" %}" hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}' name="{{ content.domain_number }}_{{ question.indicator_number }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                                                            </td>
+                                                {% if current_evaluation.is_submitted %}
+                                                    {% for content in current_submitted_evaluation_data %}
+                                                        <div class="p-4 bg-white rounded-lg md:px-10 dark:bg-gray-800">
+                                                            <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+                                                                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                                                    <caption class="p-5 text-lg font-semibold text-left text-gray-900 border-t rounded-lg bg-white dark:text-white dark:bg-gray-800">
+                                                                        Domain #{{ content.domain_number }} - {{ content.name|title }}
+                                                                        <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
+                                                                            {% if content.description %}({{ content.description|capfirst }}){% endif %}
+                                                                        </p>
+                                                                    </caption>
+                                                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                                        <tr>
+                                                                            <th scope="col" class="px-6 py-3">#</th>
+                                                                            <th scope="col" class="px-6 py-3">Indicator</th>
+                                                                            <th scope="col" class="px-6 py-3 text-center">Self</th>
+                                                                            <th scope="col" class="px-6 py-3 text-center">Peer</th>
                                                                         </tr>
-                                                                    {% endfor %}
-                                                                </tbody>
-                                                            </table>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {% for question in content.questions %}
+                                                                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                                                <th scope="row" class="px-6 py- ">{{ question.indicator_number }}</th>
+                                                                                <td class="px-6 py-4">{{ question.indicator }}</td>
+                                                                                <td class="px-6 py-4 text-center">{{ question.self_rating }}</td>
+                                                                                <td class="px-6 py-4 text-center">{{ question.peer_rating|floatformat:2 }}</td>
+                                                                            </tr>
+                                                                        {% endfor %}
+                                                                    </tbody>
+                                                                    <tfoot>
+                                                                        <tr class="font-semibold text-gray-900 dark:text-white border-b-2 dark:border-gray-700">
+                                                                            <td></td>
+                                                                            <td class="px-6 py-3 text-end text-base font-bold">Mean</td>
+                                                                            <td class="px-6 py-3 text-center text-base font-bold">{{ content.self_rating_mean|floatformat:2 }}</td>
+                                                                            <td class="px-6 py-3 text-center text-base font-bold">{{ content.peer_rating_mean|floatformat:2 }}</td>
+                                                                        </tr>
+                                                                    </tfoot>
+                                                                </table>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                {% endfor %}
+                                                        <div class="font-semibold text-gray-900 dark:text-white border-b-2 dark:border-gray-700">
+                                                            <div class="pt-6 text-center text-lg font-bold">Overall Mean</div>
+                                                            <div class="pb-6 text-center text-lg font-bold">
+                                                                <u>Self: {{ current_user_evaluation.get_overall_self_and_peer_rating_mean.0|floatformat:2 }}</u>
+                                                                <u>Peer: {{ current_user_evaluation.get_overall_self_and_peer_rating_mean.1|floatformat:2 }}</u>
+                                                            </div>
+                                                        </div>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    {% for content in current_evaluation.content_data %}
+                                                        <div class="p-4 bg-white rounded-lg md:px-10 dark:bg-gray-800">
+                                                            <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+                                                                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                                                    <caption class="p-5 text-lg font-semibold text-left text-gray-900 border-t rounded-lg bg-white dark:text-white dark:bg-gray-800">
+                                                                        Domain #{{ content.domain_number }} - {{ content.name|title }}
+                                                                        <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
+                                                                            {% if content.description %}({{ content.description|capfirst }}){% endif %}
+                                                                        </p>
+                                                                    </caption>
+                                                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                                        <tr>
+                                                                            <th scope="col" class="px-6 py-3">#</th>
+                                                                            <th scope="col" class="px-6 py-3">Indicator</th>
+                                                                            <th scope="col" class="px-6 py-3">1</th>
+                                                                            <th scope="col" class="px-6 py-3">2</th>
+                                                                            <th scope="col" class="px-6 py-3">3</th>
+                                                                            <th scope="col" class="px-6 py-3">4</th>
+                                                                            <th scope="col" class="px-6 py-3">5</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {% for question in content.questions %}
+                                                                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                                                <th scope="row" class="px-6 py- ">{{ question.indicator_number }}</th>
+                                                                                <td class="px-6 py-4">{{ question.indicator }}</td>
+                                                                                <td class="px-6 py-4">
+                                                                                    <input type="radio"
+                                                                                           value="1"
+                                                                                           {% if question.rating == '1' %}checked{% endif %}
+                                                                                           hx-post="{% url "performance:submit_evaluation_rating" %}"
+                                                                                           hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
+                                                                                           name="{{ content.domain_number }}_{{ question.indicator_number }}"
+                                                                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                                </td>
+                                                                                <td class="px-6 py-4">
+                                                                                    <input type="radio"
+                                                                                           value="2"
+                                                                                           {% if question.rating == '2' %}checked{% endif %}
+                                                                                           hx-post="{% url "performance:submit_evaluation_rating" %}"
+                                                                                           name="{{ content.domain_number }}_{{ question.indicator_number }}"
+                                                                                           hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
+                                                                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                                </td>
+                                                                                <td class="px-6 py-4">
+                                                                                    <input type="radio"
+                                                                                           value="3"
+                                                                                           {% if question.rating == '3' %}checked{% endif %}
+                                                                                           hx-post="{% url "performance:submit_evaluation_rating" %}"
+                                                                                           name="{{ content.domain_number }}_{{ question.indicator_number }}"
+                                                                                           hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
+                                                                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                                </td>
+                                                                                <td class="px-6 py-4">
+                                                                                    <input type="radio"
+                                                                                           value="4"
+                                                                                           {% if question.rating == '4' %}checked{% endif %}
+                                                                                           hx-post="{% url "performance:submit_evaluation_rating" %}"
+                                                                                           hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
+                                                                                           name="{{ content.domain_number }}_{{ question.indicator_number }}"
+                                                                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                                </td>
+                                                                                <td class="px-6 py-4">
+                                                                                    <input type="radio"
+                                                                                           value="5"
+                                                                                           {% if question.rating == '5' %}checked{% endif %}
+                                                                                           hx-post="{% url "performance:submit_evaluation_rating" %}"
+                                                                                           hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
+                                                                                           name="{{ content.domain_number }}_{{ question.indicator_number }}"
+                                                                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                                </td>
+                                                                            </tr>
+                                                                        {% endfor %}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    {% endfor %}
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </div>

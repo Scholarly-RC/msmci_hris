@@ -1,9 +1,7 @@
 from django.apps import apps
 from django.db import transaction
 
-from performance.utils import (
-    get_user_questionnaire,
-)
+from performance.utils import get_user_questionnaire
 
 
 @transaction.atomic

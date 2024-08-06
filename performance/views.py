@@ -1,23 +1,24 @@
 import datetime
 
 from django.contrib.auth.models import User
-from django.http import HttpResponse
-from django.shortcuts import render, redirect
-from django.urls import reverse
 from django.db.models import Q
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.utils.timezone import make_aware
 from django_htmx.http import push_url, reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
 
 from performance.actions import (
-    process_evaluator_modification,
     add_self_evaluation,
     modify_content_data_rating,
+    process_evaluator_modification,
 )
-from performance.models import Questionnaire, UserEvaluation, Evaluation
+from performance.models import Evaluation, Questionnaire, UserEvaluation
 from performance.utils import (
+    get_existing_evaluators,
     get_user_evaluator_choices,
     get_year_and_quarter_from_user_evaluation,
-    get_existing_evaluators,
 )
 
 
@@ -50,6 +51,16 @@ def performance_evaluation(request):
         context.update(
             {
                 "current_evaluation": current_evaluation,
+            }
+        )
+
+    if current_evaluation.is_submitted():
+        current_submitted_evaluation_data = (
+            current_user_evaluation.get_questionnaire_content_data_with_self_and_peer_rating_mean()
+        )
+        context.update(
+            {
+                "current_submitted_evaluation_data": current_submitted_evaluation_data,
             }
         )
 
@@ -115,6 +126,17 @@ def submit_evaluation_rating(request):
         )
         response = retarget(response, "#evaluation_counter_and_submit_section")
         response = reswap(response, "outerHTML")
+        return response
+
+
+def submit_user_evaluation(request):
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        current_evaluation_id = data.get("current_evaluation")
+        current_evaluation = Evaluation.objects.get(id=current_evaluation_id)
+        current_evaluation.date_submitted = make_aware(datetime.datetime.now())
+        current_evaluation.save()
+        response = HttpResponse()
         return response
 
 

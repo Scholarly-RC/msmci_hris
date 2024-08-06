@@ -31,6 +31,11 @@ urlpatterns = [
         name="user_evaluation_management",
     ),
     path(
+        "evaluation/submit-user-evaluation",
+        performance_views.submit_user_evaluation,
+        name="submit_user_evaluation",
+    ),
+    path(
         "evaluation/submit-evaluation-rating",
         performance_views.submit_evaluation_rating,
         name="submit_evaluation_rating",

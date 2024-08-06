@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from performance.utils import get_user_questionnaire, get_list_mean, get_question_rating_mean_from_evaluations
+
 
 # Create your models here.
 class Questionnaire(models.Model):
@@ -52,19 +54,23 @@ class Evaluation(models.Model):
         verbose_name_plural = "Evaluations"
 
     def __str__(self):
-        year_and_quarter = f"({self.user_evaluation.year} - {UserEvaluation.Quarter(self.user_evaluation.quarter).name})".replace("_", " ")
-        
+        year_and_quarter = f"({self.user_evaluation.year} - {UserEvaluation.Quarter(self.user_evaluation.quarter).name})".replace(
+            "_", " "
+        )
+
         if self.is_self_evaluation():
             return f"{year_and_quarter} - {self.evaluator.userdetails.get_user_fullname()} - SELF EVALUATION"
-        
+
         return f"{year_and_quarter} - {self.user_evaluation.evaluatee.userdetails.get_user_fullname() if self.user_evaluation else ""} by {self.evaluator.userdetails.get_user_fullname()}"
 
     def is_self_evaluation(self) -> bool:
         return self.evaluator == self.user_evaluation.evaluatee
 
     def was_modified(self) -> bool:
-        return self.questionnaire.content.get("questionnaire_content") != self.content_data
-    
+        return (
+            self.questionnaire.content.get("questionnaire_content") != self.content_data
+        )
+
     def get_total_answered_questions_count(self):
         question_count = 0
         answered_question_count = 0
@@ -75,11 +81,13 @@ class Evaluation(models.Model):
                 if question.get("rating"):
                     answered_question_count += 1
         return answered_question_count, question_count
-    
+
     def is_all_questions_answered(self):
-        answered_question_count, question_count = self.get_total_answered_questions_count()
+        answered_question_count, question_count = (
+            self.get_total_answered_questions_count()
+        )
         return answered_question_count == question_count
-    
+
     def get_content_data_with_mean_per_domain(self):
         for domain in self.content_data:
             domain_questions = domain.get("questions")
@@ -92,7 +100,7 @@ class Evaluation(models.Model):
             current_mean = current_rating / question_count
             domain.update({"mean": current_mean})
         return self.content_data
-    
+
     def get_overall_content_data_mean(self):
         content_data_with_mean = self.get_content_data_with_mean_per_domain()
         domain_count = len(content_data_with_mean)
@@ -100,8 +108,25 @@ class Evaluation(models.Model):
         for domain in content_data_with_mean:
             current_domain_mean = domain.get("mean")
             current_mean += current_domain_mean
-        overall_mean = current_mean/domain_count
+        overall_mean = current_mean / domain_count
         return overall_mean
+    
+    def get_specific_rating(self, domain_number: str, indicator_number: str):
+        for domain in self.content_data:
+            current_domain_number = domain.get("domain_number")
+            if current_domain_number == domain_number:
+                current_domain_questions = domain.get("questions")
+                for question in current_domain_questions:
+                    if question.get("indicator_number") == indicator_number:
+                        return question.get("rating")
+
+    def is_submitted(self) -> bool:
+        return self.date_submitted is not None
+
+    def revert_submission(self):
+        self.date_submitted = None
+        self.save()
+
 
 class UserEvaluation(models.Model):
     class Quarter(models.TextChoices):
@@ -133,7 +158,53 @@ class UserEvaluation(models.Model):
 
     def __str__(self):
         return f"({self.evaluatee.userdetails.get_user_fullname()}) - ({self.year} - {self.quarter}) - {"Finalized" if self.is_finalized else "Pending"}"
-    
+
     def get_year_and_quarter(self):
         quarter = self.Quarter(self.quarter).name.replace("_", " ")
         return f"{self.year} - {quarter}"
+    
+    def get_questionnaire_content_data_with_self_and_peer_rating_mean(self):
+        questionnaire = get_user_questionnaire(self.evaluatee)
+        questionnaire_content = questionnaire.content.get("questionnaire_content")            
+        self_evaluation = self.evaluations.filter(evaluator=self.evaluatee)
+        peer_evaluations = self.evaluations.exclude(evaluator=self.evaluatee)
+
+
+        for domain in questionnaire_content:
+            self_eval = []
+            peer_eval = []
+            current_domain_number = domain.get("domain_number")
+            current_questions = domain.get("questions")
+            for question in current_questions:
+                current_indicator_number = question.get("indicator_number")
+                question['self_rating'] = get_question_rating_mean_from_evaluations(self_evaluation, current_domain_number, current_indicator_number)
+                self_eval.append(question['self_rating'])
+                question['peer_rating'] = get_question_rating_mean_from_evaluations(peer_evaluations, current_domain_number, current_indicator_number)
+                peer_eval.append(question['peer_rating'])
+                del question['rating']
+            domain['self_rating_mean'] = get_list_mean(self_eval)
+            domain['peer_rating_mean'] = get_list_mean(peer_eval)
+
+        return questionnaire_content
+    
+    def get_overall_self_and_peer_rating_mean(self):
+        self_eval = []
+        peer_eval = []
+        questionnaire_content_data = self.get_questionnaire_content_data_with_self_and_peer_rating_mean()
+        for data in questionnaire_content_data:
+            self_rating_mean = data.get("self_rating_mean")
+            peer_rating_mean = data.get("peer_rating_mean")
+            self_eval.append(self_rating_mean)
+            peer_eval.append(peer_rating_mean)
+        self_eval_overall_mean = get_list_mean(self_eval)
+        peer_eval_overall_mean = get_list_mean(peer_eval)
+
+        return self_eval_overall_mean, peer_eval_overall_mean
+    
+    def show_peer_evaluations(self) -> bool:
+        peer_evaluations = self.evaluations.exclude(evaluator=self.evaluatee)
+        for peer_evaluation in peer_evaluations:
+            if not peer_evaluation.is_submitted():
+                return False
+        return True
+            
