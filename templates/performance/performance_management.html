@@ -46,37 +46,18 @@
                         <li class="w-full focus-within:z-10">
                             <button type="button"
                                     hx-post="{% url 'performance:performance_evaluation' %}"
-                                    class="inline-block w-full p-4 
-                                        {% if evaluation_section == 'self' %}
-                                        text-gray-900 bg-gray-100 border border-gray-200 dark:border-gray-700 rounded-l-lg 
-                                        focus:ring-4 focus:ring-blue-300 active focus:outline-none 
-                                        dark:bg-gray-700 dark:text-white
-                                        {% else %}
-                                        text-gray-700 bg-white border border-gray-200 dark:border-gray-700 
-                                        hover:text-gray-900 hover:bg-gray-50 focus:ring-4 focus:ring-blue-300 
-                                        focus:outline-none dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700
-                                        {% endif %}">
+                                    class="inline-block w-full p-4 {% if evaluation_section == 'self' %} text-gray-900 bg-gray-100 border border-gray-200 dark:border-gray-700 rounded-l-lg focus:ring-4 focus:ring-blue-300 active focus:outline-none dark:bg-gray-700 dark:text-white {% else %} text-gray-700 bg-white border border-gray-200 dark:border-gray-700 hover:text-gray-900 hover:bg-gray-50 focus:ring-4 focus:ring-blue-300 focus:outline-none dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700 {% endif %}">
                                 Self Evaluation
                             </button>
                         </li>
                         <li class="w-full focus-within:z-10">
                             <button type="button"
                                     hx-post="{% url 'performance:performance_peer_evaluation' %}"
-                                    class="inline-block w-full p-4 
-                                        {% if evaluation_section == 'peer' %}
-                                        text-gray-900 bg-gray-100 border border-gray-200 dark:border-gray-700 rounded-r-lg 
-                                        focus:ring-4 focus:ring-blue-300 active focus:outline-none 
-                                        dark:bg-gray-700 dark:text-white
-                                        {% else %}
-                                        text-gray-700 bg-white border border-gray-200 dark:border-gray-700 
-                                        hover:text-gray-900 hover:bg-gray-50 focus:ring-4 focus:ring-blue-300 
-                                        focus:outline-none dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700
-                                        {% endif %}">
+                                    class="inline-block w-full p-4 {% if evaluation_section == 'peer' %} text-gray-900 bg-gray-100 border border-gray-200 dark:border-gray-700 rounded-r-lg focus:ring-4 focus:ring-blue-300 active focus:outline-none dark:bg-gray-700 dark:text-white {% else %} text-gray-700 bg-white border border-gray-200 dark:border-gray-700 hover:text-gray-900 hover:bg-gray-50 focus:ring-4 focus:ring-blue-300 focus:outline-none dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700 {% endif %}">
                                 Peer Evaluation
                             </button>
                         </li>
                     </ul>
-                    
                     {% block evaluation_content %}
                         <div id="evluation_content">
                             {% if evaluation_section == "self" %}
@@ -123,84 +104,53 @@
                                             <div class="h-[35rem] overflow-y-scroll grid grid-cols-1">
                                                 {% for content in current_evaluation.content_data %}
                                                     <div class="p-4 bg-white rounded-lg md:px-10 dark:bg-gray-800">
-                                                        <h2 class="mb-3 text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">{{ content.name|title }}</h2>
-                                                        {% for question in content.questions %}
-                                                            <div class="mb-3">
-                                                                <p class="mb-3 text-gray-500 dark:text-gray-400">{{ question.indicator_number }}. {{ question.indicator }}.</p>
-                                                                <div class="flex ml-4">
-                                                                    <div class="flex items-center me-4">
-                                                                        <input id="choice_1_{{ content.domain_number }}_{{ question.indicator_number }}"
-                                                                               type="radio"
-                                                                               value="1"
-                                                                               {% if question.rating == '1' %}checked{% endif %}
-                                                                               hx-post="{% url "performance:submit_evaluation_rating" %}"
-                                                                               hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
-                                                                               name="{{ content.domain_number }}_{{ question.indicator_number }}"
-                                                                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                                                        <label for="choice_1_{{ content.domain_number }}_{{ question.indicator_number }}"
-                                                                               class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                                            1
-                                                                        </label>
-                                                                    </div>
-                                                                    <div class="flex items-center me-4">
-                                                                        <input id="choice_2_{{ content.domain_number }}_{{ question.indicator_number }}"
-                                                                               type="radio"
-                                                                               value="2"
-                                                                               {% if question.rating == '2' %}checked{% endif %}
-                                                                               hx-post="{% url "performance:submit_evaluation_rating" %}"
-                                                                               name="{{ content.domain_number }}_{{ question.indicator_number }}"
-                                                                               hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
-                                                                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                                                        <label for="choice_2_{{ content.domain_number }}_{{ question.indicator_number }}"
-                                                                               class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                                            2
-                                                                        </label>
-                                                                    </div>
-                                                                    <div class="flex items-center me-4">
-                                                                        <input id="choice_3_{{ content.domain_number }}_{{ question.indicator_number }}"
-                                                                               type="radio"
-                                                                               value="3"
-                                                                               {% if question.rating == '3' %}checked{% endif %}
-                                                                               hx-post="{% url "performance:submit_evaluation_rating" %}"
-                                                                               name="{{ content.domain_number }}_{{ question.indicator_number }}"
-                                                                               hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
-                                                                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                                                        <label for="choice_3_{{ content.domain_number }}_{{ question.indicator_number }}"
-                                                                               class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                                            3
-                                                                        </label>
-                                                                    </div>
-                                                                    <div class="flex items-center me-4">
-                                                                        <input id="choice_4_{{ content.domain_number }}_{{ question.indicator_number }}"
-                                                                               type="radio"
-                                                                               value="4"
-                                                                               {% if question.rating == '4' %}checked{% endif %}
-                                                                               hx-post="{% url "performance:submit_evaluation_rating" %}"
-                                                                               hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
-                                                                               name="{{ content.domain_number }}_{{ question.indicator_number }}"
-                                                                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                                                        <label for="choice_4_{{ content.domain_number }}_{{ question.indicator_number }}"
-                                                                               class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                                            4
-                                                                        </label>
-                                                                    </div>
-                                                                    <div class="flex items-center me-4">
-                                                                        <input id="choice_5_{{ content.domain_number }}_{{ question.indicator_number }}"
-                                                                               type="radio"
-                                                                               value="5"
-                                                                               {% if question.rating == '5' %}checked{% endif %}
-                                                                               hx-post="{% url "performance:submit_evaluation_rating" %}"
-                                                                               hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
-                                                                               name="{{ content.domain_number }}_{{ question.indicator_number }}"
-                                                                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                                                        <label for="choice_5_{{ content.domain_number }}_{{ question.indicator_number }}"
-                                                                               class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                                            5
-                                                                        </label>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        {% endfor %}
+                                                        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+                                                            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                                                <caption class="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white dark:text-white dark:bg-gray-800">
+                                                                    Domain #{{ content.domain_number }} - {{ content.name|title }}
+                                                                    <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
+                                                                        {% if content.description %}({{ content.description|capfirst }}){% endif %}
+                                                                    </p>
+                                                                </caption>
+                                                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                                    <tr>
+                                                                        <th scope="col" class="px-6 py-3">#</th>
+                                                                        <th scope="col" class="px-6 py-3">Indicator</th>
+                                                                        <th scope="col" class="px-6 py-3">1</th>
+                                                                        <th scope="col" class="px-6 py-3">2</th>
+                                                                        <th scope="col" class="px-6 py-3">3</th>
+                                                                        <th scope="col" class="px-6 py-3">4</th>
+                                                                        <th scope="col" class="px-6 py-3">5</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for question in content.questions %}
+                                                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                                            <th scope="row"
+                                                                                class="px-6 py- ">
+                                                                                {{ question.indicator_number }}
+                                                                            </th>
+                                                                            <td class="px-6 py-4">{{ question.indicator }}</td>
+                                                                            <td class="px-6 py-4">
+                                                                                <input type="radio" value="1" {% if question.rating == '1' %}checked{% endif %} hx-post="{% url "performance:submit_evaluation_rating" %}" hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}' name="{{ content.domain_number }}_{{ question.indicator_number }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                            </td>
+                                                                            <td class="px-6 py-4">
+                                                                                <input type="radio" value="2" {% if question.rating == '2' %}checked{% endif %} hx-post="{% url "performance:submit_evaluation_rating" %}" name="{{ content.domain_number }}_{{ question.indicator_number }}" hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}' class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                            </td>
+                                                                            <td class="px-6 py-4">
+                                                                                <input type="radio" value="3" {% if question.rating == '3' %}checked{% endif %} hx-post="{% url "performance:submit_evaluation_rating" %}" name="{{ content.domain_number }}_{{ question.indicator_number }}" hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}' class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                            </td>
+                                                                            <td class="px-6 py-4">
+                                                                                <input type="radio" value="4" {% if question.rating == '4' %}checked{% endif %} hx-post="{% url "performance:submit_evaluation_rating" %}" hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}' name="{{ content.domain_number }}_{{ question.indicator_number }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                            </td>
+                                                                            <td class="px-6 py-4">
+                                                                                <input type="radio" value="5" {% if question.rating == '5' %}checked{% endif %} hx-post="{% url "performance:submit_evaluation_rating" %}" hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}' name="{{ content.domain_number }}_{{ question.indicator_number }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                            </td>
+                                                                        </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
                                                     </div>
                                                 {% endfor %}
                                             </div>
