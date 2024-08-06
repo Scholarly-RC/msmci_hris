@@ -31,6 +31,26 @@ urlpatterns = [
         name="user_evaluation_management",
     ),
     path(
+        "evaluation/submit-evaluation-rating",
+        performance_views.submit_evaluation_rating,
+        name="submit_evaluation_rating",
+    ),
+    path(
+        "peer-evaluation",
+        performance_views.performance_peer_evaluation,
+        name="performance_peer_evaluation",
+    ),
+    path(
+        "evaluation",
+        performance_views.performance_evaluation,
+        name="performance_evaluation",
+    ),
+    path(
+        "section-switch",
+        performance_views.switch_performance_management_section,
+        name="switch_performance_management_section",
+    ),
+    path(
         "",
         performance_views.performance_management,
         name="performance_management",

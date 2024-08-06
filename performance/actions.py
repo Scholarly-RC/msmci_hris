@@ -1,13 +1,14 @@
 from django.apps import apps
 from django.db import transaction
 
-from performance.enums import QuestionnaireTypes
+from performance.utils import (
+    get_user_questionnaire,
+)
 
 
 @transaction.atomic
 def process_evaluator_modification(user_evaluation, evaluator_id, to_remove=""):
     evaluation_model = apps.get_model("performance", "Evaluation")
-    questionaire_model = apps.get_model("performance", "Questionnaire")
     user_model = apps.get_model("auth", "User")
 
     if to_remove == "ALL":
@@ -20,15 +21,7 @@ def process_evaluator_modification(user_evaluation, evaluator_id, to_remove=""):
 
     selected_evaluator = user_model.objects.get(id=evaluator_id)
 
-    is_evaluatee_employee = user_evaluation.evaluatee.userdetails.is_employee()
-    if is_evaluatee_employee:
-        questionnaire = questionaire_model.objects.get(
-            content__questionnaire_code=QuestionnaireTypes.NEPET.value
-        )
-    else:
-        questionnaire = questionaire_model.objects.get(
-            content__questionnaire_code=QuestionnaireTypes.NAPES.value
-        )
+    questionnaire = get_user_questionnaire(user_evaluation.evaluatee)
 
     new_evaluation, new_evaluation_created = evaluation_model.objects.get_or_create(
         evaluator=selected_evaluator,
@@ -39,11 +32,44 @@ def process_evaluator_modification(user_evaluation, evaluator_id, to_remove=""):
     return
 
 
-def _reset_evaluation_values(evaluation):
-    questionnaire_content = evaluation.questionnaire.content.get(
-        "questionnaire_content"
+@transaction.atomic
+def add_self_evaluation(user_evaluation):
+    evaluation_model = apps.get_model("performance", "Evaluation")
+
+    self_user = user_evaluation.evaluatee
+
+    questionnaire = get_user_questionnaire(self_user)
+
+    new_evaluation, new_evaluation_created = evaluation_model.objects.get_or_create(
+        evaluator=self_user,
+        user_evaluation=user_evaluation,
+        questionnaire=questionnaire,
+        defaults={"content_data": questionnaire.content.get("questionnaire_content")},
     )
-    evaluation.content_data = questionnaire_content
-    evaluation.positive_feedback = None
-    evaluation.improvement_suggestion = None
-    evaluation.save()
+
+
+@transaction.atomic
+def modify_content_data_rating(data):
+    evaluation_model = apps.get_model("performance", "Evaluation")
+    domain = data.get("domain_number")
+    indicator = data.get("indicator_number")
+    str_id = domain + "_" + indicator
+    value = data.get(str_id)
+    current_evaluation_id = data.get("current_evaluation")
+    current_evaluation = evaluation_model.objects.get(id=current_evaluation_id)
+
+    current_content_data = current_evaluation.content_data
+
+    _edit_content_data(current_content_data, domain, indicator, value)
+
+    current_evaluation.save()
+
+
+def _edit_content_data(current_content_data, domain_number, indicator_number, value):
+    for domain in current_content_data:
+        if domain.get("domain_number") == domain_number:
+            domain_questions = domain.get("questions")
+            for question in domain_questions:
+                if question.get("indicator_number") == indicator_number:
+                    question["rating"] = value
+    return current_content_data

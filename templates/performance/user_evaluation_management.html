@@ -34,7 +34,7 @@
                         </button>
                     </div>
                     <div class="relative overflow-x-auto sm:rounded-lg">
-                        <div class="flex flex-row gap-5 pb-4 bg-white dark:bg-gray-900">
+                        <div class="flex flex-col sm:flex-row gap-2 sm:gap-5 pb-4 bg-white dark:bg-gray-900">
                             <div class="relative">
                                 <div class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
                                     <svg class="w-4 h-4 text-gray-500 dark:text-gray-400"
@@ -46,9 +46,13 @@
                                     </svg>
                                 </div>
                                 <input type="text"
-                                       id="table-search"
-                                       class="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                       placeholder="Search for items">
+                                       id="search_user"
+                                       value="{{ user_search_query }}"
+                                       name="search_user"
+                                       hx-trigger="input changed delay:200ms"
+                                       hx-post="{% url "performance:user_evaluation_management_filtered" selected_year %}"
+                                       class="block w-full sm:w-96 pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                       placeholder="Search User">
                             </div>
                             <div class="flex flex-row items-center gap-2 max-w-sm">
                                 <label for="evaluation_year"
@@ -61,11 +65,12 @@
                                        class="w-20 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                        min="2024"
                                        hx-post="{% url "performance:user_evaluation_management" %}"
+                                       hx-include="[name='search_user']"
                                        value="{{ selected_year }}"
                                        hx-trigger="input changed delay:200ms">
                             </div>
                         </div>
-                        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                        <table class="min-w-max w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr>
                                     <th scope="col" class="px-6 py-3">Employee</th>

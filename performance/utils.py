@@ -1,4 +1,5 @@
 from django.apps import apps
+from performance.enums import QuestionnaireTypes
 
 
 def get_year_and_quarter_from_user_evaluation(user_evaluation):
@@ -27,4 +28,20 @@ def get_user_evaluator_choices(selected_user):
 
 
 def get_existing_evaluators(user_evaluation):
-    return user_evaluation.evaluations.all().values_list("evaluator__id", flat=True)
+    return user_evaluation.evaluations.exclude(
+        evaluator=user_evaluation.evaluatee
+    ).values_list("evaluator__id", flat=True)
+
+
+def get_user_questionnaire(user):
+    questionaire_model = apps.get_model("performance", "Questionnaire")
+
+    is_evaluatee_employee = user.userdetails.is_employee()
+    if is_evaluatee_employee:
+        return questionaire_model.objects.get(
+            content__questionnaire_code=QuestionnaireTypes.NEPET.value
+        )
+
+    return questionaire_model.objects.get(
+        content__questionnaire_code=QuestionnaireTypes.NAPES.value
+    )

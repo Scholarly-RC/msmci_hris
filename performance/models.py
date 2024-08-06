@@ -53,10 +53,32 @@ class Evaluation(models.Model):
 
     def __str__(self):
         year_and_quarter = f"({self.user_evaluation.year} - {UserEvaluation.Quarter(self.user_evaluation.quarter).name})".replace("_", " ")
+        
+        if self.is_self_evaluation():
+            return f"{year_and_quarter} - {self.evaluator.userdetails.get_user_fullname()} - SELF EVALUATION"
+        
         return f"{year_and_quarter} - {self.user_evaluation.evaluatee.userdetails.get_user_fullname() if self.user_evaluation else ""} by {self.evaluator.userdetails.get_user_fullname()}"
 
-    def was_modified(self):
+    def is_self_evaluation(self) -> bool:
+        return self.evaluator == self.user_evaluation.evaluatee
+
+    def was_modified(self) -> bool:
         return self.questionnaire.content.get("questionnaire_content") != self.content_data
+    
+    def get_total_answered_questions_count(self):
+        question_count = 0
+        answered_question_count = 0
+        for domain in self.content_data:
+            domain_questions = domain.get("questions")
+            question_count += len(domain_questions)
+            for question in domain_questions:
+                if question.get("rating"):
+                    answered_question_count += 1
+        return answered_question_count, question_count
+    
+    def is_all_questions_answered(self):
+        answered_question_count, question_count = self.get_total_answered_questions_count()
+        return answered_question_count == question_count
     
     def get_content_data_with_mean_per_domain(self):
         for domain in self.content_data:
@@ -111,3 +133,7 @@ class UserEvaluation(models.Model):
 
     def __str__(self):
         return f"({self.evaluatee.userdetails.get_user_fullname()}) - ({self.year} - {self.quarter}) - {"Finalized" if self.is_finalized else "Pending"}"
+    
+    def get_year_and_quarter(self):
+        quarter = self.Quarter(self.quarter).name.replace("_", " ")
+        return f"{self.year} - {quarter}"
