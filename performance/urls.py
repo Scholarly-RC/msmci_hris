@@ -41,6 +41,11 @@ urlpatterns = [
         name="submit_evaluation_rating",
     ),
     path(
+        "evaluation/swtich",
+        performance_views.switch_performance_evalution,
+        name="switch_performance_evalution",
+    ),
+    path(
         "peer-evaluation",
         performance_views.performance_peer_evaluation,
         name="performance_peer_evaluation",

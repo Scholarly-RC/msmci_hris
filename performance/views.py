@@ -6,7 +6,13 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.timezone import make_aware
-from django_htmx.http import push_url, reswap, retarget, trigger_client_event
+from django_htmx.http import (
+    push_url,
+    reswap,
+    retarget,
+    trigger_client_event,
+    HttpResponseClientRedirect,
+)
 from render_block import render_block_to_string
 
 from performance.actions import (
@@ -34,7 +40,12 @@ def performance_evaluation(request):
         evaluatee=current_user, is_finalized=True
     ).order_by("-year")
 
-    current_user_evaluation = user_evaluations.first()
+    current_user_evaluation = (
+        user_evaluations.filter(
+            id=request.POST.get("selected_year_and_quarter")
+        ).first()
+        or user_evaluations.first()
+    )
 
     context.update(
         {
@@ -43,26 +54,28 @@ def performance_evaluation(request):
         }
     )
 
-    current_evaluation = current_user_evaluation.evaluations.filter(
-        evaluator=current_user
-    ).first()
+    if current_user_evaluation:
 
-    if current_evaluation:
-        context.update(
-            {
-                "current_evaluation": current_evaluation,
-            }
-        )
+        current_evaluation = current_user_evaluation.evaluations.filter(
+            evaluator=current_user
+        ).first()
 
-    if current_evaluation.is_submitted():
-        current_submitted_evaluation_data = (
-            current_user_evaluation.get_questionnaire_content_data_with_self_and_peer_rating_mean()
-        )
-        context.update(
-            {
-                "current_submitted_evaluation_data": current_submitted_evaluation_data,
-            }
-        )
+        if current_evaluation:
+            context.update(
+                {
+                    "current_evaluation": current_evaluation,
+                }
+            )
+
+        if current_evaluation.is_submitted():
+            current_submitted_evaluation_data = (
+                current_user_evaluation.get_questionnaire_content_data_with_self_and_peer_rating_mean()
+            )
+            context.update(
+                {
+                    "current_submitted_evaluation_data": current_submitted_evaluation_data,
+                }
+            )
 
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -86,6 +99,13 @@ def performance_evaluation(request):
 
 def performance_peer_evaluation(request):
     context = {"evaluation_section": "peer"}
+    current_user = request.user
+
+    peer_evaluations = current_user.evaluator_evaluations.exclude(
+        user_evaluation__evaluatee=current_user
+    ).filter(user_evaluation__is_finalized=True)
+
+    context.update({"peer_evaluations": peer_evaluations})
 
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -105,6 +125,13 @@ def performance_peer_evaluation(request):
         return response
 
     return render(request, "performance/performance_management.html", context)
+
+
+def switch_performance_evalution(request):
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        selected_evaluation_url = data.get("selected_evaluation")
+        return HttpResponseClientRedirect(selected_evaluation_url)
 
 
 def submit_evaluation_rating(request):
