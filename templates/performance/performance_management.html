@@ -65,7 +65,7 @@
                         <div id="evluation_content">
                             {% if evaluation_section == "self" %}
                                 <div class="w-full flex flex-col items-center">
-                                    <div class="flex flex-col {% if user_evaluations %}w-auto{% else %}w-full{% endif %}">
+                                    <div class="flex flex-col">
                                         <div class="w-auto max-w-sm mb-2">
                                             <label for="year_and_quarter"
                                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -102,14 +102,14 @@
                                                                 <span class="text-lg p-2 font-medium text-gray-900 dark:text-white">{{ current_evaluation.get_total_answered_questions_count.0 }} | {{ current_evaluation.get_total_answered_questions_count.1 }}</span>
                                                                 {% if current_evaluation.is_all_questions_answered %}
                                                                     <button type="button"
-                                                                            hx-post="{% url "performance:submit_user_evaluation" %}"
+                                                                            hx-post="{% url "performance:submit_self_evaluation" %}"
                                                                             hx-vals='{"current_evaluation": {{ current_evaluation.id }}}'
                                                                             class="w-96 md:w-auto px-5 py-2.5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
                                                                         Submit
                                                                     </button>
                                                                 {% else %}
                                                                     <button type="button"
-                                                                            class="w-96 md:w-auto text-white bg-blue-400 dark:bg-blue-500 cursor-not-allowed font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                                                                            class="w-20 md:w-auto px-auto md:px-5 text-white bg-blue-400 dark:bg-blue-500 cursor-not-allowed font-medium rounded-lg text-sm text-center"
                                                                             disabled>Submit</button>
                                                                 {% endif %}
                                                             {% endif %}
@@ -248,7 +248,7 @@
                                                 </div>
                                             </div>
                                         {% else %}
-                                            <div class="w-[60rem]">
+                                            <div class="w-full lg:w-[60rem]">
                                                 <!-- PLACEHOLDER DIV -->
                                             </div>
                                         {% endif %}

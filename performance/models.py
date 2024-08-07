@@ -66,7 +66,7 @@ class Evaluation(models.Model):
     def is_self_evaluation(self) -> bool:
         return self.evaluator == self.user_evaluation.evaluatee
 
-    def was_modified(self) -> bool:
+    def is_modified(self) -> bool:
         return (
             self.questionnaire.content.get("questionnaire_content") != self.content_data
         )
@@ -126,6 +126,14 @@ class Evaluation(models.Model):
     def revert_submission(self):
         self.date_submitted = None
         self.save()
+
+    def reset_evaluation(self):
+        questionnaire = self.questionnaire
+        questionnaire_content_data = questionnaire.content.get("questionnaire_content")
+        self.content_data = questionnaire_content_data
+        
+        self.revert_submission()
+
 
 
 class UserEvaluation(models.Model):

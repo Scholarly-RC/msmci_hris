@@ -19,6 +19,7 @@ from performance.actions import (
     add_self_evaluation,
     modify_content_data_rating,
     process_evaluator_modification,
+    reset_selected_evaluation,
 )
 from performance.models import Evaluation, Questionnaire, UserEvaluation
 from performance.utils import (
@@ -36,8 +37,9 @@ def performance_management(request):
 def performance_evaluation(request):
     context = {"evaluation_section": "self"}
     current_user = request.user
-    user_evaluations = UserEvaluation.objects.filter(
-        evaluatee=current_user, is_finalized=True
+
+    user_evaluations = current_user.evaluatee_evaluations.filter(
+        is_finalized=True
     ).order_by("-year")
 
     current_user_evaluation = (
@@ -67,15 +69,15 @@ def performance_evaluation(request):
                 }
             )
 
-        if current_evaluation.is_submitted():
-            current_submitted_evaluation_data = (
-                current_user_evaluation.get_questionnaire_content_data_with_self_and_peer_rating_mean()
-            )
-            context.update(
-                {
-                    "current_submitted_evaluation_data": current_submitted_evaluation_data,
-                }
-            )
+            if current_evaluation.is_submitted():
+                current_submitted_evaluation_data = (
+                    current_user_evaluation.get_questionnaire_content_data_with_self_and_peer_rating_mean()
+                )
+                context.update(
+                    {
+                        "current_submitted_evaluation_data": current_submitted_evaluation_data,
+                    }
+                )
 
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -156,14 +158,45 @@ def submit_evaluation_rating(request):
         return response
 
 
-def submit_user_evaluation(request):
+def submit_self_evaluation(request):
+    context = {"evaluation_section": "self"}
+
     if request.htmx and request.method == "POST":
         data = request.POST
         current_evaluation_id = data.get("current_evaluation")
         current_evaluation = Evaluation.objects.get(id=current_evaluation_id)
         current_evaluation.date_submitted = make_aware(datetime.datetime.now())
         current_evaluation.save()
+
+        current_user_evaluation = current_evaluation.user_evaluation
+
+        user_evaluations = (
+            current_user_evaluation.evaluatee.evaluatee_evaluations.filter(
+                is_finalized=True
+            ).order_by("-year")
+        )
+
+        current_submitted_evaluation_data = (
+            current_user_evaluation.get_questionnaire_content_data_with_self_and_peer_rating_mean()
+        )
+
+        context.update(
+            {
+                "user_evaluations": user_evaluations,
+                "current_user_evaluation": current_user_evaluation,
+                "current_evaluation": current_evaluation,
+                "current_submitted_evaluation_data": current_submitted_evaluation_data,
+            }
+        )
+
         response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/performance_management.html",
+            "evaluation_counter_and_submit_section",
+            context,
+        )
+        response = retarget(response, "#evaluation_counter_and_submit_section")
+        response = reswap(response, "outerHTML")
         return response
 
 
@@ -394,5 +427,28 @@ def modify_user_evaluation_evaluators(request, user_evaluation_id):
         )
 
         response = retarget(response, "#modify_user_evaluation_section")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def reset_evaluation(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        selected_evaluation_id = data.get("selected_evaluation")
+
+        selected_evaluation = Evaluation.objects.get(id=selected_evaluation_id)
+
+        reset_selected_evaluation(selected_evaluation)
+
+        context.update({"evaluation": selected_evaluation})
+
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/modify_user_evaluation.html",
+            "evaluation_display",
+            context,
+        )
+
         response = reswap(response, "outerHTML")
         return response

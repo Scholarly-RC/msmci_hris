@@ -71,3 +71,8 @@ def _edit_content_data(current_content_data, domain_number, indicator_number, va
                 if question.get("indicator_number") == indicator_number:
                     question["rating"] = value
     return current_content_data
+
+
+@transaction.atomic
+def reset_selected_evaluation(selected_evaluation):
+    selected_evaluation.reset_evaluation()

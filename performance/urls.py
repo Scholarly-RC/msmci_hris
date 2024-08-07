@@ -16,6 +16,11 @@ urlpatterns = [
         name="finalize_user_evaluation_toggle",
     ),
     path(
+        "user-evaluation-management/modify/reset",
+        performance_views.reset_evaluation,
+        name="reset_evaluation",
+    ),
+    path(
         "user-evaluation-management/modify/<str:pk>/<str:quarter>/<str:year>",
         performance_views.modify_user_evaluation,
         name="modify_user_evaluation",
@@ -32,8 +37,8 @@ urlpatterns = [
     ),
     path(
         "evaluation/submit-user-evaluation",
-        performance_views.submit_user_evaluation,
-        name="submit_user_evaluation",
+        performance_views.submit_self_evaluation,
+        name="submit_self_evaluation",
     ),
     path(
         "evaluation/submit-evaluation-rating",
