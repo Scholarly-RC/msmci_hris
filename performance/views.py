@@ -7,25 +7,28 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.timezone import make_aware
 from django_htmx.http import (
+    HttpResponseClientRedirect,
     push_url,
     reswap,
     retarget,
     trigger_client_event,
-    HttpResponseClientRedirect,
 )
 from render_block import render_block_to_string
 
 from performance.actions import (
     add_self_evaluation,
     modify_content_data_rating,
+    modify_qualitative_content_data,
     process_evaluator_modification,
     reset_selected_evaluation,
 )
 from performance.models import Evaluation, Questionnaire, UserEvaluation
 from performance.utils import (
-    get_existing_evaluators,
+    check_if_user_is_evaluator,
+    get_existing_evaluators_ids,
     get_user_evaluator_choices,
     get_year_and_quarter_from_user_evaluation,
+    redirect_user,
 )
 
 
@@ -99,15 +102,34 @@ def performance_evaluation(request):
     return render(request, "performance/performance_management.html", context)
 
 
-def performance_peer_evaluation(request):
+def performance_peer_evaluation(request, evaluation_id=""):
     context = {"evaluation_section": "peer"}
     current_user = request.user
 
-    peer_evaluations = current_user.evaluator_evaluations.exclude(
-        user_evaluation__evaluatee=current_user
-    ).filter(user_evaluation__is_finalized=True)
+    peer_evaluations = (
+        current_user.evaluator_evaluations.exclude(
+            user_evaluation__evaluatee=current_user
+        )
+        .filter(user_evaluation__is_finalized=True)
+        .order_by("-user_evaluation__year")
+    )
 
-    context.update({"peer_evaluations": peer_evaluations})
+    if evaluation_id:
+        selected_peer_evaluation = Evaluation.objects.filter(id=evaluation_id).first()
+        if not selected_peer_evaluation:
+            return redirect_user(
+                request.htmx, reverse("performance:performance_peer_evaluation")
+            )
+        is_user_evaluator = check_if_user_is_evaluator(
+            selected_peer_evaluation, current_user
+        )
+        if not is_user_evaluator:
+            return redirect_user(
+                request.htmx, reverse("performance:performance_peer_evaluation")
+            )
+        context.update({"selected_peer_evaluation": selected_peer_evaluation})
+    else:
+        context.update({"peer_evaluations": peer_evaluations})
 
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -116,12 +138,22 @@ def performance_peer_evaluation(request):
             "performance_and_learning_management_section",
             context,
         )
-        response = push_url(
-            response,
-            reverse(
-                "performance:performance_peer_evaluation",
-            ),
-        )
+        if evaluation_id:
+            response = push_url(
+                response,
+                reverse(
+                    "performance:selected_performance_peer_evaluation",
+                    kwargs={"evaluation_id": evaluation_id},
+                ),
+            )
+        else:
+            response = push_url(
+                response,
+                reverse(
+                    "performance:performance_peer_evaluation",
+                ),
+            )
+
         response = retarget(response, "#performance_and_learning_management_section")
         response = reswap(response, "outerHTML")
         return response
@@ -136,24 +168,45 @@ def switch_performance_evalution(request):
         return HttpResponseClientRedirect(selected_evaluation_url)
 
 
-def submit_evaluation_rating(request):
+def submit_evaluation_rating(request, for_peer=""):
     context = {}
     if request.htmx and request.method == "POST":
         data = request.POST
-
-        modify_content_data_rating(data)
-
         current_evaluation_id = data.get("current_evaluation")
+
+        if "positive_feedback" in data:
+            current_value = data.get("positive_feedback")
+            modify_qualitative_content_data(
+                current_evaluation_id, "positive_feedback", current_value
+            )
+        elif "improvement_suggestion" in data:
+            current_value = data.get("improvement_suggestion")
+            modify_qualitative_content_data(
+                current_evaluation_id, "improvement_suggestion", current_value
+            )
+        else:
+            modify_content_data_rating(data)
+
         current_evaluation = Evaluation.objects.get(id=current_evaluation_id)
-        context.update({"current_evaluation": current_evaluation})
 
         response = HttpResponse()
-        response.content = render_block_to_string(
-            "performance/performance_management.html",
-            "evaluation_counter_and_submit_section",
-            context,
-        )
-        response = retarget(response, "#evaluation_counter_and_submit_section")
+        if for_peer == "True":
+            context.update({"selected_peer_evaluation": current_evaluation})
+            response.content = render_block_to_string(
+                "performance/performance_management.html",
+                "peer_evaluation_counter_and_submit_section",
+                context,
+            )
+            response = retarget(response, "#peer_evaluation_counter_and_submit_section")
+
+        else:
+            context.update({"current_evaluation": current_evaluation})
+            response.content = render_block_to_string(
+                "performance/performance_management.html",
+                "evaluation_counter_and_submit_section",
+                context,
+            )
+            response = retarget(response, "#evaluation_counter_and_submit_section")
         response = reswap(response, "outerHTML")
         return response
 
@@ -192,12 +245,52 @@ def submit_self_evaluation(request):
         response = HttpResponse()
         response.content = render_block_to_string(
             "performance/performance_management.html",
-            "evaluation_counter_and_submit_section",
+            "performance_and_learning_management_section",
             context,
         )
-        response = retarget(response, "#evaluation_counter_and_submit_section")
+        response = retarget(response, "#performance_and_learning_management_section")
         response = reswap(response, "outerHTML")
         return response
+
+
+def submit_peer_evaluation(request):
+    context = {"evaluation_section": "peer"}
+
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        current_evaluation_id = data.get("current_evaluation")
+        current_evaluation = Evaluation.objects.get(id=current_evaluation_id)
+        current_evaluation.date_submitted = make_aware(datetime.datetime.now())
+        current_evaluation.save()
+
+        current_user = current_evaluation.evaluator
+
+        peer_evaluations = (
+            current_user.evaluator_evaluations.exclude(
+                user_evaluation__evaluatee=current_user
+            )
+            .filter(user_evaluation__is_finalized=True)
+            .order_by("-user_evaluation__year")
+        )
+
+        context.update({"peer_evaluations": peer_evaluations})
+
+        if request.htmx and request.method == "POST":
+            response = HttpResponse()
+            response.content = render_block_to_string(
+                "performance/performance_management.html",
+                "performance_and_learning_management_section",
+                context,
+            )
+            response = push_url(
+                response,
+                reverse("performance:performance_peer_evaluation"),
+            )
+            response = retarget(
+                response, "#performance_and_learning_management_section"
+            )
+            response = reswap(response, "outerHTML")
+            return response
 
 
 def switch_performance_management_section(request):
@@ -287,7 +380,7 @@ def modify_user_evaluation(request, pk, quarter, year=""):
 
     year_and_quarter = get_year_and_quarter_from_user_evaluation(user_evaluation)
 
-    existing_evaluators = get_existing_evaluators(user_evaluation)
+    existing_evaluators = get_existing_evaluators_ids(user_evaluation)
 
     if user_evaluation.is_finalized:
         evaluator_choices = evaluator_choices.filter(id__in=existing_evaluators)
@@ -339,7 +432,7 @@ def finalize_user_evaluation_toggle(request, user_evaluation_id):
 
     year_and_quarter = get_year_and_quarter_from_user_evaluation(user_evaluation)
 
-    existing_evaluators = get_existing_evaluators(user_evaluation)
+    existing_evaluators = get_existing_evaluators_ids(user_evaluation)
 
     if user_evaluation.is_finalized:
         evaluator_choices = evaluator_choices.filter(id__in=existing_evaluators)
@@ -396,7 +489,7 @@ def modify_user_evaluation_evaluators(request, user_evaluation_id):
 
         year_and_quarter = get_year_and_quarter_from_user_evaluation(user_evaluation)
 
-        existing_evaluators = get_existing_evaluators(user_evaluation)
+        existing_evaluators = get_existing_evaluators_ids(user_evaluation)
 
         if user_evaluation.is_finalized:
             evaluator_choices = evaluator_choices.filter(id__in=existing_evaluators)

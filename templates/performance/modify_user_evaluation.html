@@ -216,11 +216,37 @@
                                                     </div>
                                                 </div>
                                             {% endfor %}
-                                            <div class="font-semibold text-gray-900 dark:text-white border-b-2 dark:border-gray-700">
-                                                <div class="py-6 text-center text-lg font-bold">
+                                            <div class="mb-6 font-semibold text-gray-900 dark:text-white dark:border-gray-700">
+                                                <div class="pt-6 text-center text-lg font-bold">
                                                     Overall Mean: <u>{{ evaluation.get_overall_content_data_mean|floatformat:2 }}</u>
                                                 </div>
                                             </div>
+                                            {% if not evaluation.is_self_evaluation %}
+                                                <div class="p-4 mx-4 mt-4">
+                                                    <label for="positive_feedback"
+                                                           class="block text-sm font-medium text-gray-900 dark:text-white">
+                                                        Say something positive about the person.
+                                                    </label>
+                                                    <textarea id="positive_feedback"
+                                                              name="positive_feedback"
+                                                              rows="4"
+                                                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                              placeholder="Write your thoughts here..."
+                                                              readonly>{% if evaluation.positive_feedback %}{{ evaluation.positive_feedback }}{% endif %}</textarea>
+                                                </div>
+                                                <div class="p-4 mb-4 mx-4">
+                                                    <label for="positive_feedback"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Suggestions for improvement.
+                                                    </label>
+                                                    <textarea id="positive_feedback"
+                                                              name="positive_feedback"
+                                                              rows="4"
+                                                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                              placeholder="Write your thoughts here..."
+                                                              readonly>{% if evaluation.improvement_suggestion %}{{ evaluation.improvement_suggestion }}{% endif %}</textarea>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 {% endblock %}

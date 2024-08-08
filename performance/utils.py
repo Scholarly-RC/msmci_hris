@@ -1,4 +1,6 @@
 from django.apps import apps
+from django.shortcuts import redirect
+from django_htmx.http import HttpResponseClientRedirect
 
 from performance.enums import QuestionnaireTypes
 
@@ -28,7 +30,7 @@ def get_user_evaluator_choices(selected_user):
     return evaluator_choices
 
 
-def get_existing_evaluators(user_evaluation):
+def get_existing_evaluators_ids(user_evaluation):
     return user_evaluation.evaluations.exclude(
         evaluator=user_evaluation.evaluatee
     ).values_list("evaluator__id", flat=True)
@@ -68,3 +70,14 @@ def get_list_mean(values_list):
             return int(mean)
         return mean
     return 0
+
+
+def check_if_user_is_evaluator(evaluation, current_user) -> bool:
+    current_user_evaluation = evaluation.user_evaluation
+    return current_user.id in get_existing_evaluators_ids(current_user_evaluation)
+
+
+def redirect_user(is_htmx: bool, redirect_url: str):
+    if is_htmx:
+        return HttpResponseClientRedirect(redirect_url)
+    return redirect(redirect_url)

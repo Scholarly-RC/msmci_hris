@@ -36,9 +36,19 @@ urlpatterns = [
         name="user_evaluation_management",
     ),
     path(
+        "evaluation/submit-user-evaluation/peer",
+        performance_views.submit_peer_evaluation,
+        name="submit_peer_evaluation",
+    ),
+    path(
         "evaluation/submit-user-evaluation",
         performance_views.submit_self_evaluation,
         name="submit_self_evaluation",
+    ),
+    path(
+        "evaluation/submit-evaluation-rating/<str:for_peer>",
+        performance_views.submit_evaluation_rating,
+        name="submit_peer_evaluation_rating",
     ),
     path(
         "evaluation/submit-evaluation-rating",
@@ -49,6 +59,11 @@ urlpatterns = [
         "evaluation/swtich",
         performance_views.switch_performance_evalution,
         name="switch_performance_evalution",
+    ),
+    path(
+        "peer-evaluation/<str:evaluation_id>",
+        performance_views.performance_peer_evaluation,
+        name="selected_performance_peer_evaluation",
     ),
     path(
         "peer-evaluation",

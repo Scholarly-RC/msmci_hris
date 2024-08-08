@@ -2,7 +2,11 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from performance.utils import get_user_questionnaire, get_list_mean, get_question_rating_mean_from_evaluations
+from performance.utils import (
+    get_list_mean,
+    get_question_rating_mean_from_evaluations,
+    get_user_questionnaire,
+)
 
 
 # Create your models here.
@@ -80,9 +84,19 @@ class Evaluation(models.Model):
             for question in domain_questions:
                 if question.get("rating"):
                     answered_question_count += 1
+
+        if not self.is_self_evaluation():
+            question_count += 2
+            if bool(self.positive_feedback and self.positive_feedback.strip()):
+                answered_question_count += 1
+            if bool(
+                self.improvement_suggestion and self.improvement_suggestion.strip()
+            ):
+                answered_question_count += 1
+
         return answered_question_count, question_count
 
-    def is_all_questions_answered(self):
+    def is_all_questions_answered(self) -> bool:
         answered_question_count, question_count = (
             self.get_total_answered_questions_count()
         )
@@ -110,7 +124,7 @@ class Evaluation(models.Model):
             current_mean += current_domain_mean
         overall_mean = current_mean / domain_count
         return overall_mean
-    
+
     def get_specific_rating(self, domain_number: str, indicator_number: str):
         for domain in self.content_data:
             current_domain_number = domain.get("domain_number")
@@ -131,9 +145,10 @@ class Evaluation(models.Model):
         questionnaire = self.questionnaire
         questionnaire_content_data = questionnaire.content.get("questionnaire_content")
         self.content_data = questionnaire_content_data
-        
-        self.revert_submission()
+        self.positive_feedback = None
+        self.improvement_suggestion = None
 
+        self.revert_submission()
 
 
 class UserEvaluation(models.Model):
@@ -170,13 +185,12 @@ class UserEvaluation(models.Model):
     def get_year_and_quarter(self):
         quarter = self.Quarter(self.quarter).name.replace("_", " ")
         return f"{self.year} - {quarter}"
-    
+
     def get_questionnaire_content_data_with_self_and_peer_rating_mean(self):
         questionnaire = get_user_questionnaire(self.evaluatee)
-        questionnaire_content = questionnaire.content.get("questionnaire_content")            
+        questionnaire_content = questionnaire.content.get("questionnaire_content")
         self_evaluation = self.evaluations.filter(evaluator=self.evaluatee)
         peer_evaluations = self.evaluations.exclude(evaluator=self.evaluatee)
-
 
         for domain in questionnaire_content:
             self_eval = []
@@ -185,20 +199,26 @@ class UserEvaluation(models.Model):
             current_questions = domain.get("questions")
             for question in current_questions:
                 current_indicator_number = question.get("indicator_number")
-                question['self_rating'] = get_question_rating_mean_from_evaluations(self_evaluation, current_domain_number, current_indicator_number)
-                self_eval.append(question['self_rating'])
-                question['peer_rating'] = get_question_rating_mean_from_evaluations(peer_evaluations, current_domain_number, current_indicator_number)
-                peer_eval.append(question['peer_rating'])
-                del question['rating']
-            domain['self_rating_mean'] = get_list_mean(self_eval)
-            domain['peer_rating_mean'] = get_list_mean(peer_eval)
+                question["self_rating"] = get_question_rating_mean_from_evaluations(
+                    self_evaluation, current_domain_number, current_indicator_number
+                )
+                self_eval.append(question["self_rating"])
+                question["peer_rating"] = get_question_rating_mean_from_evaluations(
+                    peer_evaluations, current_domain_number, current_indicator_number
+                )
+                peer_eval.append(question["peer_rating"])
+                del question["rating"]
+            domain["self_rating_mean"] = get_list_mean(self_eval)
+            domain["peer_rating_mean"] = get_list_mean(peer_eval)
 
         return questionnaire_content
-    
+
     def get_overall_self_and_peer_rating_mean(self):
         self_eval = []
         peer_eval = []
-        questionnaire_content_data = self.get_questionnaire_content_data_with_self_and_peer_rating_mean()
+        questionnaire_content_data = (
+            self.get_questionnaire_content_data_with_self_and_peer_rating_mean()
+        )
         for data in questionnaire_content_data:
             self_rating_mean = data.get("self_rating_mean")
             peer_rating_mean = data.get("peer_rating_mean")
@@ -208,11 +228,24 @@ class UserEvaluation(models.Model):
         peer_eval_overall_mean = get_list_mean(peer_eval)
 
         return self_eval_overall_mean, peer_eval_overall_mean
-    
+
+    def get_evaluator_comments(self):
+        evaluations = self.evaluations.exclude(evaluator=self.evaluatee)
+        positive_feedback_list = []
+        improvement_suggestion_list = []
+
+        for evaluation in evaluations:
+            if evaluation.positive_feedback:
+                positive_feedback_list.append(evaluation.positive_feedback)
+
+            if evaluation.improvement_suggestion:
+                improvement_suggestion_list.append(evaluation.improvement_suggestion)
+
+        return positive_feedback_list, improvement_suggestion_list
+
     def show_peer_evaluations(self) -> bool:
         peer_evaluations = self.evaluations.exclude(evaluator=self.evaluatee)
         for peer_evaluation in peer_evaluations:
             if not peer_evaluation.is_submitted():
                 return False
         return True
-            

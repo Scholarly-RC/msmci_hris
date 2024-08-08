@@ -74,5 +74,19 @@ def _edit_content_data(current_content_data, domain_number, indicator_number, va
 
 
 @transaction.atomic
+def modify_qualitative_content_data(current_evaluation_id: str, key: str, value: str):
+    evaluation_model = apps.get_model("performance", "Evaluation")
+    current_evaluation = evaluation_model.objects.get(id=current_evaluation_id)
+    value = value.strip()
+
+    if key == "positive_feedback":
+        current_evaluation.positive_feedback = value or None
+    if key == "improvement_suggestion":
+        current_evaluation.improvement_suggestion = value or None
+
+    current_evaluation.save()
+
+
+@transaction.atomic
 def reset_selected_evaluation(selected_evaluation):
     selected_evaluation.reset_evaluation()
