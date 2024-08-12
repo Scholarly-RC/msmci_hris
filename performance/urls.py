@@ -15,6 +15,11 @@ urlpatterns = [
         performance_views.modify_poll_choices,
         name="modify_poll_choices",
     ),
+        path(
+        "polls-management/<str:poll_id>/stats",
+        performance_views.poll_statistics,
+        name="poll_statistics",
+    ),
     path(
         "polls-management/<str:poll_id>",
         performance_views.polls_management,

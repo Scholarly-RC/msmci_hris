@@ -93,9 +93,9 @@ def reset_selected_evaluation(selected_evaluation):
 
 
 @transaction.atomic
-def add_poll_choice(poll, new_item):
+def add_poll_choice(poll, new_item, color):
     data = poll.data
-    data.append({new_item: []})
+    data.append({new_item: {"color": color, "voters": []}})
     poll.save()
 
     return poll

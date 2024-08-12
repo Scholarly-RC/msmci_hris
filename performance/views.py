@@ -600,6 +600,7 @@ def polls_management(request, poll_id=""):
                     "performance:polls_management",
                 ),
             )
+        response = trigger_client_event(response, "showDescriptionPopover", after="swap")
         response = retarget(response, "#polls_management_section")
         response = reswap(response, "outerHTML")
         return response
@@ -607,6 +608,34 @@ def polls_management(request, poll_id=""):
     if poll_id:
         selected_poll = all_polls.get(id=poll_id)
         context.update({"selected_poll": selected_poll})
+
+    return render(request, "performance/polls_management.html", context)
+
+
+def poll_statistics(request, poll_id=""):
+    context = {"show_poll_stats": True}
+    all_polls = Poll.objects.all().order_by("-created")
+    context.update({"all_polls": all_polls})
+
+    selected_poll = all_polls.get(id=poll_id)
+    context.update({"selected_poll": selected_poll})
+
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/polls_management.html",
+            "polls_management_section",
+            context,
+        )
+
+        response = push_url(
+            response,
+            reverse("performance:poll_statistics", kwargs={"poll_id": poll_id}),
+        )
+        response = trigger_client_event(response, "showStatGraph", after="swap")
+        response = retarget(response, "#polls_management_section")
+        response = reswap(response, "outerHTML")
+        return response
 
     return render(request, "performance/polls_management.html", context)
 
@@ -628,6 +657,8 @@ def modify_poll_choices(request, poll_id=""):
             updated_poll = remove_poll_choice(current_poll, item_to_remove)
         else:
             new_item = data.get("new_added_item", "")
+            poll_choice_color = data.get("poll_choice_color", "")
+
             if not new_item or new_item.strip() == "":
                 context.update(
                     {"add_poll_item_error_message": "Poll item could mot be blank."}
@@ -648,7 +679,7 @@ def modify_poll_choices(request, poll_id=""):
                 response = retarget(response, "#new_item_error_display_section")
                 return response
 
-            updated_poll = add_poll_choice(current_poll, new_item)
+            updated_poll = add_poll_choice(current_poll, new_item, poll_choice_color)
 
         context.update({"selected_poll": updated_poll})
 
