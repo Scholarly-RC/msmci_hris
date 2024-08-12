@@ -314,31 +314,29 @@
             }
         }
 
-        const initializeChart = () => {
+        const initializeStatsChart = () => {
             const chartElement = document.getElementById("donut-chart");
             if (chartElement && typeof ApexCharts !== 'undefined') {
                 // Destroy the existing chart instance if it exists
                 if (chartInstance) {
                     chartInstance.destroy();
                 }
-                // Create and render a new chart instance
                 chartInstance = new ApexCharts(chartElement, getChartOptions());
                 chartInstance.render();
             }
         }
 
-        // Call initializeChart whenever HTMX replaces content
         document.addEventListener('showStatGraph', (event) => {
-            initializeChart();
+            initializeStatsChart();
         });
 
-        // Initial chart render if the chart element is already in the DOM
         document.addEventListener('DOMContentLoaded', () => {
-            initializeChart();
+            initializeStatsChart();
         });
     </script>
     <script>
-        function initializePopovers() {
+        function initializeDescriptionPopovers() {
+            // Destroy the existing chart instance if it exists
             if (chartInstance) {
                 chartInstance.destroy();
             }
@@ -366,12 +364,12 @@
             });
         }
 
-        // Re-initialize popovers after HTMX swaps
         document.addEventListener('showDescriptionPopover', function(event) {
-            initializePopovers();
+            initializeDescriptionPopovers();
         });
+
         document.addEventListener('DOMContentLoaded', () => {
-            initializePopovers();
+            initializeDescriptionPopovers();
         });
     </script>
 {% endblock %}
