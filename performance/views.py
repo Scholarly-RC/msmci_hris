@@ -21,14 +21,17 @@ from performance.actions import (
     modify_qualitative_content_data,
     process_evaluator_modification,
     reset_selected_evaluation,
+    add_poll_choice,
+    remove_poll_choice,
 )
-from performance.models import Evaluation, Questionnaire, UserEvaluation
+from performance.models import Evaluation, UserEvaluation, Poll
 from performance.utils import (
     check_if_user_is_evaluator,
     get_existing_evaluators_ids,
     get_user_evaluator_choices,
     get_year_and_quarter_from_user_evaluation,
     redirect_user,
+    check_item_already_exists_on_poll_choices,
 )
 
 
@@ -294,8 +297,10 @@ def submit_peer_evaluation(request):
 
 
 def switch_performance_management_section(request):
-    if request.htmx:
-        breakpoint()
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        selected_evaluation_url = data.get("section")
+        return HttpResponseClientRedirect(selected_evaluation_url)
 
 
 def user_evaluation_management(request, year=""):
@@ -543,5 +548,158 @@ def reset_evaluation(request):
             context,
         )
 
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def polls_management(request, poll_id=""):
+    context = {}
+    all_polls = Poll.objects.all().order_by("-created")
+    context.update({"all_polls": all_polls})
+
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        poll_name = data.get("poll_name", "").strip()
+        poll_description = data.get("poll_description", "").strip()
+        current_poll = None
+
+        if poll_id:
+            current_poll = Poll.objects.get(id=poll_id)
+            if not "for_redirect" in data:
+                if poll_name:
+                    current_poll.name = poll_name
+                current_poll.description = poll_description
+                current_poll.save()
+        else:
+            if not "for_redirect" in data:
+                current_poll = Poll.objects.create(
+                    name=poll_name, description=poll_description
+                )
+
+        if current_poll:
+            context.update({"selected_poll": current_poll})
+
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/polls_management.html",
+            "polls_management_section",
+            context,
+        )
+        if current_poll:
+            response = push_url(
+                response,
+                reverse(
+                    "performance:polls_management_with_selected_poll",
+                    kwargs={"poll_id": current_poll.id},
+                ),
+            )
+        else:
+            response = push_url(
+                response,
+                reverse(
+                    "performance:polls_management",
+                ),
+            )
+        response = retarget(response, "#polls_management_section")
+        response = reswap(response, "outerHTML")
+        return response
+
+    if poll_id:
+        selected_poll = all_polls.get(id=poll_id)
+        context.update({"selected_poll": selected_poll})
+
+    return render(request, "performance/polls_management.html", context)
+
+
+def modify_poll_choices(request, poll_id=""):
+    context = {}
+    all_polls = Poll.objects.all().order_by("-created")
+    context.update({"all_polls": all_polls})
+    current_poll = all_polls.get(id=poll_id)
+
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        item_to_remove = data.get("item_to_remove", "")
+
+        response = HttpResponse()
+        response = reswap(response, "outerHTML")
+
+        if item_to_remove:
+            updated_poll = remove_poll_choice(current_poll, item_to_remove)
+        else:
+            new_item = data.get("new_added_item", "")
+            if not new_item or new_item.strip() == "":
+                context.update(
+                    {"add_poll_item_error_message": "Poll item could mot be blank."}
+                )
+            item_exists = check_item_already_exists_on_poll_choices(
+                current_poll, new_item
+            )
+            if item_exists:
+                context.update(
+                    {"add_poll_item_error_message": "Poll item already added."}
+                )
+            if "add_poll_item_error_message" in context:
+                response.content = render_block_to_string(
+                    "performance/polls_management.html",
+                    "new_item_error_display_section",
+                    context,
+                )
+                response = retarget(response, "#new_item_error_display_section")
+                return response
+
+            updated_poll = add_poll_choice(current_poll, new_item)
+
+        context.update({"selected_poll": updated_poll})
+
+        response.content = render_block_to_string(
+            "performance/polls_management.html",
+            "polls_management_section",
+            context,
+        )
+        response = retarget(response, "#polls_management_section")
+        return response
+
+
+def delete_selected_poll(request, poll_id=""):
+    context = {}
+    all_polls = Poll.objects.all().order_by("-created")
+    context.update({"all_polls": all_polls})
+    current_poll = all_polls.get(id=poll_id)
+
+    if request.htmx and request.method == "DELETE":
+        current_poll.delete()
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/polls_management.html",
+            "polls_management_section",
+            context,
+        )
+        response = push_url(
+            response,
+            reverse(
+                "performance:polls_management",
+            ),
+        )
+        response = retarget(response, "#polls_management_section")
+        response = reswap(response, "outerHTML")
+        return response
+
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        cancel_delete = "cancel_delete" in data
+        context.update(
+            {
+                "for_delete_confirmation": not cancel_delete,
+                "selected_poll": current_poll,
+            }
+        )
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/polls_management.html",
+            "delete_poll_confirmation_section",
+            context,
+        )
+        response = retarget(response, "#delete_poll_confirmation_section")
         response = reswap(response, "outerHTML")
         return response

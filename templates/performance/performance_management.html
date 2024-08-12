@@ -114,7 +114,7 @@
                                                                             <tbody>
                                                                                 {% for question in content.questions %}
                                                                                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                                                                        <th scope="row" class="px-6 py- ">{{ question.indicator_number }}</th>
+                                                                                        <th scope="row" class="px-6 py-4">{{ question.indicator_number }}</th>
                                                                                         <td class="px-6 py-4">{{ question.indicator }}</td>
                                                                                         <td class="px-6 py-4 text-center">{{ question.self_rating }}</td>
                                                                                         <td class="px-6 py-4 text-center">{{ question.peer_rating|floatformat:2 }}</td>
@@ -277,7 +277,7 @@
                                                                     </button>
                                                                 {% else %}
                                                                     <button type="button"
-                                                                            class="w-20 md:w-auto px-auto md:px-5 text-white bg-blue-400 dark:bg-blue-500 cursor-not-allowed font-medium rounded-lg text-sm text-center"
+                                                                            class="w-20 md:w-auto min-h-10 px-auto md:px-5 text-white bg-blue-400 dark:bg-blue-500 cursor-not-allowed font-medium rounded-lg text-sm text-center"
                                                                             disabled>Submit</button>
                                                                 {% endif %}
                                                             </div>

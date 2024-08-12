@@ -90,3 +90,22 @@ def modify_qualitative_content_data(current_evaluation_id: str, key: str, value:
 @transaction.atomic
 def reset_selected_evaluation(selected_evaluation):
     selected_evaluation.reset_evaluation()
+
+
+@transaction.atomic
+def add_poll_choice(poll, new_item):
+    data = poll.data
+    data.append({new_item: []})
+    poll.save()
+
+    return poll
+
+
+@transaction.atomic
+def remove_poll_choice(poll, item_index_to_remove):
+    data = poll.data
+    item_index_to_remove = int(item_index_to_remove)
+    data.pop(item_index_to_remove)
+    poll.save()
+
+    return poll

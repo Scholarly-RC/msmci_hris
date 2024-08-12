@@ -6,6 +6,31 @@ from performance import views as performance_views
 
 urlpatterns = [
     path(
+        "polls-management/<str:poll_id>/delete",
+        performance_views.delete_selected_poll,
+        name="delete_selected_poll",
+    ),
+    path(
+        "polls-management/<str:poll_id>/add-choice",
+        performance_views.modify_poll_choices,
+        name="modify_poll_choices",
+    ),
+    path(
+        "polls-management/<str:poll_id>",
+        performance_views.polls_management,
+        name="polls_management_with_selected_poll",
+    ),
+    path(
+        "polls-management",
+        performance_views.polls_management,
+        name="polls_management",
+    ),
+    # path(
+    #     "polls",
+    #     performance_views.polls_management,
+    #     name="polls_management",
+    # ),
+    path(
         "user-evaluation-management/<str:user_evaluation_id>/modify-evaluator",
         performance_views.modify_user_evaluation_evaluators,
         name="modify_user_evaluation_evaluators",

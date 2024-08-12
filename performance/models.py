@@ -249,3 +249,35 @@ class UserEvaluation(models.Model):
             if not peer_evaluation.is_submitted():
                 return False
         return True
+
+
+class Poll(models.Model):
+    name = models.CharField(
+        _("Poll Name"),
+        max_length=500,
+        null=True,
+        blank=True,
+    )
+
+    description = models.TextField(
+        _("Poll Description"),
+        null=True,
+        blank=True,
+    )
+
+    data = models.JSONField(_("Poll Data"), null=True, blank=True, default=list)
+
+    in_progress = models.BooleanField(_("Is Poll In Progress"), default=True)
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Polls"
+
+    def __str__(self):
+        return f"{self.name} - {"IN-PROGRESS" if self.in_progress else "ENDED"}"
+    
+
+    def get_number_of_choices(self) -> int:
+        return len(self.data)

@@ -81,3 +81,8 @@ def redirect_user(is_htmx: bool, redirect_url: str):
     if is_htmx:
         return HttpResponseClientRedirect(redirect_url)
     return redirect(redirect_url)
+
+
+def check_item_already_exists_on_poll_choices(poll, item) -> bool:
+    data = poll.data
+    return any(item in d for d in data)
