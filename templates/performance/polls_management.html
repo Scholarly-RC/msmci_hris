@@ -317,16 +317,16 @@
         const initializeStatsChart = () => {
             const chartElement = document.getElementById("donut-chart");
             if (chartElement && typeof ApexCharts !== 'undefined') {
-                // Destroy the existing chart instance if it exists
-                if (chartInstance) {
-                    chartInstance.destroy();
-                }
                 chartInstance = new ApexCharts(chartElement, getChartOptions());
                 chartInstance.render();
             }
         }
 
         document.addEventListener('showStatGraph', (event) => {
+            // Destroy the existing chart instance if it exists
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
             initializeStatsChart();
         });
 
@@ -336,10 +336,6 @@
     </script>
     <script>
         function initializeDescriptionPopovers() {
-            // Destroy the existing chart instance if it exists
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
             const targets = document.querySelectorAll('[data-popover-target]');
             const contents = document.querySelectorAll('[data-popover]');
 
@@ -365,6 +361,10 @@
         }
 
         document.addEventListener('showDescriptionPopover', function(event) {
+            // Destroy the existing chart instance if it exists
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
             initializeDescriptionPopovers();
         });
 
