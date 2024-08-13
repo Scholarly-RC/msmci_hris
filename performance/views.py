@@ -16,22 +16,22 @@ from django_htmx.http import (
 from render_block import render_block_to_string
 
 from performance.actions import (
+    add_poll_choice,
     add_self_evaluation,
     modify_content_data_rating,
     modify_qualitative_content_data,
     process_evaluator_modification,
-    reset_selected_evaluation,
-    add_poll_choice,
     remove_poll_choice,
+    reset_selected_evaluation,
 )
-from performance.models import Evaluation, UserEvaluation, Poll
+from performance.models import Evaluation, Poll, UserEvaluation
 from performance.utils import (
     check_if_user_is_evaluator,
+    check_item_already_exists_on_poll_choices,
     get_existing_evaluators_ids,
     get_user_evaluator_choices,
     get_year_and_quarter_from_user_evaluation,
     redirect_user,
-    check_item_already_exists_on_poll_choices,
 )
 
 
@@ -552,7 +552,11 @@ def reset_evaluation(request):
         return response
 
 
-def polls_management(request, poll_id=""):
+def poll_section(request):
+    pass
+
+
+def poll_management(request, poll_id=""):
     context = {}
     all_polls = Poll.objects.all().order_by("-created")
     context.update({"all_polls": all_polls})
@@ -581,8 +585,8 @@ def polls_management(request, poll_id=""):
 
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/polls_management.html",
-            "polls_management_section",
+            "performance/poll_management.html",
+            "poll_management_section",
             context,
         )
         if current_poll:
@@ -597,11 +601,13 @@ def polls_management(request, poll_id=""):
             response = push_url(
                 response,
                 reverse(
-                    "performance:polls_management",
+                    "performance:poll_management",
                 ),
             )
-        response = trigger_client_event(response, "showDescriptionPopover", after="swap")
-        response = retarget(response, "#polls_management_section")
+        response = trigger_client_event(
+            response, "showDescriptionPopover", {"ROMAN": "ROMAN"}, after="swap"
+        )
+        response = retarget(response, "#poll_management_section")
         response = reswap(response, "outerHTML")
         return response
 
@@ -609,7 +615,7 @@ def polls_management(request, poll_id=""):
         selected_poll = all_polls.get(id=poll_id)
         context.update({"selected_poll": selected_poll})
 
-    return render(request, "performance/polls_management.html", context)
+    return render(request, "performance/poll_management.html", context)
 
 
 def poll_statistics(request, poll_id=""):
@@ -623,8 +629,8 @@ def poll_statistics(request, poll_id=""):
     if request.htmx and request.method == "POST":
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/polls_management.html",
-            "polls_management_section",
+            "performance/poll_management.html",
+            "poll_management_section",
             context,
         )
 
@@ -633,11 +639,11 @@ def poll_statistics(request, poll_id=""):
             reverse("performance:poll_statistics", kwargs={"poll_id": poll_id}),
         )
         response = trigger_client_event(response, "showStatGraph", after="swap")
-        response = retarget(response, "#polls_management_section")
+        response = retarget(response, "#poll_management_section")
         response = reswap(response, "outerHTML")
         return response
 
-    return render(request, "performance/polls_management.html", context)
+    return render(request, "performance/poll_management.html", context)
 
 
 def modify_poll_choices(request, poll_id=""):
@@ -672,7 +678,7 @@ def modify_poll_choices(request, poll_id=""):
                 )
             if "add_poll_item_error_message" in context:
                 response.content = render_block_to_string(
-                    "performance/polls_management.html",
+                    "performance/poll_management.html",
                     "new_item_error_display_section",
                     context,
                 )
@@ -684,11 +690,11 @@ def modify_poll_choices(request, poll_id=""):
         context.update({"selected_poll": updated_poll})
 
         response.content = render_block_to_string(
-            "performance/polls_management.html",
-            "polls_management_section",
+            "performance/poll_management.html",
+            "poll_management_section",
             context,
         )
-        response = retarget(response, "#polls_management_section")
+        response = retarget(response, "#poll_management")
         return response
 
 
@@ -702,17 +708,17 @@ def delete_selected_poll(request, poll_id=""):
         current_poll.delete()
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/polls_management.html",
-            "polls_management_section",
+            "performance/poll_management.html",
+            "poll_management_section",
             context,
         )
         response = push_url(
             response,
             reverse(
-                "performance:polls_management",
+                "performance:poll_management",
             ),
         )
-        response = retarget(response, "#polls_management_section")
+        response = retarget(response, "#poll_management_section")
         response = reswap(response, "outerHTML")
         return response
 
@@ -727,10 +733,30 @@ def delete_selected_poll(request, poll_id=""):
         )
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/polls_management.html",
+            "performance/poll_management.html",
             "delete_poll_confirmation_section",
             context,
         )
         response = retarget(response, "#delete_poll_confirmation_section")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def toggle_poll_status(request, poll_id=""):
+    context = {}
+
+    if request.htmx and request.method == "POST":
+        poll = Poll.objects.get(id=poll_id)
+        poll.in_progress = not poll.in_progress
+        poll.save()
+
+        context.update({"selected_poll": poll})
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/poll_management.html",
+            "modify_poll_section",
+            context,
+        )
+        response = retarget(response, "#modify_poll_section")
         response = reswap(response, "outerHTML")
         return response

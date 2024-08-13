@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from performance.models import Evaluation, Questionnaire, UserEvaluation, Poll
+from performance.models import Evaluation, Poll, Questionnaire, UserEvaluation
 
 admin.site.register(Questionnaire)
 admin.site.register(Evaluation)

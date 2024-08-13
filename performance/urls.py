@@ -15,26 +15,31 @@ urlpatterns = [
         performance_views.modify_poll_choices,
         name="modify_poll_choices",
     ),
-        path(
+    path(
+        "polls-management/<str:poll_id>/toggle-status",
+        performance_views.toggle_poll_status,
+        name="toggle_poll_status",
+    ),
+    path(
         "polls-management/<str:poll_id>/stats",
         performance_views.poll_statistics,
         name="poll_statistics",
     ),
     path(
         "polls-management/<str:poll_id>",
-        performance_views.polls_management,
+        performance_views.poll_management,
         name="polls_management_with_selected_poll",
     ),
     path(
         "polls-management",
-        performance_views.polls_management,
-        name="polls_management",
+        performance_views.poll_management,
+        name="poll_management",
     ),
-    # path(
-    #     "polls",
-    #     performance_views.polls_management,
-    #     name="polls_management",
-    # ),
+    path(
+        "polls",
+        performance_views.poll_section,
+        name="poll_section",
+    ),
     path(
         "user-evaluation-management/<str:user_evaluation_id>/modify-evaluator",
         performance_views.modify_user_evaluation_evaluators,

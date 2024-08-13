@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -277,7 +279,25 @@ class Poll(models.Model):
 
     def __str__(self):
         return f"{self.name} - {"IN-PROGRESS" if self.in_progress else "ENDED"}"
-    
 
     def get_number_of_choices(self) -> int:
         return len(self.data)
+
+    def get_stats_for_donut_chart(self):
+        labels = []
+        counts = []
+        colors = []
+
+        for data_item in self.data:
+            key = next(iter(data_item))
+            value = data_item[key]
+
+            labels.append(str(key))
+            counts.append(len(value.get("voters", [])))
+            colors.append(str(value.get("color")))
+
+        stats = {"labels": labels, "counts": counts, "colors": colors}
+
+        json_stats = json.dumps(stats)
+
+        return json_stats
