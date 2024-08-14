@@ -109,3 +109,16 @@ def remove_poll_choice(poll, item_index_to_remove):
     poll.save()
 
     return poll
+
+
+@transaction.atomic
+def submit_poll_choice(poll, choice_index, user):
+    data = poll.data
+    choice_index = int(choice_index)
+    selected_choice = data[choice_index]
+
+    for key, value in selected_choice.items():
+        voters = value.get("voters")
+        voters.append(user.id)
+    poll.save()
+    return poll

@@ -107,7 +107,7 @@
                                                            required
                                                            pattern="^(?!\s*$).+"
                                                            title="This field is required"
-                                                           {% if not selected_poll.in_progress %}readonly{% endif %} />
+                                                           {% if selected_poll and not selected_poll.in_progress %}readonly{% endif %} />
                                                 </div>
                                                 <div class="mb-5">
                                                     <label for="poll_description"
@@ -120,7 +120,7 @@
                                                               class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                               {% if selected_poll %} hx-post="{% url "performance:polls_management_with_selected_poll" selected_poll.id %}" hx-trigger="input changed delay:500ms" {% endif %}
                                                               placeholder="Enter poll description... (Optional)"
-                                                              {% if not selected_poll.in_progress %} readonly {% endif %}>{{ selected_poll.description }}</textarea>
+                                                              {% if selected_poll and not selected_poll.in_progress %}readonly{% endif %}>{{ selected_poll.description }}</textarea>
                                                 </div>
                                                 {% if selected_poll %}
                                                     {% for poll_data in selected_poll.data %}

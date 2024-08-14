@@ -36,7 +36,27 @@ urlpatterns = [
         name="poll_management",
     ),
     path(
-        "polls",
+        "poll/<str:poll_id>/view-result",
+        performance_views.view_poll_result,
+        name="view_poll_result",
+    ),
+    path(
+        "poll/<str:poll_id>/submit-vote",
+        performance_views.submit_poll_vote,
+        name="submit_poll_vote",
+    ),
+    path(
+        "poll/close-content-modal",
+        performance_views.close_content_modal,
+        name="close_content_modal",
+    ),
+    path(
+        "poll/<str:content_id>",
+        performance_views.select_poll_content,
+        name="select_poll_content",
+    ),
+    path(
+        "poll",
         performance_views.poll_section,
         name="poll_section",
     ),

@@ -23,12 +23,15 @@ from performance.actions import (
     process_evaluator_modification,
     remove_poll_choice,
     reset_selected_evaluation,
+    submit_poll_choice,
 )
 from performance.models import Evaluation, Poll, UserEvaluation
 from performance.utils import (
+    check_if_user_already_voted,
     check_if_user_is_evaluator,
     check_item_already_exists_on_poll_choices,
     get_existing_evaluators_ids,
+    get_polls_by_date,
     get_user_evaluator_choices,
     get_year_and_quarter_from_user_evaluation,
     redirect_user,
@@ -553,7 +556,81 @@ def reset_evaluation(request):
 
 
 def poll_section(request):
-    pass
+    context = {}
+    polls = get_polls_by_date()
+    context.update({"polls": polls})
+    return render(request, "performance/poll_section.html", context)
+
+
+def select_poll_content(request, content_id=""):
+    context = {}
+    user = request.user
+    poll = Poll.objects.get(id=content_id)
+    user_already_voted = check_if_user_already_voted(poll, user)
+    context.update(
+        {
+            "selected_poll": poll,
+            "user_already_voted": user_already_voted,
+        }
+    )
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/poll_section.html",
+            "poll_static_modal_content",
+            context,
+        )
+        response = trigger_client_event(response, "selectPollContent", after="swap")
+        response = retarget(response, "#poll_static_modal_content")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def close_content_modal(request):
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response = trigger_client_event(response, "closePollContent", after="swap")
+        return response
+
+
+def submit_poll_vote(request, poll_id=""):
+    context = {}
+    user = request.user
+    poll = Poll.objects.get(id=poll_id)
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        choice = data.get("selected_choice")
+        poll = submit_poll_choice(poll, choice, user)
+        user_already_voted = check_if_user_already_voted(poll, user)
+        context.update(
+            {"selected_poll": poll, "user_already_voted": user_already_voted}
+        )
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/poll_section.html",
+            "poll_static_modal_content",
+            context,
+        )
+        response = retarget(response, "#poll_static_modal_content")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def view_poll_result(request, poll_id=""):
+    context = {}
+    poll = Poll.objects.get(id=poll_id)
+    if request.htmx and request.method == "POST":
+        context.update({"selected_poll": poll, "show_poll_result": True})
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/poll_section.html",
+            "poll_static_modal_content",
+            context,
+        )
+        response = trigger_client_event(response, "showPollResult", after="swap")
+        response = retarget(response, "#poll_static_modal_content")
+        response = reswap(response, "outerHTML")
+        return response
 
 
 def poll_management(request, poll_id=""):

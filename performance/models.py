@@ -269,6 +269,10 @@ class Poll(models.Model):
 
     data = models.JSONField(_("Poll Data"), null=True, blank=True, default=list)
 
+    multiple_selection = models.BooleanField(
+        _("Allow Multiple Poll Selection"), default=False
+    )
+
     in_progress = models.BooleanField(_("Is Poll In Progress"), default=True)
 
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
@@ -282,6 +286,17 @@ class Poll(models.Model):
 
     def get_number_of_choices(self) -> int:
         return len(self.data)
+
+    def get_choices(self):
+        poll_stats = self.get_stats_for_donut_chart()
+        poll_stats = json.loads(poll_stats)
+        choices = poll_stats.get("labels", [])
+        return choices
+
+    def has_choices(self):
+        choices = self.get_choices()
+        choices_count = len(choices)
+        return choices_count > 0
 
     def get_stats_for_donut_chart(self):
         labels = []

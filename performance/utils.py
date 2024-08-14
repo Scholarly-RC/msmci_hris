@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.apps import apps
 from django.shortcuts import redirect
 from django_htmx.http import HttpResponseClientRedirect
@@ -86,3 +88,27 @@ def redirect_user(is_htmx: bool, redirect_url: str):
 def check_item_already_exists_on_poll_choices(poll, item) -> bool:
     data = poll.data
     return any(item in d for d in data)
+
+
+def get_polls_by_date(date=""):
+    poll_model = apps.get_model("performance", "Poll")
+
+    polls = poll_model.objects.all().order_by("-created")
+
+    polls_by_date = defaultdict(list)
+
+    for poll in polls:
+        polls_by_date[poll.created.date()].append(poll)
+
+    result = [{"date": date, "polls": polls} for date, polls in polls_by_date.items()]
+
+    return result
+
+
+def check_if_user_already_voted(poll, user) -> bool:
+    data = poll.data
+    for choice in data:
+        for key, value in choice.items():
+            if user.id in value.get("voters"):
+                return True
+    return False
