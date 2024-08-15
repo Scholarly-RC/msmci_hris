@@ -10,4 +10,5 @@ urlpatterns = [
         include("performance.urls", namespace="performance"),
     ),
     path("", include("core.urls", namespace="core")),
+    path("prose/", include("prose.urls")),
 ]

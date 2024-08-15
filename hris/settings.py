@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "attendance",
     "chat",
     "performance",
+    "prose",
 ]
 
 MIDDLEWARE = [
