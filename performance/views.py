@@ -557,8 +557,39 @@ def reset_evaluation(request):
 
 def poll_section(request):
     context = {}
-    polls = get_polls_by_date()
-    context.update({"polls": polls})
+    date_filter = request.POST.get("date_filter") or request.GET.get("date_filter")
+    filters = request.POST.getlist("filter") or request.GET.getlist("filter")
+    polls = get_polls_by_date(date_filter)
+    context.update({"polls": polls, "filters": filters, "date_filter": date_filter})
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/poll_section.html",
+            "poll_section",
+            context,
+        )
+
+        filter_str = ""
+        if filters:
+            filter_str = f"?filter={"&filter=".join(filters)}"
+
+        if date_filter:
+            filter_str += (
+                f"&date={date_filter}" if filter_str else f"?date={date_filter}"
+            )
+
+        response = push_url(
+            response,
+            reverse(
+                "performance:poll_section",
+            )
+            + filter_str,
+        )
+        response = retarget(response, "#poll_section")
+        response = reswap(response, "outerHTML")
+        return response
+
     return render(request, "performance/poll_section.html", context)
 
 

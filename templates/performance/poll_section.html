@@ -4,21 +4,24 @@
     <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
         <div class="w-full relative px-2 lg:px-10">
             <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3 mt-10">Poll Section</h1>
-            {% block polls_section %}
-                <div id="polls_section"
+            {% block poll_section %}
+                <div id="poll_section"
                      class="w-full min-h-[45rem] flex flex-col gap-6 p-4 mb-10 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                    <div class="w-full flex flex-row">
-                        <div class="w-full max-w-sm p-5 border border-gray-100 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+                    <div class="w-full flex flex-col md:flex-row gap-5">
+                        <form hx-post="{% url "performance:poll_section" %}"
+                              class="w-full max-w-sm p-5 border border-gray-100 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
                             <div>
                                 <h3 class="mb-4 font-semibold text-gray-900 dark:text-white">Filter</h3>
                                 <ul class="w-48 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                                     <li class="w-full border-b border-gray-200 rounded-t-lg dark:border-gray-600">
                                         <div class="flex items-center ps-3">
-                                            <input id="vue-checkbox"
+                                            <input id="poll_filter"
+                                                   name="filter"
                                                    type="checkbox"
-                                                   value=""
-                                                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
-                                            <label for="vue-checkbox"
+                                                   value="poll"
+                                                   {% if "poll" in filters %}checked{% endif %}
+                                                   class="choice-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                                            <label for="poll_filter"
                                                    class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
                                                 Poll
                                             </label>
@@ -26,11 +29,13 @@
                                     </li>
                                     <li class="w-full border-b border-gray-200 rounded-t-lg dark:border-gray-600">
                                         <div class="flex items-center ps-3">
-                                            <input id="react-checkbox"
+                                            <input id="post_filter"
+                                                   name="filter"
                                                    type="checkbox"
-                                                   value=""
-                                                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
-                                            <label for="react-checkbox"
+                                                   value="post"
+                                                   {% if "post" in filters %}checked{% endif %}
+                                                   class="choice-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                                            <label for="post_filter"
                                                    class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
                                                 Post
                                             </label>
@@ -38,13 +43,15 @@
                                     </li>
                                     <li class="w-full border-b border-gray-200 rounded-t-lg dark:border-gray-600">
                                         <div class="flex items-center ps-3">
-                                            <input id="laravel-checkbox"
+                                            <input id="important_filter"
+                                                   name="filter"
                                                    type="checkbox"
-                                                   value=""
-                                                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
-                                            <label for="laravel-checkbox"
+                                                   value="important"
+                                                   {% if "important" in filters %}checked{% endif %}
+                                                   class="choice-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                                            <label for="important_filter"
                                                    class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                                Pinned
+                                                Important
                                             </label>
                                         </div>
                                     </li>
@@ -60,17 +67,29 @@
                                         <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
                                     </svg>
                                 </div>
-                                <input id="datepicker-actions"
+                                <input id="date_filter"
+                                       name="date_filter"
                                        datepicker
                                        datepicker-autohide
                                        datepicker-buttons
                                        datepicker-autoselect-today
+                                       hx-post="{% url "performance:poll_section" %}"
+                                       hx-trigger="input changed delay:200ms"
+                                       hx-include=".choice-checkbox"
                                        type="text"
+                                       value="{% if date_filter %}{{ date_filter }}{% endif %}"
                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                       placeholder="Select date">
+                                       placeholder="Select date"
+                                       autocomplete="off">
                             </div>
-                        </div>
-                        <div class="w-full h-[42rem] overflow-y-auto px-2">
+                            <div class="mt-2">
+                                <button type="submit"
+                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                    Filter
+                                </button>
+                            </div>
+                        </form>
+                        <div class="w-full h-[42rem] overflow-y-auto md:px-2">
                             {% for poll_data in polls %}
                                 <div class="p-5 mb-4 border border-gray-100 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
                                     <time class="text-lg font-semibold text-gray-900 dark:text-white">{{ poll_data.date }}</time>
@@ -209,6 +228,38 @@
 </div>
 {% endblock %}
 {% block javascript %}
+    <script>
+        const options = {
+            autohide: true,
+            format: 'mm/dd/yyyy',
+            maxDate: null,
+            minDate: null,
+            orientation: 'bottom',
+            buttons: true,
+            autoSelectToday: true,
+            title: null,
+            rangePicker: false,
+            onShow: () => {},
+            onHide: () => {},
+        };
+
+        const instanceOptions = {
+            id: 'date_filter',
+            override: true
+        };
+
+        const initializeDatePicker = () => {
+            const $datepickerElement = document.getElementById('date_filter');
+
+            if ($datepickerElement) {
+                const datepicker = new Datepicker($datepickerElement, options, instanceOptions);
+            }
+        }
+
+        document.body.addEventListener("htmx:afterSwap", (event) => {
+            initializeDatePicker();
+        });
+    </script>
     <script>
         const initializeContentModal = () => {
             const modalElement = document.getElementById('static_content_modal');

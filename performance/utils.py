@@ -1,3 +1,4 @@
+import datetime
 from collections import defaultdict
 
 from django.apps import apps
@@ -94,6 +95,10 @@ def get_polls_by_date(date=""):
     poll_model = apps.get_model("performance", "Poll")
 
     polls = poll_model.objects.all().order_by("-created")
+
+    if date:
+        date = datetime.datetime.strptime(date, "%m/%d/%Y").date()
+        polls = polls.filter(created__date=date)
 
     polls_by_date = defaultdict(list)
 
