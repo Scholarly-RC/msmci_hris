@@ -1,5 +1,7 @@
 import datetime
 from collections import defaultdict
+from itertools import chain
+from operator import attrgetter
 
 from django.apps import apps
 from django.shortcuts import redirect
@@ -91,21 +93,29 @@ def check_item_already_exists_on_poll_choices(poll, item) -> bool:
     return any(item in d for d in data)
 
 
-def get_polls_by_date(date=""):
+def get_polls_and_posts_by_date(date=""):
     poll_model = apps.get_model("performance", "Poll")
+    post_model = apps.get_model("performance", "Post")
 
     polls = poll_model.objects.all().order_by("-created")
+    posts = post_model.objects.all().order_by("-created")
 
     if date:
         date = datetime.datetime.strptime(date, "%m/%d/%Y").date()
         polls = polls.filter(created__date=date)
+        posts = posts.filter(created__date=date)
 
-    polls_by_date = defaultdict(list)
+    polls_and_post_by_date = defaultdict(list)
 
     for poll in polls:
-        polls_by_date[poll.created.date()].append(poll)
+        polls_and_post_by_date[poll.created.date()].append(poll)
+    for post in posts:
+        polls_and_post_by_date[post.created.date()].append(post)
 
-    result = [{"date": date, "polls": polls} for date, polls in polls_by_date.items()]
+    result = [
+        {"date": date, "polls_and_posts": polls_and_posts}
+        for date, polls_and_posts in polls_and_post_by_date.items()
+    ]
 
     return result
 
@@ -117,3 +127,18 @@ def check_if_user_already_voted(poll, user) -> bool:
             if user.id in value.get("voters"):
                 return True
     return False
+
+
+def get_poll_and_post_combined_list():
+    poll_model = apps.get_model("performance", "Poll")
+    post_model = apps.get_model("performance", "Post")
+
+    all_polls = poll_model.objects.all().order_by("-created")
+    all_posts = post_model.objects.all().order_by("-created")
+
+    combined_list = list(chain(all_polls, all_posts))
+    sorted_combined_list = sorted(
+        combined_list, key=attrgetter("created"), reverse=True
+    )
+
+    return sorted_combined_list

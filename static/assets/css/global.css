@@ -1,3 +1,137 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.dark .django-prose-editor-container {
+  background-color: #1a202c;
+  color: #e2e8f0;
+}
+
+.dark .django-prose-editor {
+  background-color: #2d3748;
+  color: #e2e8f0;
+}
+
+.dark .trix-button {
+  background-color: #4a5568;
+  color: #edf2f7;
+}
+
+.dark .trix-toolbar {
+  background-color: #2d3748;
+}
+
+.django-prose-editor ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+}
+
+.django-prose-editor ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+}
+
+.dark .django-prose-editor ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  color: #e2e8f0;
+}
+
+.dark .django-prose-editor ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  color: #e2e8f0;
+}
+
+.django-prose-editor pre {
+  background-color: #f5f5f5;
+  color: #333;
+  padding: 1em;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: monospace;
+  white-space: pre-wrap;
+}
+
+.dark .django-prose-editor pre {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 1em;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: monospace;
+  white-space: pre-wrap;
+}
+
+.django-prose-editor a {
+  color: #1d4ed8;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.django-prose-editor a:hover,
+.django-prose-editor a:focus {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.dark .django-prose-editor a {
+  color: #4f9dff;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.dark .django-prose-editor a:hover,
+.dark .django-prose-editor a:focus {
+  color: #80aaff;
+  text-decoration: underline;
+}
+
+.dark .trix-dialogs {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.dark .trix-dialog {
+  background-color: #1a202c;
+  color: #e2e8f0;
+}
+
+.dark .trix-input {
+  background-color: #2d3748;
+  color: #edf2f7;
+  border: 1px solid #4a5568;
+  border-radius: 4px;
+  padding: 0.75em;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dark .trix-button-group {
+  display: flex;
+}
+
+.dark .trix-button-group input {
+  background-color: #2b6cb0;
+  color: #169ffa;
+  cursor: pointer;
+}
+
+.dark .trix-button-group input:hover,
+.dark .trix-button-group input:focus {
+  background-color: #2b6cb0;
+}
+
+.dark .trix-button-group input:disabled {
+  background-color: #4a5568;
+  color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.dark .trix-input--dialog.trix-validate:invalid {
+  color: #3f3f3f;
+}
+
+.dark .trix-input--dialog:focus {
+  border-color: #63b3ed;
+  outline: none;
+}

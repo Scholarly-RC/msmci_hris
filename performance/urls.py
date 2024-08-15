@@ -6,34 +6,49 @@ from performance import views as performance_views
 
 urlpatterns = [
     path(
-        "polls-management/<str:poll_id>/delete",
+        "post-management/<str:post_id>/delete",
+        performance_views.delete_selected_post,
+        name="delete_selected_post",
+    ),
+    path(
+        "poll-management/<str:poll_id>/delete",
         performance_views.delete_selected_poll,
         name="delete_selected_poll",
     ),
     path(
-        "polls-management/<str:poll_id>/add-choice",
+        "poll-management/<str:poll_id>/add-choice",
         performance_views.modify_poll_choices,
         name="modify_poll_choices",
     ),
     path(
-        "polls-management/<str:poll_id>/toggle-status",
+        "poll-management/<str:poll_id>/toggle-status",
         performance_views.toggle_poll_status,
         name="toggle_poll_status",
     ),
     path(
-        "polls-management/<str:poll_id>/stats",
+        "poll-management/<str:poll_id>/stats",
         performance_views.poll_statistics,
         name="poll_statistics",
     ),
     path(
-        "polls-management/<str:poll_id>",
+        "poll-management/<str:poll_id>",
         performance_views.poll_management,
-        name="polls_management_with_selected_poll",
+        name="poll_management_with_selected_poll",
     ),
     path(
-        "polls-management",
+        "poll-management",
         performance_views.poll_management,
         name="poll_management",
+    ),
+    path(
+        "post-management/<str:post_id>",
+        performance_views.post_management,
+        name="post_management_with_selected_poll",
+    ),
+    path(
+        "post-management",
+        performance_views.post_management,
+        name="post_management",
     ),
     path(
         "poll/<str:poll_id>/view-result",

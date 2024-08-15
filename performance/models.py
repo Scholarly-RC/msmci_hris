@@ -10,6 +10,8 @@ from performance.utils import (
     get_user_questionnaire,
 )
 
+from prose.fields import RichTextField
+from prose.models import AbstractDocument
 
 # Create your models here.
 class Questionnaire(models.Model):
@@ -316,3 +318,54 @@ class Poll(models.Model):
         json_stats = json.dumps(stats)
 
         return json_stats
+    
+    def is_poll(self):
+        return True
+
+class PostContent(AbstractDocument):
+    pass
+    class Meta:
+        verbose_name_plural = "Post Contents"
+
+    def __str__(self):
+        return f"Content of Post #{self.post.id}"
+
+
+
+class Post(models.Model):
+    title = models.CharField(
+        _("Post Title"),
+        max_length=500,
+        null=True,
+        blank=True,
+    )
+
+    description = models.TextField(
+        _("Post Description"),
+        null=True,
+        blank=True,
+    )
+
+    content = RichTextField(null=True, blank=True)
+
+    body = models.OneToOneField(PostContent, on_delete=models.CASCADE, null=True, blank=True)
+
+    is_active = models.BooleanField(_("Is Post Active"), default=True)
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Posts"
+
+    def __str__(self):
+        return f"{self.title}"
+    
+    def is_post(self):
+        return True
+
+
+
+
+
+
