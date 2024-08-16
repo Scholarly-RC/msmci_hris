@@ -845,8 +845,6 @@ def poll_statistics(request, poll_id=""):
 
 def modify_poll_choices(request, poll_id=""):
     context = {}
-    sorted_combined_list = get_poll_and_post_combined_list()
-    context.update({"sorted_combined_list": sorted_combined_list})
     current_poll = Poll.objects.get(id=poll_id)
 
     if request.htmx and request.method == "POST":
@@ -884,7 +882,13 @@ def modify_poll_choices(request, poll_id=""):
 
             updated_poll = add_poll_choice(current_poll, new_item, poll_choice_color)
 
-        context.update({"selected_poll": updated_poll})
+        sorted_combined_list = get_poll_and_post_combined_list()
+        context.update(
+            {
+                "sorted_combined_list": sorted_combined_list,
+                "selected_poll": updated_poll,
+            }
+        )
 
         response.content = render_block_to_string(
             "performance/poll_and_post_management.html",
