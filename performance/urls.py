@@ -51,29 +51,29 @@ urlpatterns = [
         name="post_management",
     ),
     path(
-        "poll/<str:poll_id>/view-result",
+        "poll-and-post/poll/<str:poll_id>/view-result",
         performance_views.view_poll_result,
         name="view_poll_result",
     ),
     path(
-        "poll/<str:poll_id>/submit-vote",
+        "poll-and-post/poll/<str:poll_id>/submit-vote",
         performance_views.submit_poll_vote,
         name="submit_poll_vote",
     ),
     path(
-        "poll/close-content-modal",
+        "poll-and-post/close-content-modal",
         performance_views.close_content_modal,
         name="close_content_modal",
     ),
     path(
-        "poll/<str:content_id>",
+        "poll-and-post/poll/<str:content_id>",
         performance_views.select_poll_content,
         name="select_poll_content",
     ),
     path(
-        "poll",
-        performance_views.poll_section,
-        name="poll_section",
+        "poll-and-post",
+        performance_views.poll_and_post_section,
+        name="poll_and_post_section",
     ),
     path(
         "user-evaluation-management/<str:user_evaluation_id>/modify-evaluator",

@@ -559,7 +559,7 @@ def reset_evaluation(request):
         return response
 
 
-def poll_section(request):
+def poll_and_post_section(request):
     context = {}
     date_filter = request.POST.get("date_filter") or request.GET.get("date_filter")
     filters = request.POST.getlist("filter") or request.GET.getlist("filter")
@@ -569,8 +569,8 @@ def poll_section(request):
         data = request.POST
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/poll_section.html",
-            "poll_section",
+            "performance/poll_and_post_section.html",
+            "poll_and_post_section",
             context,
         )
 
@@ -586,15 +586,15 @@ def poll_section(request):
         response = push_url(
             response,
             reverse(
-                "performance:poll_section",
+                "performance:poll_and_post_section",
             )
             + filter_str,
         )
-        response = retarget(response, "#poll_section")
+        response = retarget(response, "#poll_and_post_section")
         response = reswap(response, "outerHTML")
         return response
 
-    return render(request, "performance/poll_section.html", context)
+    return render(request, "performance/poll_and_post_section.html", context)
 
 
 def select_poll_content(request, content_id=""):
@@ -611,12 +611,12 @@ def select_poll_content(request, content_id=""):
     if request.htmx and request.method == "POST":
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/poll_section.html",
-            "poll_static_modal_content",
+            "performance/poll_and_post_section.html",
+            "poll_and_post_static_modal_content",
             context,
         )
         response = trigger_client_event(response, "selectPollContent", after="swap")
-        response = retarget(response, "#poll_static_modal_content")
+        response = retarget(response, "#poll_and_post_static_modal_content")
         response = reswap(response, "outerHTML")
         return response
 
@@ -642,11 +642,11 @@ def submit_poll_vote(request, poll_id=""):
         )
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/poll_section.html",
-            "poll_static_modal_content",
+            "performance/poll_and_post_section.html",
+            "poll_and_post_static_modal_content",
             context,
         )
-        response = retarget(response, "#poll_static_modal_content")
+        response = retarget(response, "#poll_and_post_static_modal_content")
         response = reswap(response, "outerHTML")
         return response
 
@@ -658,12 +658,12 @@ def view_poll_result(request, poll_id=""):
         context.update({"selected_poll": poll, "show_poll_result": True})
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/poll_section.html",
-            "poll_static_modal_content",
+            "performance/poll_and_post_section.html",
+            "poll_and_post_static_modal_content",
             context,
         )
         response = trigger_client_event(response, "showPollResult", after="swap")
-        response = retarget(response, "#poll_static_modal_content")
+        response = retarget(response, "#poll_and_post_static_modal_content")
         response = reswap(response, "outerHTML")
         return response
 
