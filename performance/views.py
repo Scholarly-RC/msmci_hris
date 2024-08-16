@@ -27,20 +27,20 @@ from performance.actions import (
     reset_selected_evaluation,
     submit_poll_choice,
 )
-from performance.models import Evaluation, Poll, UserEvaluation, Post, PostContent
+from performance.forms import PostContentForm, PostForm
+from performance.models import Evaluation, Poll, Post, PostContent, UserEvaluation
 from performance.utils import (
     check_if_user_already_voted,
     check_if_user_is_evaluator,
     check_item_already_exists_on_poll_choices,
     get_existing_evaluators_ids,
+    get_poll_and_post_combined_list,
     get_polls_and_posts_by_date,
     get_user_evaluator_choices,
     get_year_and_quarter_from_user_evaluation,
     redirect_user,
-    get_poll_and_post_combined_list
 )
 
-from performance.forms import PostForm, PostContentForm
 
 # Create your views here.
 def performance_management(request):
@@ -700,7 +700,7 @@ def poll_management(request, poll_id=""):
 
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/poll_management.html",
+            "performance/poll_and_post_management.html",
             "poll_management_section",
             context,
         )
@@ -730,7 +730,7 @@ def poll_management(request, poll_id=""):
         selected_poll = Poll.objects.get(id=poll_id)
         context.update({"selected_poll": selected_poll})
 
-    return render(request, "performance/poll_management.html", context)
+    return render(request, "performance/poll_and_post_management.html", context)
 
 
 def post_management(request, post_id=""):
@@ -758,7 +758,9 @@ def post_management(request, post_id=""):
         else:
             if not "for_redirect" in data:
                 current_post = Post.objects.create(
-                    title=post_title, description=post_description, body=PostContent.objects.create()
+                    title=post_title,
+                    description=post_description,
+                    body=PostContent.objects.create(),
                 )
 
         sorted_combined_list = get_poll_and_post_combined_list()
@@ -766,14 +768,19 @@ def post_management(request, post_id=""):
 
         if current_post:
             current_content_form = PostContentForm(instance=current_post.body)
-            context.update({"selected_post": current_post, "current_content_form": current_content_form})
+            context.update(
+                {
+                    "selected_post": current_post,
+                    "current_content_form": current_content_form,
+                }
+            )
 
         response = HttpResponse()
         response.content = render_block_to_string(
-                "performance/poll_management.html",
-                "poll_management_section",
-                context,
-            )
+            "performance/poll_and_post_management.html",
+            "poll_management_section",
+            context,
+        )
         if current_post:
             response = push_url(
                 response,
@@ -784,26 +791,29 @@ def post_management(request, post_id=""):
             )
         else:
             response = push_url(
-                    response,
-                    reverse(
-                        "performance:post_management",
-                    ),
-
-                )
+                response,
+                reverse(
+                    "performance:post_management",
+                ),
+            )
         response = trigger_client_event(
             response, "showDescriptionPopover", after="swap"
         )
         response = retarget(response, "#poll_management_section")
         response = reswap(response, "outerHTML")
         return response
-    
+
     if post_id:
         selected_post = Post.objects.get(id=post_id)
         current_content_form = PostContentForm(instance=selected_post.body)
-        context.update({"selected_post": selected_post, "current_content_form": current_content_form})
+        context.update(
+            {
+                "selected_post": selected_post,
+                "current_content_form": current_content_form,
+            }
+        )
 
-    return render(request, "performance/poll_management.html", context)
-
+    return render(request, "performance/poll_and_post_management.html", context)
 
 
 def poll_statistics(request, poll_id=""):
@@ -816,7 +826,7 @@ def poll_statistics(request, poll_id=""):
     if request.htmx and request.method == "POST":
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/poll_management.html",
+            "performance/poll_and_post_management.html",
             "poll_management_section",
             context,
         )
@@ -830,7 +840,7 @@ def poll_statistics(request, poll_id=""):
         response = reswap(response, "outerHTML")
         return response
 
-    return render(request, "performance/poll_management.html", context)
+    return render(request, "performance/poll_and_post_management.html", context)
 
 
 def modify_poll_choices(request, poll_id=""):
@@ -865,7 +875,7 @@ def modify_poll_choices(request, poll_id=""):
                 )
             if "add_poll_item_error_message" in context:
                 response.content = render_block_to_string(
-                    "performance/poll_management.html",
+                    "performance/poll_and_post_management.html",
                     "new_item_error_display_section",
                     context,
                 )
@@ -877,7 +887,7 @@ def modify_poll_choices(request, poll_id=""):
         context.update({"selected_poll": updated_poll})
 
         response.content = render_block_to_string(
-            "performance/poll_management.html",
+            "performance/poll_and_post_management.html",
             "poll_management_section",
             context,
         )
@@ -896,7 +906,7 @@ def delete_selected_poll(request, poll_id=""):
         context.update({"sorted_combined_list": sorted_combined_list})
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/poll_management.html",
+            "performance/poll_and_post_management.html",
             "poll_management_section",
             context,
         )
@@ -921,14 +931,15 @@ def delete_selected_poll(request, poll_id=""):
         )
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/poll_management.html",
+            "performance/poll_and_post_management.html",
             "delete_poll_confirmation_section",
             context,
         )
         response = retarget(response, "#delete_poll_confirmation_section")
         response = reswap(response, "outerHTML")
         return response
-    
+
+
 def delete_selected_post(request, post_id=""):
     context = {}
     current_post = Post.objects.get(id=post_id)
@@ -941,7 +952,7 @@ def delete_selected_post(request, post_id=""):
 
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/poll_management.html",
+            "performance/poll_and_post_management.html",
             "poll_management_section",
             context,
         )
@@ -966,7 +977,7 @@ def delete_selected_post(request, post_id=""):
         )
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/poll_management.html",
+            "performance/poll_and_post_management.html",
             "delete_post_confirmation_section",
             context,
         )
@@ -986,7 +997,7 @@ def toggle_poll_status(request, poll_id=""):
         context.update({"selected_poll": poll})
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/poll_management.html",
+            "performance/poll_and_post_management.html",
             "modify_poll_section",
             context,
         )

@@ -3,10 +3,10 @@ from django.contrib import admin
 from performance.models import (
     Evaluation,
     Poll,
-    Questionnaire,
-    UserEvaluation,
     Post,
     PostContent,
+    Questionnaire,
+    UserEvaluation,
 )
 
 admin.site.register(Questionnaire)
