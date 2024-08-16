@@ -564,9 +564,10 @@ def poll_and_post_section(request):
     date_filter = request.POST.get("date_filter") or request.GET.get("date_filter")
     filters = request.POST.getlist("filter") or request.GET.getlist("filter")
     polls = get_polls_and_posts_by_date(date_filter)
-    context.update({"polls": polls, "filters": filters, "date_filter": date_filter})
+    context.update(
+        {"polls_and_posts": polls, "filters": filters, "date_filter": date_filter}
+    )
     if request.htmx and request.method == "POST":
-        data = request.POST
         response = HttpResponse()
         response.content = render_block_to_string(
             "performance/poll_and_post_section.html",
