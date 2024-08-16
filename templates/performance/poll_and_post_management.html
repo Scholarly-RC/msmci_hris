@@ -23,7 +23,7 @@
                                     Create New Poll
                                 </button>
                             </div>
-                            {% for poll_or_post in sorted_combined_list %}
+                            {% for poll_or_post in poll_and_post_combined_list %}
                                 <div class="flex flex-col sm:flex-row justify-between h-auto w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                                     <div class="relative inline-block max-w-lg">
                                         <h5 {% if poll_or_post.description %}data-popover-target="popover-{{ poll_or_post.id }}" data-popover-placement="top"{% endif %}

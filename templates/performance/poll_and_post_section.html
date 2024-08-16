@@ -8,7 +8,7 @@
                 <div id="poll_and_post_section"
                      class="w-full min-h-[45rem] flex flex-col gap-6 p-4 mb-10 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                     <div class="w-full flex flex-col md:flex-row gap-5">
-                        <form hx-post="{% url "performance:poll_section" %}"
+                        <form hx-post="{% url "performance:poll_and_post_section" %}"
                               class="w-full max-w-sm p-5 border border-gray-100 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
                             <div>
                                 <h3 class="mb-4 font-semibold text-gray-900 dark:text-white">Filter</h3>
@@ -73,7 +73,7 @@
                                        datepicker-autohide
                                        datepicker-buttons
                                        datepicker-autoselect-today
-                                       hx-post="{% url "performance:poll_section" %}"
+                                       hx-post="{% url "performance:poll_and_post_section" %}"
                                        hx-trigger="input changed delay:200ms"
                                        hx-include=".choice-checkbox"
                                        type="text"

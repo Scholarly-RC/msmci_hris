@@ -670,8 +670,8 @@ def view_poll_result(request, poll_id=""):
 
 def poll_management(request, poll_id=""):
     context = {}
-    sorted_combined_list = get_poll_and_post_combined_list()
-    context.update({"sorted_combined_list": sorted_combined_list})
+    poll_and_post_combined_list = get_poll_and_post_combined_list()
+    context.update({"poll_and_post_combined_list": poll_and_post_combined_list})
 
     if request.htmx and request.method == "POST":
         data = request.POST
@@ -692,8 +692,8 @@ def poll_management(request, poll_id=""):
                     name=poll_name, description=poll_description
                 )
 
-        sorted_combined_list = get_poll_and_post_combined_list()
-        context.update({"sorted_combined_list": sorted_combined_list})
+        poll_and_post_combined_list = get_poll_and_post_combined_list()
+        context.update({"poll_and_post_combined_list": poll_and_post_combined_list})
 
         if current_poll:
             context.update({"selected_poll": current_poll})
@@ -735,8 +735,10 @@ def poll_management(request, poll_id=""):
 
 def post_management(request, post_id=""):
     context = {}
-    sorted_combined_list = get_poll_and_post_combined_list()
-    context.update({"for_post": True, "sorted_combined_list": sorted_combined_list})
+    poll_and_post_combined_list = get_poll_and_post_combined_list()
+    context.update(
+        {"for_post": True, "poll_and_post_combined_list": poll_and_post_combined_list}
+    )
 
     if request.htmx and request.method == "POST":
         data = request.POST
@@ -763,8 +765,8 @@ def post_management(request, post_id=""):
                     body=PostContent.objects.create(),
                 )
 
-        sorted_combined_list = get_poll_and_post_combined_list()
-        context.update({"sorted_combined_list": sorted_combined_list})
+        poll_and_post_combined_list = get_poll_and_post_combined_list()
+        context.update({"poll_and_post_combined_list": poll_and_post_combined_list})
 
         if current_post:
             current_content_form = PostContentForm(instance=current_post.body)
@@ -818,8 +820,8 @@ def post_management(request, post_id=""):
 
 def poll_statistics(request, poll_id=""):
     context = {"show_poll_stats": True}
-    sorted_combined_list = get_poll_and_post_combined_list()
-    context.update({"sorted_combined_list": sorted_combined_list})
+    poll_and_post_combined_list = get_poll_and_post_combined_list()
+    context.update({"poll_and_post_combined_list": poll_and_post_combined_list})
     selected_poll = Poll.objects.get(id=poll_id)
     context.update({"selected_poll": selected_poll})
 
@@ -882,10 +884,10 @@ def modify_poll_choices(request, poll_id=""):
 
             updated_poll = add_poll_choice(current_poll, new_item, poll_choice_color)
 
-        sorted_combined_list = get_poll_and_post_combined_list()
+        poll_and_post_combined_list = get_poll_and_post_combined_list()
         context.update(
             {
-                "sorted_combined_list": sorted_combined_list,
+                "poll_and_post_combined_list": poll_and_post_combined_list,
                 "selected_poll": updated_poll,
             }
         )
@@ -906,8 +908,8 @@ def delete_selected_poll(request, poll_id=""):
     if request.htmx and request.method == "DELETE":
         current_poll.body.delete()
         current_poll.delete()
-        sorted_combined_list = get_poll_and_post_combined_list()
-        context.update({"sorted_combined_list": sorted_combined_list})
+        poll_and_post_combined_list = get_poll_and_post_combined_list()
+        context.update({"poll_and_post_combined_list": poll_and_post_combined_list})
         response = HttpResponse()
         response.content = render_block_to_string(
             "performance/poll_and_post_management.html",
@@ -951,8 +953,8 @@ def delete_selected_post(request, post_id=""):
     if request.htmx and request.method == "DELETE":
         current_post.body.delete()
         current_post.delete()
-        sorted_combined_list = get_poll_and_post_combined_list()
-        context.update({"sorted_combined_list": sorted_combined_list})
+        poll_and_post_combined_list = get_poll_and_post_combined_list()
+        context.update({"poll_and_post_combined_list": poll_and_post_combined_list})
 
         response = HttpResponse()
         response.content = render_block_to_string(
