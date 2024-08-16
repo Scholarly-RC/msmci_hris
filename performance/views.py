@@ -35,7 +35,7 @@ from performance.utils import (
     check_item_already_exists_on_poll_choices,
     get_existing_evaluators_ids,
     get_poll_and_post_combined_list,
-    get_polls_and_posts_by_date,
+    get_polls_and_posts_by_date_and_filter,
     get_user_evaluator_choices,
     get_year_and_quarter_from_user_evaluation,
     redirect_user,
@@ -563,7 +563,7 @@ def poll_and_post_section(request):
     context = {}
     date_filter = request.POST.get("date_filter") or request.GET.get("date_filter")
     filters = request.POST.getlist("filter") or request.GET.getlist("filter")
-    polls = get_polls_and_posts_by_date(date_filter)
+    polls = get_polls_and_posts_by_date_and_filter(date_filter, filters)
     context.update(
         {"polls_and_posts": polls, "filters": filters, "date_filter": date_filter}
     )
@@ -616,7 +616,33 @@ def select_poll_content(request, content_id=""):
             "poll_and_post_static_modal_content",
             context,
         )
-        response = trigger_client_event(response, "selectPollContent", after="swap")
+        response = trigger_client_event(
+            response, "selectPollOrPostContent", after="swap"
+        )
+        response = retarget(response, "#poll_and_post_static_modal_content")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def select_post_content(request, content_id=""):
+    context = {}
+    user = request.user
+    post = Post.objects.get(id=content_id)
+    context.update(
+        {
+            "selected_post": post,
+        }
+    )
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/poll_and_post_section.html",
+            "poll_and_post_static_modal_content",
+            context,
+        )
+        response = trigger_client_event(
+            response, "selectPollOrPostContent", after="swap"
+        )
         response = retarget(response, "#poll_and_post_static_modal_content")
         response = reswap(response, "outerHTML")
         return response
@@ -907,7 +933,6 @@ def delete_selected_poll(request, poll_id=""):
     current_poll = Poll.objects.get(id=poll_id)
 
     if request.htmx and request.method == "DELETE":
-        current_poll.body.delete()
         current_poll.delete()
         poll_and_post_combined_list = get_poll_and_post_combined_list()
         context.update({"poll_and_post_combined_list": poll_and_post_combined_list})
@@ -948,7 +973,7 @@ def delete_selected_poll(request, poll_id=""):
 
 
 def delete_selected_post(request, post_id=""):
-    context = {}
+    context = {"for_post": True}
     current_post = Post.objects.get(id=post_id)
 
     if request.htmx and request.method == "DELETE":

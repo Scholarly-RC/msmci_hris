@@ -139,29 +139,47 @@ def check_item_already_exists_on_poll_choices(poll, item) -> bool:
     return any(item in d for d in data)
 
 
-def get_polls_and_posts_by_date(date=""):
+def get_polls_and_posts_by_date_and_filter(date="", filters=[]):
     """
-    Gets polls and posts from the database, optionally filtered by a specific date.
-    Returns a list of dates with their corresponding polls and posts, sorted by date.
+    Fetches polls and posts from the database, with optional filtering by date and type.
+    Returns a list of dates with their corresponding polls and posts, sorted by date and creation time.
     """
-
     poll_model = apps.get_model("performance", "Poll")
     post_model = apps.get_model("performance", "Post")
 
-    polls = poll_model.objects.all().order_by("-created")
-    posts = post_model.objects.all().order_by("-created")
+    if not filters:
+        show_poll = True
+        show_post = True
+    else:
+        show_poll = "poll" in filters
+        show_post = "post" in filters
+
+    polls = (
+        poll_model.objects.all().order_by("-created")
+        if show_poll
+        else poll_model.objects.none()
+    )
+    posts = (
+        post_model.objects.all().order_by("-created")
+        if show_post
+        else post_model.objects.none()
+    )
 
     if date:
         date = datetime.datetime.strptime(date, "%m/%d/%Y").date()
-        polls = polls.filter(created__date=date)
-        posts = posts.filter(created__date=date)
+        if polls:
+            polls = polls.filter(created__date=date)
+        if posts:
+            posts = posts.filter(created__date=date)
 
     polls_and_post_by_date = defaultdict(list)
 
-    for poll in polls:
-        polls_and_post_by_date[poll.created.date()].append(poll)
-    for post in posts:
-        polls_and_post_by_date[post.created.date()].append(post)
+    if polls:
+        for poll in polls:
+            polls_and_post_by_date[poll.created.date()].append(poll)
+    if posts:
+        for post in posts:
+            polls_and_post_by_date[post.created.date()].append(post)
 
     result = []
 

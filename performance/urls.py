@@ -66,6 +66,11 @@ urlpatterns = [
         name="close_content_modal",
     ),
     path(
+        "poll-and-post/post/<str:content_id>",
+        performance_views.select_post_content,
+        name="select_post_content",
+    ),
+    path(
         "poll-and-post/poll/<str:content_id>",
         performance_views.select_poll_content,
         name="select_poll_content",
