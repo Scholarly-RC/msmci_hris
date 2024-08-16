@@ -138,3 +138,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
 BIOMETRIC_DEVICE_IP = os.getenv("BIOMETRIC_DEVICE_IP")
+
+PROSE_ATTACHMENT_ALLOWED_FILE_SIZE = 15  # In megabytes

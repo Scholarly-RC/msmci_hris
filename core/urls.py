@@ -1,7 +1,4 @@
-from django.conf import settings
-from django.conf.urls.static import static
-from django.contrib import admin
-from django.urls import include, path
+from django.urls import path
 
 from core import views as core_views
 
@@ -50,4 +47,4 @@ urlpatterns = [
         name="bulk_add_new_users",
     ),
     path("user-management", core_views.user_management, name="user_management"),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
