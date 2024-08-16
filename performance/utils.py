@@ -11,6 +11,11 @@ from performance.enums import QuestionnaireTypes
 
 
 def get_year_and_quarter_from_user_evaluation(user_evaluation):
+    """
+    Extracts and formats the year and quarter from a user evaluation.
+    Returns a string in the format "Year - Quarter".
+    """
+
     user_evaluation_model = apps.get_model("performance", "UserEvaluation")
 
     selected_quarter = user_evaluation_model.Quarter(
@@ -23,6 +28,11 @@ def get_year_and_quarter_from_user_evaluation(user_evaluation):
 
 
 def get_user_evaluator_choices(selected_user):
+    """
+    Retrieves a list of active users from the same department as the selected user,
+    excluding the selected user themselves. The list is ordered by user role and first name.
+    """
+
     user_model = apps.get_model("auth", "User")
     evaluator_choices = (
         user_model.objects.filter(
@@ -36,12 +46,22 @@ def get_user_evaluator_choices(selected_user):
 
 
 def get_existing_evaluators_ids(user_evaluation):
+    """
+    Retrieves a list of evaluator IDs from the user evaluations, excluding the evaluatee's ID.
+    """
+
     return user_evaluation.evaluations.exclude(
         evaluator=user_evaluation.evaluatee
     ).values_list("evaluator__id", flat=True)
 
 
 def get_user_questionnaire(user):
+    """
+    Retrieves the appropriate questionnaire for the user based on their employment status.
+    Returns the questionnaire with the code 'NEPET' if the user is an employee,
+    otherwise returns the questionnaire with the code 'NAPES'.
+    """
+
     questionaire_model = apps.get_model("performance", "Questionnaire")
 
     is_evaluatee_employee = user.userdetails.is_employee()
@@ -58,6 +78,11 @@ def get_user_questionnaire(user):
 def get_question_rating_mean_from_evaluations(
     evalutaions, domain_number: str, indicator_number: str
 ):
+    """
+    Calculates the mean rating for a specific domain and indicator from a list of evaluations.
+    Returns the mean rating based on the collected ratings.
+    """
+
     current_ratings = []
     for evaluation in evalutaions:
         rating = evaluation.get_specific_rating(domain_number, indicator_number)
@@ -69,6 +94,12 @@ def get_question_rating_mean_from_evaluations(
 
 
 def get_list_mean(values_list):
+    """
+    Calculates the mean of a list of numbers.
+    Returns an integer if the mean is a whole number, otherwise returns a float.
+    Returns 0 if the list is empty.
+    """
+
     if values_list:
         mean = sum(values_list) / len(values_list)
         if mean.is_integer():
@@ -78,22 +109,42 @@ def get_list_mean(values_list):
 
 
 def check_if_user_is_evaluator(evaluation, current_user) -> bool:
+    """
+    Checks if the current user is an evaluator for the given evaluation.
+    Returns True if the user is an evaluator, otherwise False.
+    """
+
     current_user_evaluation = evaluation.user_evaluation
     return current_user.id in get_existing_evaluators_ids(current_user_evaluation)
 
 
 def redirect_user(is_htmx: bool, redirect_url: str):
+    """
+    Redirects the user based on whether the request is made with HTMX.
+    Uses `HttpResponseClientRedirect` for HTMX requests and `redirect` for others.
+    """
+
     if is_htmx:
         return HttpResponseClientRedirect(redirect_url)
     return redirect(redirect_url)
 
 
 def check_item_already_exists_on_poll_choices(poll, item) -> bool:
+    """
+    Checks if the specified item already exists in the poll's choices.
+    Returns True if the item is found, otherwise False.
+    """
+
     data = poll.data
     return any(item in d for d in data)
 
 
 def get_polls_and_posts_by_date(date=""):
+    """
+    Gets polls and posts from the database, optionally filtered by a specific date.
+    Returns a list of dates with their corresponding polls and posts, sorted by date.
+    """
+
     poll_model = apps.get_model("performance", "Poll")
     post_model = apps.get_model("performance", "Post")
 
@@ -112,15 +163,22 @@ def get_polls_and_posts_by_date(date=""):
     for post in posts:
         polls_and_post_by_date[post.created.date()].append(post)
 
-    result = [
-        {"date": date, "polls_and_posts": polls_and_posts}
-        for date, polls_and_posts in polls_and_post_by_date.items()
-    ]
+    result = []
+
+    for date, polls_and_posts in polls_and_post_by_date.items():
+        polls_and_posts.sort(key=lambda item: item.created, reverse=True)
+        result.append({"date": date, "polls_and_posts": polls_and_posts})
+
+    result.sort(key=lambda item: item["date"], reverse=True)
 
     return result
 
 
 def check_if_user_already_voted(poll, user) -> bool:
+    """
+    Checks if the specified user has already voted in the given poll.
+    Returns True if the user has voted, otherwise False.
+    """
     data = poll.data
     for choice in data:
         for key, value in choice.items():
@@ -130,6 +188,11 @@ def check_if_user_already_voted(poll, user) -> bool:
 
 
 def get_poll_and_post_combined_list():
+    """
+    Retrieves all polls and posts from the database, combines them into a single list,
+    and sorts them by creation date in descending order.
+    """
+
     poll_model = apps.get_model("performance", "Poll")
     post_model = apps.get_model("performance", "Post")
 
