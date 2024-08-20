@@ -26,7 +26,7 @@
             Sections Menu
         </h5>
     </div>
-    <div class="grid grid-cols-3 gap-4 p-4 lg:grid-cols-4">
+    <div class="grid grid-cols-3 gap-4 p-4 lg:grid-cols-3">
         <button type="button"
                 hx-post="{% url "performance:switch_performance_management_section" %}"
                 hx-vals='{"section": "{% url "performance:performance_evaluation" %}"}'
@@ -40,7 +40,7 @@
                     <path d="M18 0H2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2ZM9 6v2H2V6h7Zm2 0h7v2h-7V6Zm-9 4h7v2H2v-2Zm9 2v-2h7v2h-7Z" />
                 </svg>
             </div>
-            <div class="font-medium text-center text-gray-500 dark:text-gray-400">Evaluation</div>
+            <div class="font-medium text-center text-gray-500 dark:text-gray-400">Evaluations</div>
         </button>
         <button type="button"
                 hx-post="{% url "performance:switch_performance_management_section" %}"
@@ -55,7 +55,7 @@
                     <path d="M18 0H2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2ZM9 6v2H2V6h7Zm2 0h7v2h-7V6Zm-9 4h7v2H2v-2Zm9 2v-2h7v2h-7Z" />
                 </svg>
             </div>
-            <div class="font-medium text-center text-gray-500 dark:text-gray-400">Polls</div>
+            <div class="font-medium text-center text-gray-500 dark:text-gray-400">Polls and Posts</div>
         </button>
         <div class="p-4 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-600 dark:bg-gray-700">
             <div class="flex justify-center items-center p-2 mx-auto mb-2 bg-gray-200 dark:bg-gray-600 rounded-full w-[48px] h-[48px] max-w-[48px] max-h-[48px]">
@@ -67,19 +67,7 @@
                     <path d="M16 1h-3.278A1.992 1.992 0 0 0 11 0H7a1.993 1.993 0 0 0-1.722 1H2a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2Zm-3 14H5a1 1 0 0 1 0-2h8a1 1 0 0 1 0 2Zm0-4H5a1 1 0 0 1 0-2h8a1 1 0 1 1 0 2Zm0-5H5a1 1 0 0 1 0-2h2V2h4v2h2a1 1 0 1 1 0 2Z" />
                 </svg>
             </div>
-            <div class="font-medium text-center text-gray-500 dark:text-gray-400">Documents</div>
-        </div>
-        <div class="p-4 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-600 dark:bg-gray-700">
-            <div class="flex justify-center items-center p-2 mx-auto mb-2 bg-gray-200 dark:bg-gray-600 rounded-full w-[48px] h-[48px] max-w-[48px] max-h-[48px]">
-                <svg class="inline w-5 h-5 text-gray-500 dark:text-gray-400"
-                     aria-hidden="true"
-                     xmlns="http://www.w3.org/2000/svg"
-                     fill="none"
-                     viewBox="0 0 20 16">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 2a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1M2 5h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm8 5a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" />
-                </svg>
-            </div>
-            <div class="font-medium text-center text-gray-500 dark:text-gray-400">Shared Files</div>
+            <div class="font-medium text-center text-gray-500 dark:text-gray-400">Shared Documents</div>
         </div>
     </div>
 </div>
