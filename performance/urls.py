@@ -6,6 +6,46 @@ from performance import views as performance_views
 
 urlpatterns = [
     path(
+        "shared-documents/close-preview-file-modal",
+        performance_views.close_preview_file_modal,
+        name="close_preview_file_modal",
+    ),
+    path(
+        "shared-documents/<str:document_id>/view",
+        performance_views.preview_document,
+        name="preview_document",
+    ),
+    path(
+        "shared-documents/search",
+        performance_views.search_documents,
+        name="search_documents",
+    ),
+    path(
+        "shared-documents/close-delete-confirmation",
+        performance_views.close_delete_confirmation_modal,
+        name="close_delete_confirmation_modal",
+    ),
+    path(
+        "shared-documents/<str:document_id>/delete",
+        performance_views.delete_document,
+        name="delete_document",
+    ),
+    path(
+        "shared-documents/<str:document_id>/download",
+        performance_views.download_document,
+        name="download_document",
+    ),
+    path(
+        "shared-documents/upload",
+        performance_views.upload_documents,
+        name="upload_documents",
+    ),
+    path(
+        "shared-documents",
+        performance_views.shared_documents,
+        name="shared_documents",
+    ),
+    path(
         "post-management/<str:post_id>/delete",
         performance_views.delete_selected_post,
         name="delete_selected_post",

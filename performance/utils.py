@@ -1,4 +1,5 @@
 import datetime
+import os
 from collections import defaultdict
 from itertools import chain
 from operator import attrgetter
@@ -6,6 +7,7 @@ from operator import attrgetter
 from django.apps import apps
 from django.shortcuts import redirect
 from django_htmx.http import HttpResponseClientRedirect
+
 
 from performance.enums import QuestionnaireTypes
 
@@ -223,3 +225,34 @@ def get_poll_and_post_combined_list():
     )
 
     return sorted_combined_list
+
+
+def get_shared_documents_directory_path(instance, filename):
+    return f"{instance.uploader.id}/documents/{filename}"
+
+
+def get_user_with_hr_role():
+    user_model = apps.get_model("auth", "User")
+    user_details_model = apps.get_model("core", "UserDetails")
+
+    hr_role = user_details_model.Role.HR.value
+    hr = user_model.objects.filter(userdetails__user_role=hr_role)
+    return hr
+
+
+def extract_filename_and_extension(filename: str):
+    name, extension = os.path.splitext(filename)
+    return name, extension
+
+
+def validate_file_size(file):
+    size_limit = 5 * 1024 * 1024
+    if file.size > size_limit:
+        return "File size exceeded limit."
+    return None
+
+
+def get_user_shared_files(user):
+    shared_documents_model = apps.get_model("performance", "SharedDocument")
+    user_shared_documents = shared_documents_model.objects.filter(uploader=user)
+    return user_shared_documents

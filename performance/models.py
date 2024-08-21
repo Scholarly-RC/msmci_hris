@@ -7,8 +7,10 @@ from prose.fields import RichTextField
 from prose.models import AbstractDocument
 
 from performance.utils import (
+    extract_filename_and_extension,
     get_list_mean,
     get_question_rating_mean_from_evaluations,
+    get_shared_documents_directory_path,
     get_user_questionnaire,
 )
 
@@ -366,3 +368,46 @@ class Post(models.Model):
 
     def is_post(self):
         return True
+
+
+class SharedDocument(models.Model):
+    uploader = models.ForeignKey(
+        User, on_delete=models.RESTRICT, related_name="uploaded_documents"
+    )
+    shared_to = models.ManyToManyField(
+        User, related_name="shared_to_documents", blank=True
+    )
+
+    document_name = models.CharField(
+        _("Document Name"),
+        max_length=500,
+        null=True,
+        blank=True,
+    )
+
+    document = models.FileField(
+        _("Document"),
+        null=True,
+        blank=True,
+        upload_to=get_shared_documents_directory_path,
+    )
+    
+    document_pdf = models.FileField(
+        _("Document PDF"),
+        null=True,
+        blank=True,
+        upload_to=get_shared_documents_directory_path,
+    )
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Shared Documents"
+
+    def __str__(self):
+        return f"{self.uploader.get_full_name()} - {self.document_name}"
+
+    def get_file_extension(self):
+        _, ext = extract_filename_and_extension(self.document.name)
+        return ext

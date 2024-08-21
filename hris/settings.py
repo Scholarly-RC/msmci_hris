@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "chat",
     "performance",
     "prose",
+    "django_q",
 ]
 
 MIDDLEWARE = [
@@ -139,4 +140,14 @@ MEDIA_URL = "/media/"
 
 BIOMETRIC_DEVICE_IP = os.getenv("BIOMETRIC_DEVICE_IP")
 
-PROSE_ATTACHMENT_ALLOWED_FILE_SIZE = 15  # In megabytes
+PROSE_ATTACHMENT_ALLOWED_FILE_SIZE = 10
+
+Q_CLUSTER = {
+    'name': 'Django-Q2 ORM',
+    'workers': 8,
+    'timeout': 90,
+    'retry': 120,
+    'queue_limit': 50,
+    'bulk': 10,
+    'orm': 'default'
+}

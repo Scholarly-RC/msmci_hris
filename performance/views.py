@@ -1,10 +1,10 @@
 import datetime
-from itertools import chain
-from operator import attrgetter
+import mimetypes
+import os
 
 from django.contrib.auth.models import User
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import FileResponse, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.timezone import make_aware
@@ -23,12 +23,20 @@ from performance.actions import (
     modify_content_data_rating,
     modify_qualitative_content_data,
     process_evaluator_modification,
+    process_upload_documents,
     remove_poll_choice,
     reset_selected_evaluation,
     submit_poll_choice,
 )
 from performance.forms import PostContentForm, PostForm
-from performance.models import Evaluation, Poll, Post, PostContent, UserEvaluation
+from performance.models import (
+    Evaluation,
+    Poll,
+    Post,
+    PostContent,
+    SharedDocument,
+    UserEvaluation,
+)
 from performance.utils import (
     check_if_user_already_voted,
     check_if_user_is_evaluator,
@@ -37,6 +45,7 @@ from performance.utils import (
     get_poll_and_post_combined_list,
     get_polls_and_posts_by_date_and_filter,
     get_user_evaluator_choices,
+    get_user_shared_files,
     get_year_and_quarter_from_user_evaluation,
     redirect_user,
 )
@@ -1035,4 +1044,181 @@ def toggle_poll_status(request, poll_id=""):
         )
         response = retarget(response, "#modify_poll_section")
         response = reswap(response, "outerHTML")
+        return response
+
+
+# Shared Document Views
+
+
+def shared_documents(request):
+    context = {}
+    user = request.user
+    search_query = request.GET.get("q", "")
+    shared_files = get_user_shared_files(user).filter(
+        document_name__icontains=search_query
+    )
+    context.update({"shared_files": shared_files, "search_query": search_query})
+    return render(request, "performance/shared_documents_section.html", context)
+
+
+def upload_documents(request):
+    context = {}
+    user = request.user
+    if request.htmx and request.method == "POST":
+        shared_files, errors = process_upload_documents(user, request.FILES)
+        response = HttpResponse()
+        if errors:
+            context.update({"file_upload_errors": errors})
+            response.content = render_block_to_string(
+                "performance/shared_documents_section.html",
+                "file_upload_error_section",
+                context,
+            )
+            response = push_url(response, reverse("performance:shared_documents"))
+            response = retarget(response, "#file_upload_error_section")
+            response = reswap(response, "outerHTML")
+        else:
+            context.update({"shared_files": shared_files})
+            response.content = render_block_to_string(
+                "performance/shared_documents_section.html",
+                "shared_documents_section",
+                context,
+            )
+            response = push_url(response, reverse("performance:shared_documents"))
+            response = retarget(response, "#shared_documents_section")
+            response = reswap(response, "outerHTML")
+        return response
+
+
+def search_documents(request):
+    context = {}
+    user = request.user
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        search_query = data.get("document_search", "")
+        shared_files = get_user_shared_files(user).filter(
+            document_name__icontains=search_query
+        )
+        context.update({"shared_files": shared_files, "search_query": search_query})
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_documents_section.html",
+            "shared_documents_section",
+            context,
+        )
+
+        redirect_url = reverse("performance:shared_documents")
+        if search_query:
+            redirect_url += f"?q={search_query}" if search_query else ""
+
+        response = push_url(response, redirect_url)
+        response = retarget(response, "#shared_documents_section")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def download_document(request, document_id=""):
+    context = {}
+    user = request.user
+    document = SharedDocument.objects.get(id=document_id)
+
+    # TODO: Raise error if user is not permitted
+    # TODO: Raise error if file size is too large
+    file = document.document
+
+    file_name = file.name
+    content_type, _ = mimetypes.guess_type(file_name)
+
+    if content_type is None:
+        if file_name.lower().endswith(".doc"):
+            content_type = "application/msword"
+        elif file_name.lower().endswith(".docx"):
+            content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        else:
+            content_type = "application/octet-stream"
+
+    response = FileResponse(file, content_type=content_type)
+    response["Content-Disposition"] = (
+        f'attachment; filename="{os.path.basename(file_name)}"'
+    )
+
+    return response
+
+
+def delete_document(request, document_id=""):
+    context = {}
+    user = request.user
+    if request.htmx and request.method == "DELETE":
+        document_to_delete = SharedDocument.objects.get(id=document_id)
+        document_to_delete.document.delete()
+        document_to_delete.document_pdf.delete()
+        document_to_delete.delete()
+        search_query = request.GET.get("q", "")
+        shared_files = get_user_shared_files(user).filter(
+            document_name__icontains=search_query
+        )
+        context.update({"shared_files": shared_files, "search_query": search_query})
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_documents_section.html",
+            "shared_documents_section",
+            context,
+        )
+        response = trigger_client_event(
+            response, "closeDeleteConfirmationModal", after="swap"
+        )
+        response = retarget(response, "#shared_documents_section")
+        response = reswap(response, "outerHTML")
+        return response
+
+    if request.htmx and request.method == "POST":
+        document_to_delete = SharedDocument.objects.get(id=document_id)
+        context.update({"document_to_delete": document_to_delete})
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_documents_section.html",
+            "delete_confirmation_modal_content",
+            context,
+        )
+        response = trigger_client_event(
+            response, "initializeDeleteConfirmationModal", after="swap"
+        )
+        response = retarget(response, "#delete_confirmation_modal_content")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def close_delete_confirmation_modal(request):
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response = trigger_client_event(
+            response, "closeDeleteConfirmationModal", after="swap"
+        )
+        return response
+
+
+def preview_document(request, document_id=""):
+    context = {}
+    if request.htmx and request.method == "POST":
+        document_to_preview = SharedDocument.objects.get(id=document_id)
+        context.update({"document_to_preview": document_to_preview})
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_documents_section.html",
+            "preview_file_modal_content",
+            context,
+        )
+        response = trigger_client_event(
+            response, "initializePreviewFileModal", after="swap"
+        )
+        response = retarget(response, "#preview_file_modal_content")
+        response = reswap(response, "outerHTML")
+        return response
+    
+def close_preview_file_modal(request):
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response = trigger_client_event(
+            response, "closePreviewFileModal", after="swap"
+        )
         return response

@@ -1,7 +1,14 @@
 from django.apps import apps
 from django.db import transaction
 
-from performance.utils import get_user_questionnaire
+from performance.utils import (
+    extract_filename_and_extension,
+    get_user_questionnaire,
+    get_user_with_hr_role,
+    validate_file_size,
+)
+
+from django_q.tasks import async_task
 
 
 @transaction.atomic
@@ -122,3 +129,30 @@ def submit_poll_choice(poll, choice_index, user):
         voters.append(user.id)
     poll.save()
     return poll
+
+
+@transaction.atomic
+def process_upload_documents(user, file_data):
+    shared_documents_model = apps.get_model("performance", "SharedDocument")
+    errors = []
+    files = file_data.getlist("uploaded_documents")
+    for file in files:
+        file_name, ext = extract_filename_and_extension(file.name)
+        file_size_error = validate_file_size(file)
+        if file_size_error is not None:
+            errors.append(f"Error: {file_name}{ext} - {file_size_error}")
+            break
+        new_shared_document = shared_documents_model.objects.create(
+            uploader=user, document=file, document_name=file_name
+        )
+        if ext == ".docx":
+            async_task(
+                "performance.tasks.convert_word_to_pdf", new_shared_document, file_name
+            )
+
+        hr = get_user_with_hr_role()
+        hr_id = hr.values_list("id", flat=True)
+        new_shared_document.shared_to.add(*hr_id)
+
+    user_shared_documents = shared_documents_model.objects.filter(uploader=user)
+    return user_shared_documents, errors
