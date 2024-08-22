@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Additional styling for responsiveness */
+#pdf-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px; /* Space between pages */
+}
+
+.pdf-page {
+  border: 1px solid #ddd; /* Light border between pages */
+  width: 100%; /* Make canvas responsive to the container width */
+  max-width: 100%; /* Prevent canvas from exceeding container width */
+}
+
 /* Prose Content Custom Css */
 
 #post_content h1,
