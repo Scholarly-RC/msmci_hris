@@ -245,7 +245,7 @@ def extract_filename_and_extension(filename: str):
 
 
 def validate_file_size(file):
-    size_limit = 5 * 1024 * 1024
+    size_limit = 10 * 1024 * 1024
     if file.size > size_limit:
         return "File size exceeded limit."
     return None
