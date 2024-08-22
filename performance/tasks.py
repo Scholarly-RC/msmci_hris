@@ -1,22 +1,36 @@
 import os
-import tempfile
-from docx2pdf import convert
-from django.core.files import File
+import subprocess
 
-def convert_word_to_pdf(new_shared_document, file_name):
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
-        pdf_path = temp_pdf.name
+from django.conf import settings
 
+
+def convert_document_to_pdf(uploaded_file_instance, file_name):
     try:
-        docx_path = new_shared_document.document.path
-        
-        convert(docx_path, pdf_path)
-        
-        with open(pdf_path, "rb") as pdf_file:
-            new_shared_document.document_pdf.save(f"{file_name}.pdf", File(pdf_file), save=False)
-        
-        new_shared_document.save()
-    finally:
-        # Ensure the temporary PDF file is removed
-        if os.path.exists(pdf_path):
-            os.remove(pdf_path)
+        document_path = uploaded_file_instance.document.path
+        document_extension = uploaded_file_instance.get_file_extension()
+
+        command = [
+            settings.SOFFICE_PATH,
+            "--headless",
+            "--convert-to",
+            "pdf",
+            "--outdir",
+            os.path.dirname(document_path),
+            document_path,
+        ]
+
+        subprocess.run(command, check=True, capture_output=True, text=True)
+
+        output_pdf_path = document_path.replace(document_extension, ".pdf")
+
+        if os.path.exists(output_pdf_path):
+            uploaded_file_instance.document_pdf.name = output_pdf_path
+            uploaded_file_instance.save()
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error during PDF conversion: {e.stderr}")
+        raise e
+
+    except Exception as error:
+        print(f"An error occurred: {error}")
+        raise error

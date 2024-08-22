@@ -141,12 +141,16 @@ def process_upload_documents(user, file_data):
         if file_size_error is not None:
             errors.append(f"Error: {file_name}{ext} - {file_size_error}")
             break
+
         new_shared_document = shared_documents_model.objects.create(
             uploader=user, document=file, document_name=file_name
         )
-        if ext == ".docx":
+
+        if not new_shared_document.is_document_pdf():
             async_task(
-                "performance.tasks.convert_word_to_pdf", new_shared_document, file_name
+                "performance.tasks.convert_document_to_pdf",
+                new_shared_document,
+                file_name,
             )
 
         hr = get_user_with_hr_role()

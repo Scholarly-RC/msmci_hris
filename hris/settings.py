@@ -150,6 +150,11 @@ Q_CLUSTER = {
     "queue_limit": 50,
     "bulk": 10,
     "orm": "default",
+    "ack_failures": True,
+    "max_attempts": 1,
+    "attempt_count": 1,
 }
 
 X_FRAME_OPTIONS = "SAMEORIGIN"
+
+SOFFICE_PATH = os.getenv("SOFFICE_PATH")
