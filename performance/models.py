@@ -415,6 +415,15 @@ class SharedDocument(models.Model):
     def is_document_pdf(self):
         return self.get_file_extension() == ".pdf"
 
+    def is_document_excel(self):
+        return self.get_file_extension() in {".xls", ".xlsx"}
+
+    def is_document_word(self):
+        return self.get_file_extension() in {".doc", ".docx"}
+
+    def is_document_powerpoint(self):
+        return self.get_file_extension() in {".ppt", ".pptx"}
+
     def get_document_url_for_preview(self):
         if self.is_document_pdf():
             return self.document.url
