@@ -110,7 +110,7 @@ class UserDetails(models.Model):
         verbose_name_plural = "User Details"
 
     def __str__(self):
-        return f"User Details of USER {self.get_user_fullname() if self.get_user_fullname().strip() != "" else self.user.id}"
+        return f"User Details of USER {self.get_user_fullname() if self.get_user_fullname().strip() != '' else self.user.id}"
 
     def get_user_fullname(self):
         user_name_values = [

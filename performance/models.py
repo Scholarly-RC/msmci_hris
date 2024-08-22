@@ -27,7 +27,7 @@ class Questionnaire(models.Model):
         verbose_name_plural = "Questionnaires"
 
     def __str__(self):
-        return f"{self.content.get("questionnaire_name")} - ({self.content.get("questionnaire_code")})"
+        return f"{self.content.get('questionnaire_name')} - ({self.content.get('questionnaire_code')})"
 
 
 class Evaluation(models.Model):
@@ -71,7 +71,7 @@ class Evaluation(models.Model):
         if self.is_self_evaluation():
             return f"{year_and_quarter} - {self.evaluator.userdetails.get_user_fullname()} - SELF EVALUATION"
 
-        return f"{year_and_quarter} - {self.user_evaluation.evaluatee.userdetails.get_user_fullname() if self.user_evaluation else ""} by {self.evaluator.userdetails.get_user_fullname()}"
+        return f"{year_and_quarter} - {self.user_evaluation.evaluatee.userdetails.get_user_fullname() if self.user_evaluation else ''} by {self.evaluator.userdetails.get_user_fullname()}"
 
     def is_self_evaluation(self) -> bool:
         return self.evaluator == self.user_evaluation.evaluatee
@@ -186,7 +186,7 @@ class UserEvaluation(models.Model):
         verbose_name_plural = "User Evaluations"
 
     def __str__(self):
-        return f"({self.evaluatee.userdetails.get_user_fullname()}) - ({self.year} - {self.quarter}) - {"Finalized" if self.is_finalized else "Pending"}"
+        return f"({self.evaluatee.userdetails.get_user_fullname()}) - ({self.year} - {self.quarter}) - {'Finalized' if self.is_finalized else 'Pending'}"
 
     def get_year_and_quarter(self):
         quarter = self.Quarter(self.quarter).name.replace("_", " ")
@@ -286,7 +286,7 @@ class Poll(models.Model):
         verbose_name_plural = "Polls"
 
     def __str__(self):
-        return f"{self.name} - {"IN-PROGRESS" if self.in_progress else "ENDED"}"
+        return f"{self.name} - {'IN-PROGRESS' if self.in_progress else 'ENDED'}"
 
     def get_number_of_choices(self) -> int:
         return len(self.data)
@@ -391,7 +391,7 @@ class SharedDocument(models.Model):
         blank=True,
         upload_to=get_shared_documents_directory_path,
     )
-    
+
     document_pdf = models.FileField(
         _("Document PDF"),
         null=True,
@@ -411,3 +411,16 @@ class SharedDocument(models.Model):
     def get_file_extension(self):
         _, ext = extract_filename_and_extension(self.document.name)
         return ext
+
+    def is_document_pdf(self):
+        return self.get_file_extension() == ".pdf"
+
+    def get_document_url_for_preview(self):
+        if self.is_document_pdf():
+            return self.document.url
+        return self.document_pdf.url
+
+    def ready_to_view(self):
+        if self.is_document_pdf():
+            return True
+        return self.document_pdf
