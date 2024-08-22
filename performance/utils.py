@@ -8,7 +8,6 @@ from django.apps import apps
 from django.shortcuts import redirect
 from django_htmx.http import HttpResponseClientRedirect
 
-
 from performance.enums import QuestionnaireTypes
 
 

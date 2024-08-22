@@ -1,5 +1,6 @@
 from django.apps import apps
 from django.db import transaction
+from django_q.tasks import async_task
 
 from performance.utils import (
     extract_filename_and_extension,
@@ -7,8 +8,6 @@ from performance.utils import (
     get_user_with_hr_role,
     validate_file_size,
 )
-
-from django_q.tasks import async_task
 
 
 @transaction.atomic
