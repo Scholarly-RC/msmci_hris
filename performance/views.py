@@ -586,7 +586,7 @@ def poll_and_post_section(request):
 
         filter_str = ""
         if filters:
-            filter_str = f"?filter={"&filter=".join(filters)}"
+            filter_str = f"?filter={'&filter='.join(filters)}"
 
         if date_filter:
             filter_str += (
@@ -1214,11 +1214,10 @@ def preview_document(request, document_id=""):
         response = retarget(response, "#preview_file_modal_content")
         response = reswap(response, "outerHTML")
         return response
-    
+
+
 def close_preview_file_modal(request):
     if request.htmx and request.method == "POST":
         response = HttpResponse()
-        response = trigger_client_event(
-            response, "closePreviewFileModal", after="swap"
-        )
+        response = trigger_client_event(response, "closePreviewFileModal", after="swap")
         return response
