@@ -1219,9 +1219,12 @@ def preview_resource(request, resource_id=""):
             "preview_file_modal_content",
             context,
         )
-        response = trigger_client_event(
-            response, "initializePreviewFileModal", after="swap"
+        event_name = (
+            "initializeDocumentPreview"
+            if not resource_to_preview.is_resource_media()
+            else "initializeMediaPreview"
         )
+        response = trigger_client_event(response, event_name, after="swap")
         response = retarget(response, "#preview_file_modal_content")
         response = reswap(response, "outerHTML")
         return response

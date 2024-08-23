@@ -35,19 +35,30 @@
                                         <ul class="items-center w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg sm:flex dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                                             <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
                                                 <div class="flex items-center ps-3">
-                                                    <input id="vue-checkbox-list" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
-                                                    <label for="vue-checkbox-list" class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">You</label>
+                                                    <input id="vue-checkbox-list"
+                                                           type="checkbox"
+                                                           value=""
+                                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                                                    <label for="vue-checkbox-list"
+                                                           class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                        You
+                                                    </label>
                                                 </div>
                                             </li>
                                             <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
                                                 <div class="flex items-center ps-3">
-                                                    <input id="react-checkbox-list" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
-                                                    <label for="react-checkbox-list" class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Name</label>
+                                                    <input id="react-checkbox-list"
+                                                           type="checkbox"
+                                                           value=""
+                                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                                                    <label for="react-checkbox-list"
+                                                           class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                        Name
+                                                    </label>
                                                 </div>
                                             </li>
                                         </ul>
                                     </div>
-
                                 </form>
                             </div>
                             <div class="w-full p-3 border border-gray-100 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
@@ -58,7 +69,7 @@
                                            for="file_input">Upload file/s</label>
                                     <input id="file_input"
                                            name="uploaded_resources"
-                                           class="block w-full text-lg text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                                           class="block w-full text-sm lg:text-lg text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
                                            type="file"
                                            accept=".pdf,.doc,.docx,.xlsx,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.mp4"
                                            multiple
@@ -107,7 +118,7 @@
                                                  class="z-10 hidden text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
                                                 <ul class="py-2">
                                                     <li>
-                                                        {% if file.is_resource_pdf or file.resource_pdf %}
+                                                        {% if file.is_resource_media or file.is_resource_pdf or file.resource_pdf %}
                                                             <button type="button"
                                                                     hx-post="{% url "performance:preview_resource" file.id %}"
                                                                     class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
@@ -160,7 +171,7 @@
                                                      viewBox="0 0 24 24">
                                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m8-2h3m-3 3h3m-4 3v6m4-3H8M19 4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1ZM8 12v6h8v-6H8Z" />
                                                 </svg>
-                                            {% elif file_is_resource_powerpoint %}
+                                            {% elif file.is_resource_powerpoint %}
                                                 <svg class="w-20 h-20 text-gray-800 dark:text-white"
                                                      aria-hidden="true"
                                                      xmlns="http://www.w3.org/2000/svg"
@@ -169,6 +180,27 @@
                                                      fill="none"
                                                      viewBox="0 0 24 24">
                                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 17v-5h1.5a1.5 1.5 0 1 1 0 3H5m6 2v-5h1.5a1.5 1.5 0 1 1 0 3H11m7-3v5m-1-5h2M5 10V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1v6M5 19v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1M10 3v4a1 1 0 0 1-1 1H5" />
+                                                </svg>
+                                            {% elif file.is_resource_video %}
+                                                <svg class="w-20 h-20 text-gray-800 dark:text-white"
+                                                     aria-hidden="true"
+                                                     xmlns="http://www.w3.org/2000/svg"
+                                                     width="24"
+                                                     height="24"
+                                                     fill="none"
+                                                     viewBox="0 0 24 24">
+                                                    <path stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1ZM9 12h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1Zm5.697 2.395v-.733l1.269-1.219v2.984l-1.268-1.032Z" />
+                                                </svg>
+                                            {% elif file.is_resource_image %}
+                                                <svg class="w-20 h-20 text-gray-800 dark:text-white"
+                                                     aria-hidden="true"
+                                                     xmlns="http://www.w3.org/2000/svg"
+                                                     width="24"
+                                                     height="24"
+                                                     fill="none"
+                                                     viewBox="0 0 24 24">
+                                                    <path fill="currentColor" d="M16 18H8l2.5-6 2 4 1.5-2 2 4Zm-1-8.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0Z" />
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1ZM8 18h8l-2-4-1.5 2-2-4L8 18Zm7-8.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0Z" />
                                                 </svg>
                                             {% else %}
                                                 <svg class="w-20 h-20 text-gray-800 dark:text-white"
@@ -263,11 +295,23 @@
                                 </svg>
                             </button>
                             <div class="p-4 md:p-10 text-center w-full">
-                                <input id="resource_to_preview_url"
-                                       type="hidden"
-                                       value="{{ resource_to_preview.get_resource_url_for_preview }}">
-                                <div id="pdf-container"
-                                     class="w-full h-[45rem] p-4 overflow-y-auto bg-white shadow-lg"></div>
+                                {% if resource_to_preview.is_resource_media %}
+                                    {% if resource_to_preview.is_resource_video %}
+                                        <video controls>
+                                            <source src="{{ resource_to_preview.resource.url }}">
+                                        </video>
+                                    {% elif resource_to_preview.is_resource_image %}
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <img src="{{ resource_to_preview.resource.url }}" alt="Image Preview">
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <input id="resource_to_preview_url"
+                                           type="hidden"
+                                           value="{{ resource_to_preview.get_resource_url_for_preview }}">
+                                    <div id="pdf-container"
+                                         class="w-full h-[45rem] p-4 overflow-y-auto bg-white shadow-lg"></div>
+                                {% endif %}
                             </div>
                         </div>
                     {% endif %}
@@ -280,49 +324,49 @@
 {% endblock %}
 {% block javascript %}
     <script>
-    const initializePdfViewer = async () => {
-        const pdfUrl = document.getElementById('resource_to_preview_url').value;
+        const initializePdfViewer = async () => {
+            const pdfUrl = document.getElementById('resource_to_preview_url').value;
 
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-        try {
-            const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
-            const viewer = document.getElementById('pdf-container');
+            try {
+                const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+                const viewer = document.getElementById('pdf-container');
 
-            const fixedWidth = 800;
-            const fixedHeight = 1280;
+                const fixedWidth = 800;
+                const fixedHeight = 1280;
 
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                const page = await pdf.getPage(pageNum);
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    const page = await pdf.getPage(pageNum);
 
-                const viewport = page.getViewport({
-                    scale: 1.0
-                });
-                const scale = Math.min(fixedWidth / viewport.width, fixedHeight / viewport.height);
-                const scaledViewport = page.getViewport({
-                    scale
-                });
+                    const viewport = page.getViewport({
+                        scale: 1.0
+                    });
+                    const scale = Math.min(fixedWidth / viewport.width, fixedHeight / viewport.height);
+                    const scaledViewport = page.getViewport({
+                        scale
+                    });
 
-                const canvas = document.createElement('canvas');
-                canvas.className = 'pdf-page';
-                viewer.appendChild(canvas);
-                const context = canvas.getContext('2d');
-                canvas.width = scaledViewport.width;
-                canvas.height = scaledViewport.height;
+                    const canvas = document.createElement('canvas');
+                    canvas.className = 'pdf-page';
+                    viewer.appendChild(canvas);
+                    const context = canvas.getContext('2d');
+                    canvas.width = scaledViewport.width;
+                    canvas.height = scaledViewport.height;
 
-                const renderContext = {
-                    canvasContext: context,
-                    viewport: scaledViewport
-                };
-                await page.render(renderContext).promise;
+                    const renderContext = {
+                        canvasContext: context,
+                        viewport: scaledViewport
+                    };
+                    await page.render(renderContext).promise;
+                }
+            } catch (error) {
+                console.error('Error loading PDF:', error);
             }
-        } catch (error) {
-            console.error('Error loading PDF:', error);
         }
-    }
-</script>
+    </script>
     <script>
-        const initializePreviewFileModal = () => {
+        const initializePreviewResourceModal = () => {
             const modalElement = document.getElementById('preview_file_modal');
             const options = {
                 placement: 'center-center',
@@ -351,9 +395,13 @@
             }
         }
 
-        document.addEventListener('initializePreviewFileModal', (event) => {
-            initializePreviewFileModal();
+        document.addEventListener('initializeDocumentPreview', (event) => {
+            initializePreviewResourceModal();
             initializePdfViewer();
+        });
+
+        document.addEventListener('initializeMediaPreview', (event) => {
+            initializePreviewResourceModal();
         });
 
         document.addEventListener('closePreviewFileModal', (event) => {

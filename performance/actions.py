@@ -146,12 +146,15 @@ def process_upload_resources(user, file_data):
             uploader=user, resource=file, resource_name=file_name
         )
 
-        # if not new_shared_resource.is_resource_pdf():
-        #     async_task(
-        #         "performance.tasks.convert_document_to_pdf",
-        #         new_shared_resource,
-        #         file_name,
-        #     )
+        if (
+            not new_shared_resource.is_resource_media()
+            and not new_shared_resource.is_resource_pdf()
+        ):
+            async_task(
+                "performance.tasks.convert_document_to_pdf",
+                new_shared_resource,
+                file_name,
+            )
 
         hr = get_user_with_hr_role()
         hr_id = hr.values_list("id", flat=True)

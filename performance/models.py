@@ -426,12 +426,15 @@ class SharedResource(models.Model):
         return self.get_file_extension() in {".ppt", ".pptx"}
 
     def is_resource_video(self):
-        mime_type, _ = mimetypes.guess_type(self.resource)
+        mime_type, _ = mimetypes.guess_type(self.resource.name)
         return mime_type and mime_type.startswith("video")
 
     def is_resource_image(self):
-        mime_type, _ = mimetypes.guess_type(self.resource)
+        mime_type, _ = mimetypes.guess_type(self.resource.name)
         return mime_type and mime_type.startswith("image")
+
+    def is_resource_media(self):
+        return self.is_resource_image() or self.is_resource_video()
 
     def get_resource_url_for_preview(self):
         if self.is_resource_pdf():
