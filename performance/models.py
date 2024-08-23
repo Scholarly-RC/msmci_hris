@@ -1,4 +1,5 @@
 import json
+import mimetypes
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -10,7 +11,7 @@ from performance.utils import (
     extract_filename_and_extension,
     get_list_mean,
     get_question_rating_mean_from_evaluations,
-    get_shared_documents_directory_path,
+    get_shared_resources_directory_path,
     get_user_questionnaire,
 )
 
@@ -370,66 +371,74 @@ class Post(models.Model):
         return True
 
 
-class SharedDocument(models.Model):
+class SharedResource(models.Model):
     uploader = models.ForeignKey(
-        User, on_delete=models.RESTRICT, related_name="uploaded_documents"
+        User, on_delete=models.RESTRICT, related_name="uploaded_resources"
     )
     shared_to = models.ManyToManyField(
-        User, related_name="shared_to_documents", blank=True
+        User, related_name="shared_to_resources", blank=True
     )
 
-    document_name = models.CharField(
-        _("Document Name"),
+    resource_name = models.CharField(
+        _("Resource Name"),
         max_length=500,
         null=True,
         blank=True,
     )
 
-    document = models.FileField(
-        _("Document"),
+    resource = models.FileField(
+        _("Resource"),
         null=True,
         blank=True,
-        upload_to=get_shared_documents_directory_path,
+        upload_to=get_shared_resources_directory_path,
     )
 
-    document_pdf = models.FileField(
-        _("Document PDF"),
+    resource_pdf = models.FileField(
+        _("Resource as PDF"),
         null=True,
         blank=True,
-        upload_to=get_shared_documents_directory_path,
+        upload_to=get_shared_resources_directory_path,
     )
 
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     class Meta:
-        verbose_name_plural = "Shared Documents"
+        verbose_name_plural = "Shared Resources"
 
     def __str__(self):
-        return f"{self.uploader.get_full_name()} - {self.document_name}"
+        return f"{self.uploader.get_full_name()} - {self.resource_name}"
 
     def get_file_extension(self):
-        _, ext = extract_filename_and_extension(self.document.name)
+        _, ext = extract_filename_and_extension(self.resource.name)
         return ext
 
-    def is_document_pdf(self):
+    def is_resource_pdf(self):
         return self.get_file_extension() == ".pdf"
 
-    def is_document_excel(self):
+    def is_resource_excel(self):
         return self.get_file_extension() in {".xls", ".xlsx"}
 
-    def is_document_word(self):
+    def is_resource_word(self):
         return self.get_file_extension() in {".doc", ".docx"}
 
-    def is_document_powerpoint(self):
+    def is_resource_powerpoint(self):
         return self.get_file_extension() in {".ppt", ".pptx"}
 
-    def get_document_url_for_preview(self):
-        if self.is_document_pdf():
-            return self.document.url
-        return self.document_pdf.url
+    def is_resource_video(self):
+        mime_type, _ = mimetypes.guess_type(self.resource)
+        return mime_type and mime_type.startswith("video")
+
+    def is_resource_image(self):
+        mime_type, _ = mimetypes.guess_type(self.resource)
+        return mime_type and mime_type.startswith("image")
+
+    def get_resource_url_for_preview(self):
+        if self.is_resource_pdf():
+            return self.resource.url
+        return self.resource_pdf.url
 
     def ready_to_view(self):
-        if self.is_document_pdf():
+        if self.is_resource_pdf():
             return True
-        return self.document_pdf
+        return self.resource_pdf

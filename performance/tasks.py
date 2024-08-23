@@ -6,7 +6,7 @@ from django.conf import settings
 
 def convert_document_to_pdf(uploaded_file_instance, file_name):
     try:
-        document_path = uploaded_file_instance.document.path
+        document_path = uploaded_file_instance.resource.path
         document_extension = uploaded_file_instance.get_file_extension()
 
         command = [
@@ -24,7 +24,7 @@ def convert_document_to_pdf(uploaded_file_instance, file_name):
         output_pdf_path = document_path.replace(document_extension, ".pdf")
 
         if os.path.exists(output_pdf_path):
-            uploaded_file_instance.document_pdf.name = output_pdf_path
+            uploaded_file_instance.resource_pdf.name = output_pdf_path
             uploaded_file_instance.save()
 
     except subprocess.CalledProcessError as e:

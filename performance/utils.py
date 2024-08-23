@@ -226,8 +226,8 @@ def get_poll_and_post_combined_list():
     return sorted_combined_list
 
 
-def get_shared_documents_directory_path(instance, filename):
-    return f"{instance.uploader.id}/documents/{filename}"
+def get_shared_resources_directory_path(instance, filename):
+    return f"{instance.uploader.id}/resource/{filename}"
 
 
 def get_user_with_hr_role():
@@ -245,13 +245,14 @@ def extract_filename_and_extension(filename: str):
 
 
 def validate_file_size(file):
-    size_limit = 10 * 1024 * 1024
-    if file.size > size_limit:
-        return "File size exceeded limit."
+    # TODO: Update if needed.
+    # size_limit = 10 * 1024 * 1024
+    # if file.size > size_limit:
+    #     return "File size exceeded limit."
     return None
 
 
 def get_user_shared_files(user):
-    shared_documents_model = apps.get_model("performance", "SharedDocument")
+    shared_documents_model = apps.get_model("performance", "SharedResource")
     user_shared_documents = shared_documents_model.objects.filter(uploader=user)
     return user_shared_documents

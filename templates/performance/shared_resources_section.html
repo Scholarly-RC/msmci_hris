@@ -3,18 +3,14 @@
     {% include "navbar.html" %}
     <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
         <div class="w-full relative px-2 lg:px-10">
-            <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3 mt-10">Shared Documents Section</h1>
-            {% block shared_documents_section %}
-                <div id="shared_documents_section"
+            <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3 mt-10">Shared Resources Section</h1>
+            {% block shared_resources_section %}
+                <div id="shared_resources_section"
                      class="w-full min-h-[45rem] flex flex-col gap-6 p-4 mb-10 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                     <div class="w-full flex flex-col gap-5">
                         <div class="w-full flex flex-col-reverse md:flex-row gap-5">
                             <div class="w-auto md:w-[50rem] p-3 border border-gray-100 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700 flex flex-col justify-center">
-                                <form class="w-full max-w-md mx-auto">
-                                    <label for="document_search"
-                                           class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">
-                                        Search
-                                    </label>
+                                <form class="w-full max-w-md mx-auto flex flex-col gap-2">
                                     <div class="relative">
                                         <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                                             <svg class="w-4 h-4 text-gray-500 dark:text-gray-400"
@@ -26,31 +22,48 @@
                                             </svg>
                                         </div>
                                         <input type="search"
-                                               id="document_search"
+                                               id="resource_search"
                                                class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                placeholder="Search file..."
-                                               name="document_search"
-                                               hx-post="{% url "performance:search_documents" %}"
+                                               name="resource_search"
+                                               hx-post="{% url "performance:search_resources" %}"
                                                hx-trigger="input changed delay:350ms"
                                                value="{{ search_query }}"
                                                required />
                                     </div>
+                                    <div>
+                                        <ul class="items-center w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg sm:flex dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                            <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                                                <div class="flex items-center ps-3">
+                                                    <input id="vue-checkbox-list" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                                                    <label for="vue-checkbox-list" class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">You</label>
+                                                </div>
+                                            </li>
+                                            <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                                                <div class="flex items-center ps-3">
+                                                    <input id="react-checkbox-list" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                                                    <label for="react-checkbox-list" class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Name</label>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+
                                 </form>
                             </div>
                             <div class="w-full p-3 border border-gray-100 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
-                                <form hx-post="{% url "performance:upload_documents" %}"
+                                <form hx-post="{% url "performance:upload_resources" %}"
                                       hx-encoding='multipart/form-data'
                                       class="w-full">
                                     <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                            for="file_input">Upload file/s</label>
                                     <input id="file_input"
-                                           name="uploaded_documents"
+                                           name="uploaded_resources"
                                            class="block w-full text-lg text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
                                            type="file"
-                                           accept=".pdf,.docx,.xlsx,.pptx"
+                                           accept=".pdf,.doc,.docx,.xlsx,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.mp4"
                                            multiple
                                            required>
-                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-300">PDF or DOCX or XLSX or PPTX (MAX. 10MB).</p>
+                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-300">Document And Media File Type Only</p>
                                     {% block file_upload_error_section %}
                                         <p id="file_upload_error_section"
                                            class="text-base text-red-600 dark:text-red-400">
@@ -77,7 +90,7 @@
                                 <div>
                                     <div class="w-full max-w-[15rem] h-auto pb-4 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                                         <div class="flex justify-end px-4 pt-4">
-                                            <button id="document_dropdown-{{ file.id }}"
+                                            <button id="resource_dropdown-{{ file.id }}"
                                                     data-dropdown-toggle="dropdown-{{ file.id }}"
                                                     class="inline-block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-1.5"
                                                     type="button">
@@ -94,21 +107,21 @@
                                                  class="z-10 hidden text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
                                                 <ul class="py-2">
                                                     <li>
-                                                        {% if file.is_document_pdf or file.document_pdf %}
+                                                        {% if file.is_resource_pdf or file.resource_pdf %}
                                                             <button type="button"
-                                                                    hx-post="{% url "performance:preview_document" file.id %}"
+                                                                    hx-post="{% url "performance:preview_resource" file.id %}"
                                                                     class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
                                                                 View
                                                             </button>
                                                         {% endif %}
                                                     </li>
                                                     <li>
-                                                        <a href="{% url "performance:download_document" file.id %}"
+                                                        <a href="{% url "performance:download_resource" file.id %}"
                                                            class="block px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Download</a>
                                                     </li>
                                                     <li>
                                                         <button type="submit"
-                                                                hx-post="{% url "performance:delete_document" file.id %}"
+                                                                hx-post="{% url "performance:delete_resource" file.id %}"
                                                                 class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
                                                             Delete
                                                         </button>
@@ -117,7 +130,7 @@
                                             </div>
                                         </div>
                                         <div class="w-full flex justify-center">
-                                            {% if file.is_document_pdf %}
+                                            {% if file.is_resource_pdf %}
                                                 <svg class="w-20 h-20 text-gray-800 dark:text-white"
                                                      aria-hidden="true"
                                                      xmlns="http://www.w3.org/2000/svg"
@@ -127,7 +140,7 @@
                                                      viewBox="0 0 24 24">
                                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 17v-5h1.5a1.5 1.5 0 1 1 0 3H5m12 2v-5h2m-2 3h2M5 10V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1v6M5 19v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1M10 3v4a1 1 0 0 1-1 1H5m6 4v5h1.375A1.627 1.627 0 0 0 14 15.375v-1.75A1.627 1.627 0 0 0 12.375 12H11Z" />
                                                 </svg>
-                                            {% elif file.is_document_word %}
+                                            {% elif file.is_resource_word %}
                                                 <svg class="w-20 h-20 text-gray-800 dark:text-white"
                                                      aria-hidden="true"
                                                      xmlns="http://www.w3.org/2000/svg"
@@ -137,7 +150,7 @@
                                                      viewBox="0 0 24 24">
                                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m4 4 1 5 2-3.333L14 17l1-5m4-8v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z" />
                                                 </svg>
-                                            {% elif file.is_document_excel %}
+                                            {% elif file.is_resource_excel %}
                                                 <svg class="w-20 h-20 text-gray-800 dark:text-white"
                                                      aria-hidden="true"
                                                      xmlns="http://www.w3.org/2000/svg"
@@ -147,7 +160,7 @@
                                                      viewBox="0 0 24 24">
                                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m8-2h3m-3 3h3m-4 3v6m4-3H8M19 4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1ZM8 12v6h8v-6H8Z" />
                                                 </svg>
-                                            {% elif file_is_document_powerpoint %}
+                                            {% elif file_is_resource_powerpoint %}
                                                 <svg class="w-20 h-20 text-gray-800 dark:text-white"
                                                      aria-hidden="true"
                                                      xmlns="http://www.w3.org/2000/svg"
@@ -171,9 +184,9 @@
                                         </div>
                                         <div class="flex flex-col px-4 group text-center">
                                             <h5 class="text-base md:text-xl font-medium text-gray-900 dark:text-white group-hover:hidden truncate">
-                                                {{ file.document_name }}
+                                                {{ file.resource_name }}
                                             </h5>
-                                            <h5 class="text-base md:text-xl text-gray-900 dark:text-white hidden group-hover:block">{{ file.document_name }}</h5>
+                                            <h5 class="text-base md:text-xl text-gray-900 dark:text-white hidden group-hover:block">{{ file.resource_name }}</h5>
                                             <p class="text-base font-normal text-gray-900 dark:text-white">Uploaded by: {{ file.uploader.first_name }}</p>
                                         </div>
                                     </div>
@@ -190,7 +203,7 @@
             {% block delete_confirmation_modal_content %}
                 <div id="delete_confirmation_modal_content"
                      class="relative p-4 w-full max-w-md max-h-full">
-                    {% if document_to_delete %}
+                    {% if resource_to_delete %}
                         <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
                             <button type="button"
                                     class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
@@ -212,9 +225,9 @@
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                 </svg>
                                 <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-                                    Are you sure you want to delete <strong>{{ document_to_delete.document_name }}{{ document_to_delete.get_file_extension }}</strong>?
+                                    Are you sure you want to delete <strong>{{ resource_to_delete.resource_name }}{{ resource_to_delete.get_file_extension }}</strong>?
                                 </h3>
-                                <button hx-delete="{% url "performance:delete_document" document_to_delete.id %}"
+                                <button hx-delete="{% url "performance:delete_resource" resource_to_delete.id %}"
                                         type="button"
                                         class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
                                     Delete
@@ -236,7 +249,7 @@
             {% block preview_file_modal_content %}
                 <div id="preview_file_modal_content"
                      class="relative p-4 w-full max-w-6xl max-h-full">
-                    {% if document_to_preview %}
+                    {% if resource_to_preview %}
                         <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
                             <button type="button"
                                     class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
@@ -250,9 +263,9 @@
                                 </svg>
                             </button>
                             <div class="p-4 md:p-10 text-center w-full">
-                                <input id="document_to_preview_url"
+                                <input id="resource_to_preview_url"
                                        type="hidden"
-                                       value="{{ document_to_preview.get_document_url_for_preview }}">
+                                       value="{{ resource_to_preview.get_resource_url_for_preview }}">
                                 <div id="pdf-container"
                                      class="w-full h-[45rem] p-4 overflow-y-auto bg-white shadow-lg"></div>
                             </div>
@@ -266,27 +279,22 @@
 </div>
 {% endblock %}
 {% block javascript %}
-    <<script>
+    <script>
     const initializePdfViewer = async () => {
-        const pdfUrl = document.getElementById('document_to_preview_url').value;
+        const pdfUrl = document.getElementById('resource_to_preview_url').value;
 
-        // PDF.js worker source
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-        // Fetch the PDF document from the URL using PDF.js
         try {
             const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
             const viewer = document.getElementById('pdf-container');
 
-            // Fixed dimensions for pages
-            const fixedWidth = 800; // Adjust the width as needed
-            const fixedHeight = 1280; // Adjust the height as needed
+            const fixedWidth = 800;
+            const fixedHeight = 1280;
 
-            // Loop through all pages
             for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                 const page = await pdf.getPage(pageNum);
 
-                // Calculate scale to fit fixed dimensions
                 const viewport = page.getViewport({
                     scale: 1.0
                 });
@@ -296,7 +304,7 @@
                 });
 
                 const canvas = document.createElement('canvas');
-                canvas.className = 'pdf-page'; // Apply border and margin styles
+                canvas.className = 'pdf-page';
                 viewer.appendChild(canvas);
                 const context = canvas.getContext('2d');
                 canvas.width = scaledViewport.width;
@@ -392,7 +400,6 @@
     </script>
     <script>
         function initializeDropdowns() {
-            // Select all dropdown triggers and target elements
             document.querySelectorAll('[data-dropdown-toggle]').forEach(trigger => {
                 const dropdownId = trigger.getAttribute('data-dropdown-toggle');
                 const $targetEl = document.getElementById(dropdownId);
@@ -408,7 +415,6 @@
                         ignoreClickOutsideClass: false,
                     };
 
-                    // Create a new Dropdown instance
                     const dropdown = new Dropdown($targetEl, $triggerEl, options);
                     dropdown.hide();
                 }

@@ -23,7 +23,7 @@ from performance.actions import (
     modify_content_data_rating,
     modify_qualitative_content_data,
     process_evaluator_modification,
-    process_upload_documents,
+    process_upload_resources,
     remove_poll_choice,
     reset_selected_evaluation,
     submit_poll_choice,
@@ -34,7 +34,7 @@ from performance.models import (
     Poll,
     Post,
     PostContent,
-    SharedDocument,
+    SharedResource,
     UserEvaluation,
 )
 from performance.utils import (
@@ -1047,97 +1047,108 @@ def toggle_poll_status(request, poll_id=""):
         return response
 
 
-# Shared Document Views
+# Shared Resources Views
 
 
-def shared_documents(request):
+def shared_resources(request):
     context = {}
     user = request.user
     search_query = request.GET.get("q", "")
     shared_files = get_user_shared_files(user).filter(
-        document_name__icontains=search_query
+        resource_name__icontains=search_query
     )
     context.update({"shared_files": shared_files, "search_query": search_query})
-    return render(request, "performance/shared_documents_section.html", context)
+    return render(request, "performance/shared_resources_section.html", context)
 
 
-def upload_documents(request):
+def upload_resources(request):
     context = {}
     user = request.user
     if request.htmx and request.method == "POST":
-        shared_files, errors = process_upload_documents(user, request.FILES)
+        shared_files, errors = process_upload_resources(user, request.FILES)
         response = HttpResponse()
         if errors:
             context.update({"file_upload_errors": errors})
             response.content = render_block_to_string(
-                "performance/shared_documents_section.html",
+                "performance/shared_resources_section.html",
                 "file_upload_error_section",
                 context,
             )
-            response = push_url(response, reverse("performance:shared_documents"))
+            response = push_url(response, reverse("performance:shared_resources"))
             response = retarget(response, "#file_upload_error_section")
             response = reswap(response, "outerHTML")
         else:
             context.update({"shared_files": shared_files})
             response.content = render_block_to_string(
-                "performance/shared_documents_section.html",
-                "shared_documents_section",
+                "performance/shared_resources_section.html",
+                "shared_resources_section",
                 context,
             )
-            response = push_url(response, reverse("performance:shared_documents"))
-            response = retarget(response, "#shared_documents_section")
+            response = push_url(response, reverse("performance:shared_resources"))
+            response = retarget(response, "#shared_resources_section")
             response = reswap(response, "outerHTML")
         return response
 
 
-def search_documents(request):
+def search_resources(request):
     context = {}
     user = request.user
     if request.htmx and request.method == "POST":
         data = request.POST
-        search_query = data.get("document_search", "")
+        search_query = data.get("resource_search", "")
         shared_files = get_user_shared_files(user).filter(
-            document_name__icontains=search_query
+            resource_name__icontains=search_query
         )
         context.update({"shared_files": shared_files, "search_query": search_query})
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/shared_documents_section.html",
-            "shared_documents_section",
+            "performance/shared_resources_section.html",
+            "shared_resources_section",
             context,
         )
 
-        redirect_url = reverse("performance:shared_documents")
+        redirect_url = reverse("performance:shared_resources")
         if search_query:
             redirect_url += f"?q={search_query}" if search_query else ""
 
         response = push_url(response, redirect_url)
-        response = retarget(response, "#shared_documents_section")
+        response = retarget(response, "#shared_resources_section")
         response = reswap(response, "outerHTML")
         return response
 
 
-def download_document(request, document_id=""):
+def download_resource(request, resource_id=""):
     context = {}
     user = request.user
-    document = SharedDocument.objects.get(id=document_id)
+    resource = SharedResource.objects.get(id=resource_id)
 
     # TODO: Raise error if user is not permitted
     # TODO: Raise error if file size is too large
-    file = document.document
+    file = resource.resource
 
     file_name = file.name
     content_type, _ = mimetypes.guess_type(file_name)
 
-    if content_type is None:
-        if file_name.lower().endswith(".doc"):
-            content_type = "application/msword"
-        elif file_name.lower().endswith(".docx"):
-            content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        else:
-            content_type = "application/octet-stream"
+    content_type_mapping = {
+        ".pdf": "application/pdf",
+        ".doc": "application/msword",
+        ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ".ppt": "application/vnd.ms-powerpoint",
+        ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".mp4": "video/mp4",
+    }
+
+    file_extension = resource.get_file_extension()
+    content_type = content_type_mapping.get(
+        f".{file_extension}", "application/octet-stream"
+    )
 
     response = FileResponse(file, content_type=content_type)
+
     response["Content-Disposition"] = (
         f'attachment; filename="{os.path.basename(file_name)}"'
     )
@@ -1145,38 +1156,38 @@ def download_document(request, document_id=""):
     return response
 
 
-def delete_document(request, document_id=""):
+def delete_resource(request, resource_id=""):
     context = {}
     user = request.user
     if request.htmx and request.method == "DELETE":
-        document_to_delete = SharedDocument.objects.get(id=document_id)
-        document_to_delete.document.delete()
-        document_to_delete.document_pdf.delete()
-        document_to_delete.delete()
+        resource_to_delete = SharedResource.objects.get(id=resource_id)
+        resource_to_delete.resource.delete()
+        resource_to_delete.resource_pdf.delete()
+        resource_to_delete.delete()
         search_query = request.GET.get("q", "")
         shared_files = get_user_shared_files(user).filter(
-            document_name__icontains=search_query
+            resource_name__icontains=search_query
         )
         context.update({"shared_files": shared_files, "search_query": search_query})
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/shared_documents_section.html",
-            "shared_documents_section",
+            "performance/shared_resources_section.html",
+            "shared_resources_section",
             context,
         )
         response = trigger_client_event(
             response, "closeDeleteConfirmationModal", after="swap"
         )
-        response = retarget(response, "#shared_documents_section")
+        response = retarget(response, "#shared_resources_section")
         response = reswap(response, "outerHTML")
         return response
 
     if request.htmx and request.method == "POST":
-        document_to_delete = SharedDocument.objects.get(id=document_id)
-        context.update({"document_to_delete": document_to_delete})
+        resource_to_delete = SharedResource.objects.get(id=resource_id)
+        context.update({"resource_to_delete": resource_to_delete})
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/shared_documents_section.html",
+            "performance/shared_resources_section.html",
             "delete_confirmation_modal_content",
             context,
         )
@@ -1197,14 +1208,14 @@ def close_delete_confirmation_modal(request):
         return response
 
 
-def preview_document(request, document_id=""):
+def preview_resource(request, resource_id=""):
     context = {}
     if request.htmx and request.method == "POST":
-        document_to_preview = SharedDocument.objects.get(id=document_id)
-        context.update({"document_to_preview": document_to_preview})
+        resource_to_preview = SharedResource.objects.get(id=resource_id)
+        context.update({"resource_to_preview": resource_to_preview})
         response = HttpResponse()
         response.content = render_block_to_string(
-            "performance/shared_documents_section.html",
+            "performance/shared_resources_section.html",
             "preview_file_modal_content",
             context,
         )

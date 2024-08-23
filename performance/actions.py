@@ -131,10 +131,10 @@ def submit_poll_choice(poll, choice_index, user):
 
 
 @transaction.atomic
-def process_upload_documents(user, file_data):
-    shared_documents_model = apps.get_model("performance", "SharedDocument")
+def process_upload_resources(user, file_data):
+    shared_resources_model = apps.get_model("performance", "SharedResource")
     errors = []
-    files = file_data.getlist("uploaded_documents")
+    files = file_data.getlist("uploaded_resources")
     for file in files:
         file_name, ext = extract_filename_and_extension(file.name)
         file_size_error = validate_file_size(file)
@@ -142,20 +142,20 @@ def process_upload_documents(user, file_data):
             errors.append(f"Error: {file_name}{ext} - {file_size_error}")
             break
 
-        new_shared_document = shared_documents_model.objects.create(
-            uploader=user, document=file, document_name=file_name
+        new_shared_resource = shared_resources_model.objects.create(
+            uploader=user, resource=file, resource_name=file_name
         )
 
-        if not new_shared_document.is_document_pdf():
-            async_task(
-                "performance.tasks.convert_document_to_pdf",
-                new_shared_document,
-                file_name,
-            )
+        # if not new_shared_resource.is_resource_pdf():
+        #     async_task(
+        #         "performance.tasks.convert_document_to_pdf",
+        #         new_shared_resource,
+        #         file_name,
+        #     )
 
         hr = get_user_with_hr_role()
         hr_id = hr.values_list("id", flat=True)
-        new_shared_document.shared_to.add(*hr_id)
+        new_shared_resource.shared_to.add(*hr_id)
 
-    user_shared_documents = shared_documents_model.objects.filter(uploader=user)
-    return user_shared_documents, errors
+    user_shared_resources = shared_resources_model.objects.filter(uploader=user)
+    return user_shared_resources, errors

@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             field=models.FileField(
                 blank=True,
                 null=True,
-                upload_to=performance.utils.get_shared_documents_directory_path,
+                upload_to=performance.utils.get_shared_resources_directory_path,
                 verbose_name="Document PDF",
             ),
         ),

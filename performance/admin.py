@@ -6,7 +6,7 @@ from performance.models import (
     Post,
     PostContent,
     Questionnaire,
-    SharedDocument,
+    SharedResource,
     UserEvaluation,
 )
 
@@ -15,5 +15,5 @@ admin.site.register(Poll)
 admin.site.register(Post)
 admin.site.register(PostContent)
 admin.site.register(Questionnaire)
-admin.site.register(SharedDocument)
+admin.site.register(SharedResource)
 admin.site.register(UserEvaluation)
