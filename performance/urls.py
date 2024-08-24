@@ -6,6 +6,11 @@ from performance import views as performance_views
 
 urlpatterns = [
     path(
+        "shared-resources-management",
+        performance_views.shared_resources_management,
+        name="shared_resources_management",
+    ),
+    path(
         "shared-resources/close-preview-file-modal",
         performance_views.close_preview_file_modal,
         name="close_preview_file_modal",

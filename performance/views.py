@@ -51,7 +51,9 @@ from performance.utils import (
 )
 
 
-# Create your views here.
+# Performance Evaluation Section Views
+
+
 def performance_management(request):
     return redirect(reverse("performance:performance_evaluation"))
 
@@ -312,11 +314,17 @@ def submit_peer_evaluation(request):
             return response
 
 
+# Performance and Learning Management Section Switch View
+
+
 def switch_performance_management_section(request):
     if request.htmx and request.method == "POST":
         data = request.POST
         selected_evaluation_url = data.get("section")
         return HttpResponseClientRedirect(selected_evaluation_url)
+
+
+# User Evaluation Management View
 
 
 def user_evaluation_management(request, year=""):
@@ -568,6 +576,9 @@ def reset_evaluation(request):
         return response
 
 
+# Poll and Post Section Views
+
+
 def poll_and_post_section(request):
     context = {}
     date_filter = request.POST.get("date_filter") or request.GET.get("date_filter")
@@ -702,6 +713,9 @@ def view_poll_result(request, poll_id=""):
         response = retarget(response, "#poll_and_post_static_modal_content")
         response = reswap(response, "outerHTML")
         return response
+
+
+# Poll and Post Management Views
 
 
 def poll_management(request, poll_id=""):
@@ -1047,7 +1061,7 @@ def toggle_poll_status(request, poll_id=""):
         return response
 
 
-# Shared Resources Views
+# Shared Resources Section Views
 
 
 def shared_resources(request):
@@ -1235,3 +1249,9 @@ def close_preview_file_modal(request):
         response = HttpResponse()
         response = trigger_client_event(response, "closePreviewFileModal", after="swap")
         return response
+
+
+# Shared Resources Management Views
+def shared_resources_management(request):
+    context = {}
+    return render(request, "performance/shared_resources_management.html", context)
