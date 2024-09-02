@@ -1506,8 +1506,11 @@ def shared_resource_management_update_file_list_after_modifying_share_access(req
     if request.htmx and request.method == "POST":
         data = request.POST
         selected_user_id = data.get("selected_user_id", "")
+        resource_search = data.get("resource_search", "")
 
-        shared_files = get_users_shared_resources(user.id, selected_user_id)
+        shared_files = get_users_shared_resources(user.id, selected_user_id).filter(
+            resource_name__icontains=resource_search
+        )
 
         context.update({"shared_files": shared_files})
 

@@ -469,10 +469,13 @@
 <script>
     document.addEventListener('updateFileListAfterUpdate', (event) => {
         const selectedUser = document.getElementById('selected_user').value;
+        const resource_search = document.getElementById('resource_search').value;
+
 
         htmx.ajax('POST', '{% url "performance:shared_resource_management_update_file_list_after_modifying_share_access" %}', {
             values: {
-                "selected_user_id": selectedUser
+                "selected_user_id": selectedUser,
+                "resource_search": resource_search
             }
         })
 
