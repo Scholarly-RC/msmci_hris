@@ -88,144 +88,144 @@
                             </div>
                         </div>
                         {% block file_list_content %}
-                        <div id="file_list_content" class="flex flex-row gap-2">
-                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-9 gap-5 w-full h-[20rem] md:h-[30rem] overflow-y-auto p-3 border border-gray-100 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
-                                {% for file in shared_files %}
-                                    <div>
-                                        <div class="w-full max-w-[15rem] h-auto pb-4 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                                            <div class="flex justify-end px-4 pt-4">
-                                                <button id="resource_dropdown-{{ file.id }}"
-                                                        data-dropdown-toggle="dropdown-{{ file.id }}"
-                                                        class="inline-block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-1.5"
-                                                        type="button">
-                                                    <svg class="w-5 h-5"
-                                                         aria-hidden="true"
-                                                         xmlns="http://www.w3.org/2000/svg"
-                                                         fill="currentColor"
-                                                         viewBox="0 0 16 3">
-                                                        <path d="M2 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm6.041 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM14 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z" />
-                                                    </svg>
-                                                </button>
-                                                <!-- Dropdown menu -->
-                                                <div id="dropdown-{{ file.id }}"
-                                                     class="z-10 hidden text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
-                                                    <ul class="py-2">
-                                                        <li>
-                                                            {% if file.is_resource_media or file.is_resource_pdf or file.resource_pdf %}
-                                                                <button type="button"
-                                                                        hx-post="{% url "performance:shared_resources_management_preview_resource" file.id %}"
+                            <div id="file_list_content" class="flex flex-row gap-2">
+                                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-9 gap-5 w-full h-[20rem] md:h-[30rem] overflow-y-auto p-3 border border-gray-100 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+                                    {% for file in shared_files %}
+                                        <div>
+                                            <div class="w-full max-w-[15rem] h-auto pb-4 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                                <div class="flex justify-end px-4 pt-4">
+                                                    <button id="resource_dropdown-{{ file.id }}"
+                                                            data-dropdown-toggle="dropdown-{{ file.id }}"
+                                                            class="inline-block text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-1.5"
+                                                            type="button">
+                                                        <svg class="w-5 h-5"
+                                                             aria-hidden="true"
+                                                             xmlns="http://www.w3.org/2000/svg"
+                                                             fill="currentColor"
+                                                             viewBox="0 0 16 3">
+                                                            <path d="M2 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm6.041 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM14 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z" />
+                                                        </svg>
+                                                    </button>
+                                                    <!-- Dropdown menu -->
+                                                    <div id="dropdown-{{ file.id }}"
+                                                         class="z-10 hidden text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+                                                        <ul class="py-2">
+                                                            <li>
+                                                                {% if file.is_resource_media or file.is_resource_pdf or file.resource_pdf %}
+                                                                    <button type="button"
+                                                                            hx-post="{% url "performance:shared_resources_management_preview_resource" file.id %}"
+                                                                            class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
+                                                                        View
+                                                                    </button>
+                                                                {% endif %}
+                                                            </li>
+                                                            <li>
+                                                                <button type="submit"
+                                                                        hx-post="{% url "performance:shared_resource_management_share_access" file.id %}"
                                                                         class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
-                                                                    View
+                                                                    Share
                                                                 </button>
-                                                            {% endif %}
-                                                        </li>
-                                                        <li>
-                                                            <button type="submit"
-                                                                    hx-post="{% url "performance:shared_resource_management_share_access" file.id %}"
-                                                                    class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
-                                                                Share
-                                                            </button>
-                                                        </li>
-                                                        <li>
-                                                            <a href="{% url "performance:download_resource" file.id %}"
-                                                               class="block px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Download</a>
-                                                        </li>
-                                                        <li>
-                                                            <button type="submit"
-                                                                    hx-post="{% url "performance:shared_resource_management_delete" file.id %}"
-                                                                    class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
-                                                                Delete
-                                                            </button>
-                                                        </li>
-                                                    </ul>
+                                                            </li>
+                                                            <li>
+                                                                <a href="{% url "performance:download_resource" file.id %}"
+                                                                   class="block px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Download</a>
+                                                            </li>
+                                                            <li>
+                                                                <button type="submit"
+                                                                        hx-post="{% url "performance:shared_resource_management_delete" file.id %}"
+                                                                        class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
+                                                                    Delete
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <div class="w-full flex justify-center">
+                                                    {% if file.is_resource_pdf %}
+                                                        <svg class="w-20 h-20 text-gray-800 dark:text-white"
+                                                             aria-hidden="true"
+                                                             xmlns="http://www.w3.org/2000/svg"
+                                                             width="24"
+                                                             height="24"
+                                                             fill="none"
+                                                             viewBox="0 0 24 24">
+                                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 17v-5h1.5a1.5 1.5 0 1 1 0 3H5m12 2v-5h2m-2 3h2M5 10V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1v6M5 19v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1M10 3v4a1 1 0 0 1-1 1H5m6 4v5h1.375A1.627 1.627 0 0 0 14 15.375v-1.75A1.627 1.627 0 0 0 12.375 12H11Z" />
+                                                        </svg>
+                                                    {% elif file.is_resource_word %}
+                                                        <svg class="w-20 h-20 text-gray-800 dark:text-white"
+                                                             aria-hidden="true"
+                                                             xmlns="http://www.w3.org/2000/svg"
+                                                             width="24"
+                                                             height="24"
+                                                             fill="none"
+                                                             viewBox="0 0 24 24">
+                                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m4 4 1 5 2-3.333L14 17l1-5m4-8v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z" />
+                                                        </svg>
+                                                    {% elif file.is_resource_excel %}
+                                                        <svg class="w-20 h-20 text-gray-800 dark:text-white"
+                                                             aria-hidden="true"
+                                                             xmlns="http://www.w3.org/2000/svg"
+                                                             width="24"
+                                                             height="24"
+                                                             fill="none"
+                                                             viewBox="0 0 24 24">
+                                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m8-2h3m-3 3h3m-4 3v6m4-3H8M19 4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1ZM8 12v6h8v-6H8Z" />
+                                                        </svg>
+                                                    {% elif file.is_resource_powerpoint %}
+                                                        <svg class="w-20 h-20 text-gray-800 dark:text-white"
+                                                             aria-hidden="true"
+                                                             xmlns="http://www.w3.org/2000/svg"
+                                                             width="24"
+                                                             height="24"
+                                                             fill="none"
+                                                             viewBox="0 0 24 24">
+                                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 17v-5h1.5a1.5 1.5 0 1 1 0 3H5m6 2v-5h1.5a1.5 1.5 0 1 1 0 3H11m7-3v5m-1-5h2M5 10V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1v6M5 19v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1M10 3v4a1 1 0 0 1-1 1H5" />
+                                                        </svg>
+                                                    {% elif file.is_resource_video %}
+                                                        <svg class="w-20 h-20 text-gray-800 dark:text-white"
+                                                             aria-hidden="true"
+                                                             xmlns="http://www.w3.org/2000/svg"
+                                                             width="24"
+                                                             height="24"
+                                                             fill="none"
+                                                             viewBox="0 0 24 24">
+                                                            <path stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1ZM9 12h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1Zm5.697 2.395v-.733l1.269-1.219v2.984l-1.268-1.032Z" />
+                                                        </svg>
+                                                    {% elif file.is_resource_image %}
+                                                        <svg class="w-20 h-20 text-gray-800 dark:text-white"
+                                                             aria-hidden="true"
+                                                             xmlns="http://www.w3.org/2000/svg"
+                                                             width="24"
+                                                             height="24"
+                                                             fill="none"
+                                                             viewBox="0 0 24 24">
+                                                            <path fill="currentColor" d="M16 18H8l2.5-6 2 4 1.5-2 2 4Zm-1-8.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0Z" />
+                                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1ZM8 18h8l-2-4-1.5 2-2-4L8 18Zm7-8.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0Z" />
+                                                        </svg>
+                                                    {% else %}
+                                                        <svg class="w-20 h-20 text-gray-800 dark:text-white"
+                                                             aria-hidden="true"
+                                                             xmlns="http://www.w3.org/2000/svg"
+                                                             width="24"
+                                                             height="24"
+                                                             fill="none"
+                                                             viewBox="0 0 24 24">
+                                                            <path stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z" />
+                                                        </svg>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="flex flex-col px-4 group text-center">
+                                                    <h5 class="text-base md:text-xl font-medium text-gray-900 dark:text-white group-hover:hidden truncate">
+                                                        {{ file.resource_name }}
+                                                    </h5>
+                                                    <h5 class="text-base md:text-xl text-gray-900 dark:text-white hidden group-hover:block">{{ file.resource_name }}</h5>
+                                                    <p class="text-base font-normal text-gray-900 dark:text-white">Uploaded by: {{ file.uploader.first_name }}</p>
                                                 </div>
                                             </div>
-                                            <div class="w-full flex justify-center">
-                                                {% if file.is_resource_pdf %}
-                                                    <svg class="w-20 h-20 text-gray-800 dark:text-white"
-                                                         aria-hidden="true"
-                                                         xmlns="http://www.w3.org/2000/svg"
-                                                         width="24"
-                                                         height="24"
-                                                         fill="none"
-                                                         viewBox="0 0 24 24">
-                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 17v-5h1.5a1.5 1.5 0 1 1 0 3H5m12 2v-5h2m-2 3h2M5 10V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1v6M5 19v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1M10 3v4a1 1 0 0 1-1 1H5m6 4v5h1.375A1.627 1.627 0 0 0 14 15.375v-1.75A1.627 1.627 0 0 0 12.375 12H11Z" />
-                                                    </svg>
-                                                {% elif file.is_resource_word %}
-                                                    <svg class="w-20 h-20 text-gray-800 dark:text-white"
-                                                         aria-hidden="true"
-                                                         xmlns="http://www.w3.org/2000/svg"
-                                                         width="24"
-                                                         height="24"
-                                                         fill="none"
-                                                         viewBox="0 0 24 24">
-                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m4 4 1 5 2-3.333L14 17l1-5m4-8v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z" />
-                                                    </svg>
-                                                {% elif file.is_resource_excel %}
-                                                    <svg class="w-20 h-20 text-gray-800 dark:text-white"
-                                                         aria-hidden="true"
-                                                         xmlns="http://www.w3.org/2000/svg"
-                                                         width="24"
-                                                         height="24"
-                                                         fill="none"
-                                                         viewBox="0 0 24 24">
-                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m8-2h3m-3 3h3m-4 3v6m4-3H8M19 4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1ZM8 12v6h8v-6H8Z" />
-                                                    </svg>
-                                                {% elif file.is_resource_powerpoint %}
-                                                    <svg class="w-20 h-20 text-gray-800 dark:text-white"
-                                                         aria-hidden="true"
-                                                         xmlns="http://www.w3.org/2000/svg"
-                                                         width="24"
-                                                         height="24"
-                                                         fill="none"
-                                                         viewBox="0 0 24 24">
-                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 17v-5h1.5a1.5 1.5 0 1 1 0 3H5m6 2v-5h1.5a1.5 1.5 0 1 1 0 3H11m7-3v5m-1-5h2M5 10V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1v6M5 19v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1M10 3v4a1 1 0 0 1-1 1H5" />
-                                                    </svg>
-                                                {% elif file.is_resource_video %}
-                                                    <svg class="w-20 h-20 text-gray-800 dark:text-white"
-                                                         aria-hidden="true"
-                                                         xmlns="http://www.w3.org/2000/svg"
-                                                         width="24"
-                                                         height="24"
-                                                         fill="none"
-                                                         viewBox="0 0 24 24">
-                                                        <path stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1ZM9 12h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1Zm5.697 2.395v-.733l1.269-1.219v2.984l-1.268-1.032Z" />
-                                                    </svg>
-                                                {% elif file.is_resource_image %}
-                                                    <svg class="w-20 h-20 text-gray-800 dark:text-white"
-                                                         aria-hidden="true"
-                                                         xmlns="http://www.w3.org/2000/svg"
-                                                         width="24"
-                                                         height="24"
-                                                         fill="none"
-                                                         viewBox="0 0 24 24">
-                                                        <path fill="currentColor" d="M16 18H8l2.5-6 2 4 1.5-2 2 4Zm-1-8.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0Z" />
-                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1ZM8 18h8l-2-4-1.5 2-2-4L8 18Zm7-8.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0Z" />
-                                                    </svg>
-                                                {% else %}
-                                                    <svg class="w-20 h-20 text-gray-800 dark:text-white"
-                                                         aria-hidden="true"
-                                                         xmlns="http://www.w3.org/2000/svg"
-                                                         width="24"
-                                                         height="24"
-                                                         fill="none"
-                                                         viewBox="0 0 24 24">
-                                                        <path stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z" />
-                                                    </svg>
-                                                {% endif %}
-                                            </div>
-                                            <div class="flex flex-col px-4 group text-center">
-                                                <h5 class="text-base md:text-xl font-medium text-gray-900 dark:text-white group-hover:hidden truncate">
-                                                    {{ file.resource_name }}
-                                                </h5>
-                                                <h5 class="text-base md:text-xl text-gray-900 dark:text-white hidden group-hover:block">{{ file.resource_name }}</h5>
-                                                <p class="text-base font-normal text-gray-900 dark:text-white">Uploaded by: {{ file.uploader.first_name }}</p>
-                                            </div>
                                         </div>
-                                    </div>
-                                {% endfor %}
+                                    {% endfor %}
+                                </div>
                             </div>
-                        </div>
                         {% endblock %}
                     </div>
                 </div>
@@ -367,7 +367,7 @@
                                     <div class="w-full flex flex-row gap-2">
                                         <div class="flex flex-col w-full">
                                             <div class="my-2">
-                                                <h2 class="text-xl font-extrabold dark:text-white">Without Access</h2>
+                                                <h2 class="text-xl font-extrabold dark:text-white">Available Users</h2>
                                             </div>
                                             <div class="z-10 block w-full p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700">
                                                 {% if user_choices %}
@@ -420,13 +420,13 @@
                                         </div>
                                         <div class="flex flex-col w-full">
                                             <div class="my-2">
-                                                <h2 class="text-xl font-extrabold dark:text-white">With Access</h2>
+                                                <h2 class="text-xl font-extrabold dark:text-white">Shared With</h2>
                                             </div>
                                             <div class="z-10 block w-full p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700">
                                                 {% if not selected_users %}
-                                                <div class="p-3">
-                                                    <h2 class="text-xl font-extrabold dark:text-white">User List Empty</h2>
-                                                </div>
+                                                    <div class="p-3">
+                                                        <h2 class="text-xl font-extrabold dark:text-white">User List Empty</h2>
+                                                    </div>
                                                 {% endif %}
                                                 <ul class="h-[25rem] px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200">
                                                     {% for user in selected_users %}
@@ -445,7 +445,8 @@
                                                                        class="w-full ms-2 text-sm text-start font-medium text-gray-900 rounded dark:text-gray-300">
                                                                     {{ user.userdetails.get_user_fullname }}
                                                                     <br>
-                                                                    ({% if not user.userdetails.is_employee %}{{ user.userdetails.get_user_full_user_role }} -{% endif %}
+                                                                    (
+                                                                    {% if not user.userdetails.is_employee %}{{ user.userdetails.get_user_full_user_role }} -{% endif %}
                                                                     {{ user.userdetails.department }})
                                                                 </label>
                                                             </div>
@@ -466,21 +467,21 @@
 </div>
 {% endblock %}
 {% block javascript %}
-<script>
-    document.addEventListener('updateFileListAfterUpdate', (event) => {
-        const selectedUser = document.getElementById('selected_user').value;
-        const resource_search = document.getElementById('resource_search').value;
+    <script>
+        document.addEventListener('updateFileListAfterUpdate', (event) => {
+            const selectedUser = document.getElementById('selected_user').value;
+            const resource_search = document.getElementById('resource_search').value;
 
 
-        htmx.ajax('POST', '{% url "performance:shared_resource_management_update_file_list_after_modifying_share_access" %}', {
-            values: {
-                "selected_user_id": selectedUser,
-                "resource_search": resource_search
-            }
-        })
+            htmx.ajax('POST', '{% url "performance:shared_resource_management_update_file_list_after_modifying_share_access" %}', {
+                values: {
+                    "selected_user_id": selectedUser,
+                    "resource_search": resource_search
+                }
+            })
 
-    });
-</script>
+        });
+    </script>
     <script>
         const initializeShareAccessModal = () => {
             const modalElement = document.getElementById('file_access_sharing_modal');

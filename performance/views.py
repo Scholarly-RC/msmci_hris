@@ -1066,14 +1066,53 @@ def toggle_poll_status(request, poll_id=""):
 # Shared Resources Section Views
 
 
-def shared_resources(request):
+def shared_resources(request, user_id=""):
     context = {}
     user = request.user
-    search_query = request.GET.get("q", "")
-    shared_files = get_users_shared_resources(user).filter(
+
+    selected_user_id = request.POST.get("selected_user", user_id)
+    if selected_user_id:
+        selected_user_id = int(selected_user_id)
+
+    search_query = request.POST.get("resource_search", "")
+
+    shared_files = get_users_shared_resources(user.id, selected_user_id).filter(
         resource_name__icontains=search_query
     )
-    context.update({"shared_files": shared_files, "search_query": search_query})
+
+    user_choices = get_users_for_shared_resources(user)
+
+    context.update(
+        {
+            "shared_files": shared_files,
+            "resource_search": search_query,
+            "user_choices": user_choices,
+            "selected_user": selected_user_id,
+        }
+    )
+
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_resources_section.html",
+            "shared_resources_section",
+            context,
+        )
+
+        redirect_url = (
+            reverse(
+                "performance:shared_resources_with_user",
+                kwargs={"user_id": selected_user_id},
+            )
+            if selected_user_id
+            else reverse("performance:shared_resources")
+        )
+
+        response = push_url(response, redirect_url)
+        response = retarget(response, "#shared_resources_section")
+        response = reswap(response, "outerHTML")
+        return response
+
     return render(request, "performance/shared_resources_section.html", context)
 
 
@@ -1103,33 +1142,6 @@ def upload_resources(request):
             response = push_url(response, reverse("performance:shared_resources"))
             response = retarget(response, "#shared_resources_section")
             response = reswap(response, "outerHTML")
-        return response
-
-
-def search_resources(request):
-    context = {}
-    user = request.user
-    if request.htmx and request.method == "POST":
-        data = request.POST
-        search_query = data.get("resource_search", "")
-        shared_files = get_users_shared_resources(user).filter(
-            resource_name__icontains=search_query
-        )
-        context.update({"shared_files": shared_files, "search_query": search_query})
-        response = HttpResponse()
-        response.content = render_block_to_string(
-            "performance/shared_resources_section.html",
-            "shared_resources_section",
-            context,
-        )
-
-        redirect_url = reverse("performance:shared_resources")
-        if search_query:
-            redirect_url += f"?q={search_query}" if search_query else ""
-
-        response = push_url(response, redirect_url)
-        response = retarget(response, "#shared_resources_section")
-        response = reswap(response, "outerHTML")
         return response
 
 
@@ -1211,6 +1223,98 @@ def delete_resource(request, resource_id=""):
             response, "initializeDeleteConfirmationModal", after="swap"
         )
         response = retarget(response, "#delete_confirmation_modal_content")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def resource_share_access(request, resource_id=""):
+    context = {}
+    user = request.user
+    if request.htmx and request.method == "POST":
+        resource_to_share = SharedResource.objects.get(id=resource_id)
+        user_choices = get_users_per_shared_resources(user, resource_to_share)
+        selected_users = resource_to_share.shared_to.all()
+        context.update(
+            {
+                "resource_to_share": resource_to_share,
+                "user_choices": user_choices,
+                "selected_users": selected_users,
+            }
+        )
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_resources_section.html",
+            "file_access_sharing_modal_content",
+            context,
+        )
+        response = trigger_client_event(
+            response, "initializeShareAccessModal", after="swap"
+        )
+        response = retarget(response, "#file_access_sharing_modal_content")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def resource_modify_users_with_share_access(request, resource_id=""):
+    context = {}
+    user = request.user
+    if request.htmx and request.method == "POST":
+        resource_to_share = SharedResource.objects.get(id=resource_id)
+        selected_user_id = request.POST.get("selected_user", "") or request.POST.get(
+            "selected_user_to_remove", ""
+        )
+        to_remove = "selected_user_to_remove" in request.POST
+        resource_to_share = share_resource_to_user(
+            resource_to_share,
+            selected_user_id,
+            to_remove,
+        )
+        user_choices = get_users_per_shared_resources(user, resource_to_share)
+        selected_users = resource_to_share.shared_to.all()
+        context.update(
+            {
+                "resource_to_share": resource_to_share,
+                "user_choices": user_choices,
+                "selected_users": selected_users,
+            }
+        )
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_resources_section.html",
+            "file_access_sharing_modal_content",
+            context,
+        )
+        response = trigger_client_event(
+            response,
+            "updateFileListAfterUpdate",
+            after="swap",
+        )
+        response = retarget(response, "#file_access_sharing_modal_content")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def resource_update_file_list_after_modifying_share_access(request):
+    context = {}
+    user = request.user
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        selected_user_id = data.get("selected_user_id", "")
+        resource_search = data.get("resource_search", "")
+
+        shared_files = get_users_shared_resources(user.id, selected_user_id).filter(
+            resource_name__icontains=resource_search
+        )
+
+        context.update({"shared_files": shared_files})
+
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_resources_section.html",
+            "file_list_content",
+            context,
+        )
+        response = retarget(response, "#file_list_content")
         response = reswap(response, "outerHTML")
         return response
 

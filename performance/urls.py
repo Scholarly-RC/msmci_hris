@@ -66,6 +66,21 @@ urlpatterns = [
         name="shared_resources_management",
     ),
     path(
+        "shared-resources/update-file-list-after-modifying-share-access",
+        performance_views.resource_update_file_list_after_modifying_share_access,
+        name="resource_update_file_list_after_modifying_share_access",
+    ),
+    path(
+        "shared-resources/<str:resource_id>/modify-users-with-share-access",
+        performance_views.resource_modify_users_with_share_access,
+        name="resource_modify_users_with_share_access",
+    ),
+    path(
+        "shared-resources/<str:resource_id>/share-access",
+        performance_views.resource_share_access,
+        name="resource_share_access",
+    ),
+    path(
         "shared-resources/close-preview-file-modal",
         performance_views.close_preview_file_modal,
         name="close_preview_file_modal",
@@ -74,11 +89,6 @@ urlpatterns = [
         "shared-resources/<str:resource_id>/view",
         performance_views.preview_resource,
         name="preview_resource",
-    ),
-    path(
-        "shared-resources/search",
-        performance_views.search_resources,
-        name="search_resources",
     ),
     path(
         "shared-resources/close-delete-confirmation",
@@ -99,6 +109,11 @@ urlpatterns = [
         "shared-resources/upload",
         performance_views.upload_resources,
         name="upload_resources",
+    ),
+    path(
+        "shared-resources/<str:user_id>",
+        performance_views.shared_resources,
+        name="shared_resources_with_user",
     ),
     path(
         "shared-resources",
