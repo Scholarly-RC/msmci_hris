@@ -5,6 +5,7 @@ from itertools import chain
 from operator import attrgetter
 
 from django.apps import apps
+from django.db.models import Q
 from django.shortcuts import redirect
 from django_htmx.http import HttpResponseClientRedirect
 
@@ -35,9 +36,15 @@ def get_user_evaluator_choices(selected_user):
     """
 
     user_model = apps.get_model("auth", "User")
+    user_details_model = apps.get_model("core", "UserDetails")
+
+    hr_role = user_details_model.Role.HR.value
+
     evaluator_choices = (
         user_model.objects.filter(
-            is_active=True, userdetails__department=selected_user.userdetails.department
+            Q(userdetails__user_role=hr_role)
+            | Q(userdetails__department=selected_user.userdetails.department),
+            is_active=True,
         )
         .exclude(pk=selected_user.id)
         .order_by("-userdetails__user_role", "first_name")
@@ -252,7 +259,56 @@ def validate_file_size(file):
     return None
 
 
-def get_user_shared_files(user):
+def get_users_shared_resources(uploader_id, shared_to_id):
+    user_model = apps.get_model("auth", "User")
     shared_documents_model = apps.get_model("performance", "SharedResource")
-    user_shared_documents = shared_documents_model.objects.filter(uploader=user)
+
+    if shared_to_id:
+        shared_documents_filter = Q(uploader_id=uploader_id) & Q(shared_to=shared_to_id)
+    else:
+        shared_documents_filter = Q(uploader_id=uploader_id) & Q(shared_to__isnull=True)
+
+    user_shared_documents = shared_documents_model.objects.filter(
+        shared_documents_filter
+    )
     return user_shared_documents
+
+
+def get_users_for_shared_resources(user):
+    user_model = apps.get_model("auth", "User")
+    user_details_model = apps.get_model("core", "UserDetails")
+
+    hr_role = user_details_model.Role.HR.value
+    department_head_role = user_details_model.Role.DEPARTMENT_HEAD.value
+    employee_role = user_details_model.Role.EMPLOYEE.value
+
+    users = user_model.objects.filter(
+        Q(userdetails__user_role=hr_role)
+        | Q(userdetails__user_role=department_head_role)
+        | Q(userdetails__user_role=employee_role)
+    ).exclude(pk=user.id)
+
+    return users
+
+
+def get_users_per_shared_resources(user, resource):
+    user_model = apps.get_model("auth", "User")
+    user_details_model = apps.get_model("core", "UserDetails")
+
+    hr_role = user_details_model.Role.HR.value
+    department_head_role = user_details_model.Role.DEPARTMENT_HEAD.value
+    employee_role = user_details_model.Role.EMPLOYEE.value
+
+    users_shared_with_resource = resource.shared_to.values_list("id", flat=True)
+
+    users = (
+        user_model.objects.filter(
+            Q(userdetails__user_role=hr_role)
+            | Q(userdetails__user_role=department_head_role)
+            | Q(userdetails__user_role=employee_role)
+        )
+        .exclude(id=user.id)
+        .exclude(id__in=users_shared_with_resource)
+    )
+
+    return users

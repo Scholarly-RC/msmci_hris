@@ -26,6 +26,7 @@ from performance.actions import (
     process_upload_resources,
     remove_poll_choice,
     reset_selected_evaluation,
+    share_resource_to_user,
     submit_poll_choice,
 )
 from performance.forms import PostContentForm, PostForm
@@ -45,11 +46,12 @@ from performance.utils import (
     get_poll_and_post_combined_list,
     get_polls_and_posts_by_date_and_filter,
     get_user_evaluator_choices,
-    get_user_shared_files,
+    get_users_for_shared_resources,
+    get_users_per_shared_resources,
+    get_users_shared_resources,
     get_year_and_quarter_from_user_evaluation,
     redirect_user,
 )
-
 
 # Performance Evaluation Section Views
 
@@ -1068,7 +1070,7 @@ def shared_resources(request):
     context = {}
     user = request.user
     search_query = request.GET.get("q", "")
-    shared_files = get_user_shared_files(user).filter(
+    shared_files = get_users_shared_resources(user).filter(
         resource_name__icontains=search_query
     )
     context.update({"shared_files": shared_files, "search_query": search_query})
@@ -1110,7 +1112,7 @@ def search_resources(request):
     if request.htmx and request.method == "POST":
         data = request.POST
         search_query = data.get("resource_search", "")
-        shared_files = get_user_shared_files(user).filter(
+        shared_files = get_users_shared_resources(user).filter(
             resource_name__icontains=search_query
         )
         context.update({"shared_files": shared_files, "search_query": search_query})
@@ -1179,7 +1181,7 @@ def delete_resource(request, resource_id=""):
         resource_to_delete.resource_pdf.delete()
         resource_to_delete.delete()
         search_query = request.GET.get("q", "")
-        shared_files = get_user_shared_files(user).filter(
+        shared_files = get_users_shared_resources(user).filter(
             resource_name__icontains=search_query
         )
         context.update({"shared_files": shared_files, "search_query": search_query})
@@ -1213,15 +1215,6 @@ def delete_resource(request, resource_id=""):
         return response
 
 
-def close_delete_confirmation_modal(request):
-    if request.htmx and request.method == "POST":
-        response = HttpResponse()
-        response = trigger_client_event(
-            response, "closeDeleteConfirmationModal", after="swap"
-        )
-        return response
-
-
 def preview_resource(request, resource_id=""):
     context = {}
     if request.htmx and request.method == "POST":
@@ -1244,6 +1237,15 @@ def preview_resource(request, resource_id=""):
         return response
 
 
+def close_delete_confirmation_modal(request):
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response = trigger_client_event(
+            response, "closeDeleteConfirmationModal", after="swap"
+        )
+        return response
+
+
 def close_preview_file_modal(request):
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -1252,6 +1254,292 @@ def close_preview_file_modal(request):
 
 
 # Shared Resources Management Views
-def shared_resources_management(request):
+def shared_resources_management(request, user_id=""):
     context = {}
+    user = request.user
+    user_choices = get_users_for_shared_resources(user)
+
+    selected_user_id = request.POST.get("selected_user", user_id)
+    if selected_user_id:
+        selected_user_id = int(selected_user_id)
+
+    search_query = request.POST.get("resource_search", "")
+
+    shared_files = get_users_shared_resources(user.id, selected_user_id).filter(
+        resource_name__icontains=search_query
+    )
+
+    context.update(
+        {
+            "shared_files": shared_files,
+            "search_query": "",
+            "user_choices": user_choices,
+            "selected_user": selected_user_id,
+            "search_query": search_query,
+        }
+    )
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_resources_management.html",
+            "shared_resources_management_section",
+            context,
+        )
+
+        redirect_url = (
+            reverse(
+                "performance:shared_resources_management_with_user",
+                kwargs={"user_id": selected_user_id},
+            )
+            if selected_user_id
+            else reverse("performance:shared_resources_management")
+        )
+
+        response = push_url(response, redirect_url)
+
+        response = retarget(response, "#shared_resources_management_section")
+        response = reswap(response, "outerHTML")
+        return response
+
     return render(request, "performance/shared_resources_management.html", context)
+
+
+def shared_resources_management_upload(request):
+    context = {}
+    user = request.user
+    if request.htmx and request.method == "POST":
+        shared_files, errors = process_upload_resources(user, request.FILES)
+        response = HttpResponse()
+        if errors:
+            context.update({"file_upload_errors": errors})
+            response.content = render_block_to_string(
+                "performance/shared_resources_section.html",
+                "file_upload_error_section",
+                context,
+            )
+            response = push_url(response, reverse("performance:shared_resources"))
+            response = retarget(response, "#file_upload_error_section")
+            response = reswap(response, "outerHTML")
+        else:
+            context.update({"shared_files": shared_files})
+            response.content = render_block_to_string(
+                "performance/shared_resources_management.html",
+                "shared_resources_management_section",
+                context,
+            )
+            response = push_url(
+                response, reverse("performance:shared_resources_management")
+            )
+            response = retarget(response, "#shared_resources_management_section")
+            response = reswap(response, "outerHTML")
+        return response
+
+
+def shared_resources_management_preview_resource(request, resource_id=""):
+    context = {}
+    if request.htmx and request.method == "POST":
+        resource_to_preview = SharedResource.objects.get(id=resource_id)
+        context.update({"resource_to_preview": resource_to_preview})
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_resources_management.html",
+            "preview_file_modal_content",
+            context,
+        )
+        event_name = (
+            "initializeDocumentPreview"
+            if not resource_to_preview.is_resource_media()
+            else "initializeMediaPreview"
+        )
+        response = trigger_client_event(response, event_name, after="swap")
+        response = retarget(response, "#preview_file_modal_content")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def shared_resource_management_delete(request, resource_id=""):
+    context = {}
+    user = request.user
+    if request.htmx and request.method == "DELETE":
+        resource_to_delete = SharedResource.objects.get(id=resource_id)
+        resource_to_delete.resource.delete()
+        resource_to_delete.resource_pdf.delete()
+        resource_to_delete.delete()
+        search_query = request.GET.get("q", "")
+        shared_files = get_users_shared_resources(user).filter(
+            resource_name__icontains=search_query
+        )
+        context.update({"shared_files": shared_files, "search_query": search_query})
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_resources_management.html",
+            "shared_resources_management_section",
+            context,
+        )
+        response = trigger_client_event(
+            response, "closeDeleteConfirmationModal", after="swap"
+        )
+        response = retarget(response, "#shared_resources_management_section")
+        response = reswap(response, "outerHTML")
+        return response
+
+    if request.htmx and request.method == "POST":
+        resource_to_delete = SharedResource.objects.get(id=resource_id)
+        context.update({"resource_to_delete": resource_to_delete})
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_resources_management.html",
+            "resource_management_delete_confirmation_modal_content",
+            context,
+        )
+        response = trigger_client_event(
+            response, "initializeDeleteConfirmationModal", after="swap"
+        )
+        response = retarget(
+            response, "#resource_management_delete_confirmation_modal_content"
+        )
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def shared_resource_management_share_access(request, resource_id=""):
+    context = {}
+    user = request.user
+    if request.htmx and request.method == "POST":
+        resource_to_share = SharedResource.objects.get(id=resource_id)
+        user_choices = get_users_per_shared_resources(user, resource_to_share)
+        selected_users = resource_to_share.shared_to.all()
+        context.update(
+            {
+                "resource_to_share": resource_to_share,
+                "user_choices": user_choices,
+                "selected_users": selected_users,
+            }
+        )
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_resources_management.html",
+            "file_access_sharing_modal_content",
+            context,
+        )
+        response = trigger_client_event(
+            response, "initializeShareAccessModal", after="swap"
+        )
+        response = retarget(response, "#file_access_sharing_modal_content")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def shared_resource_management_confidential_state_toggle(request, resource_id=""):
+    context = {}
+    user = request.user
+    if request.htmx and request.method == "POST":
+        resource_to_toggle = SharedResource.objects.get(id=resource_id)
+        resource_to_toggle.is_confidential = not resource_to_toggle.is_confidential
+        resource_to_toggle.save()
+
+        user_choices = get_users_per_shared_resources(user, resource_to_toggle)
+        selected_users = resource_to_toggle.shared_to.all()
+
+        context.update(
+            {
+                "resource_to_share": resource_to_toggle,
+                "user_choices": user_choices,
+                "selected_users": selected_users,
+            }
+        )
+
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_resources_management.html",
+            "file_access_sharing_modal_content",
+            context,
+        )
+
+        response = retarget(response, "#file_access_sharing_modal_content")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def shared_resource_management_modify_users_with_share_access(request, resource_id=""):
+    context = {}
+    user = request.user
+    if request.htmx and request.method == "POST":
+        resource_to_share = SharedResource.objects.get(id=resource_id)
+        selected_user_id = request.POST.get("selected_user", "") or request.POST.get(
+            "selected_user_to_remove", ""
+        )
+        to_remove = "selected_user_to_remove" in request.POST
+        resource_to_share = share_resource_to_user(
+            resource_to_share,
+            selected_user_id,
+            to_remove,
+        )
+        user_choices = get_users_per_shared_resources(user, resource_to_share)
+        selected_users = resource_to_share.shared_to.all()
+        context.update(
+            {
+                "resource_to_share": resource_to_share,
+                "user_choices": user_choices,
+                "selected_users": selected_users,
+            }
+        )
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_resources_management.html",
+            "file_access_sharing_modal_content",
+            context,
+        )
+        response = trigger_client_event(
+            response,
+            "updateFileListAfterUpdate",
+            after="swap",
+        )
+        response = retarget(response, "#file_access_sharing_modal_content")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def shared_resource_management_update_file_list_after_modifying_share_access(request):
+    context = {}
+    user = request.user
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        selected_user_id = data.get("selected_user_id", "")
+
+        shared_files = get_users_shared_resources(user.id, selected_user_id)
+
+        context.update({"shared_files": shared_files})
+
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_resources_management.html",
+            "file_list_content",
+            context,
+        )
+        response = retarget(response, "#file_list_content")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def close_shared_resource_management_delete_confirmation_modal(request):
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response = trigger_client_event(
+            response, "closeDeleteConfirmationModal", after="swap"
+        )
+        return response
+
+
+def close_shared_resource_management_preview_file_modal(request):
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response = trigger_client_event(response, "closePreviewFileModal", after="swap")
+        return response
+
+
+def close_shared_resource_management_share_access_modal(request):
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response = trigger_client_event(response, "closeShareAccessModal", after="swap")
+        return response

@@ -375,6 +375,7 @@ class SharedResource(models.Model):
     uploader = models.ForeignKey(
         User, on_delete=models.RESTRICT, related_name="uploaded_resources"
     )
+
     shared_to = models.ManyToManyField(
         User, related_name="shared_to_resources", blank=True
     )
@@ -398,6 +399,12 @@ class SharedResource(models.Model):
         null=True,
         blank=True,
         upload_to=get_shared_resources_directory_path,
+    )
+
+    is_confidential = models.BooleanField(_("Is Resource Confidential"), default=False)
+
+    confidential_access_users = models.ManyToManyField(
+        User, related_name="confidential_resources", blank=True
     )
 
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)

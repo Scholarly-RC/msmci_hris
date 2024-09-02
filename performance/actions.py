@@ -156,9 +156,18 @@ def process_upload_resources(user, file_data):
                 file_name,
             )
 
-        hr = get_user_with_hr_role()
-        hr_id = hr.values_list("id", flat=True)
-        new_shared_resource.shared_to.add(*hr_id)
-
     user_shared_resources = shared_resources_model.objects.filter(uploader=user)
     return user_shared_resources, errors
+
+
+@transaction.atomic
+def share_resource_to_user(resource, selected_user_id, remove=False):
+    user_model = apps.get_model("auth", "User")
+
+    selected_user = user_model.objects.get(id=selected_user_id)
+    if not remove:
+        resource.shared_to.add(selected_user)
+    else:
+        resource.shared_to.remove(selected_user)
+
+    return resource

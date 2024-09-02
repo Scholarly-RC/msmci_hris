@@ -6,6 +6,61 @@ from performance import views as performance_views
 
 urlpatterns = [
     path(
+        "shared-resources-management/update-file-list-after-modifying-share-access",
+        performance_views.shared_resource_management_update_file_list_after_modifying_share_access,
+        name="shared_resource_management_update_file_list_after_modifying_share_access",
+    ),
+    path(
+        "shared-resources-management/<str:resource_id>/modify-users-with-share-access",
+        performance_views.shared_resource_management_modify_users_with_share_access,
+        name="shared_resource_management_modify_users_with_share_access",
+    ),
+    path(
+        "shared-resources-management/<str:resource_id>/confidential-state-toggle",
+        performance_views.shared_resource_management_confidential_state_toggle,
+        name="shared_resource_management_confidential_state_toggle",
+    ),
+    path(
+        "shared-resources-management/close-share-access-modal",
+        performance_views.close_shared_resource_management_share_access_modal,
+        name="close_shared_resource_management_share_access_modal",
+    ),
+    path(
+        "shared-resources-management/<str:resource_id>/share-access",
+        performance_views.shared_resource_management_share_access,
+        name="shared_resource_management_share_access",
+    ),
+    path(
+        "shared-resources-management/close-preview-file-modal",
+        performance_views.close_shared_resource_management_preview_file_modal,
+        name="close_shared_resource_management_preview_file_modal",
+    ),
+    path(
+        "shared-resources-management/close-delete-confirmation",
+        performance_views.close_shared_resource_management_delete_confirmation_modal,
+        name="close_shared_resource_management_delete_confirmation_modal",
+    ),
+    path(
+        "shared-resources-management/<str:resource_id>/view",
+        performance_views.shared_resources_management_preview_resource,
+        name="shared_resources_management_preview_resource",
+    ),
+    path(
+        "shared-resources-management/<str:resource_id>/delete",
+        performance_views.shared_resource_management_delete,
+        name="shared_resource_management_delete",
+    ),
+    path(
+        "shared-resources-management/upload",
+        performance_views.shared_resources_management_upload,
+        name="shared_resources_management_upload",
+    ),
+    path(
+        "shared-resources-management/<str:user_id>",
+        performance_views.shared_resources_management,
+        name="shared_resources_management_with_user",
+    ),
+    path(
         "shared-resources-management",
         performance_views.shared_resources_management,
         name="shared_resources_management",
