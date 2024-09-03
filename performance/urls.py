@@ -16,6 +16,11 @@ urlpatterns = [
         name="shared_resource_management_modify_users_with_share_access",
     ),
     path(
+        "shared-resources-management/modify-user-confidential-access",
+        performance_views.shared_resource_management_modify_user_confidential_access,
+        name="shared_resource_management_modify_user_confidential_access",
+    ),
+    path(
         "shared-resources-management/<str:resource_id>/confidential-state-toggle",
         performance_views.shared_resource_management_confidential_state_toggle,
         name="shared_resource_management_confidential_state_toggle",

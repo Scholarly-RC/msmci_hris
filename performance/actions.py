@@ -169,5 +169,22 @@ def share_resource_to_user(resource, selected_user_id, remove=False):
         resource.shared_to.add(selected_user)
     else:
         resource.shared_to.remove(selected_user)
+        resource.confidential_access_users.remove(selected_user)
 
     return resource
+
+
+@transaction.atomic
+def modify_user_file_confidentiality(resource_id, selected_user_id):
+    user_model = apps.get_model("auth", "User")
+    shared_resources_model = apps.get_model("performance", "SharedResource")
+
+    selected_user = user_model.objects.get(id=selected_user_id)
+    resource = shared_resources_model.objects.get(id=resource_id)
+
+    if selected_user in resource.confidential_access_users.all():
+        resource.confidential_access_users.remove(selected_user)
+    else:
+        resource.confidential_access_users.add(selected_user)
+
+    return resource, selected_user

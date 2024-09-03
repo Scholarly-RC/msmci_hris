@@ -260,11 +260,12 @@ def validate_file_size(file):
 
 
 def get_users_shared_resources(uploader_id, shared_to_id):
-    user_model = apps.get_model("auth", "User")
     shared_documents_model = apps.get_model("performance", "SharedResource")
 
     if shared_to_id:
-        shared_documents_filter = Q(uploader_id=uploader_id) & Q(shared_to=shared_to_id)
+        shared_documents_filter = (
+            Q(uploader_id=uploader_id) | Q(uploader_id=shared_to_id)
+        ) & (Q(shared_to=shared_to_id) | Q(shared_to=uploader_id))
     else:
         shared_documents_filter = Q(uploader_id=uploader_id) & Q(shared_to__isnull=True)
 

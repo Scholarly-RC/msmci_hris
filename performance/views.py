@@ -22,6 +22,7 @@ from performance.actions import (
     add_self_evaluation,
     modify_content_data_rating,
     modify_qualitative_content_data,
+    modify_user_file_confidentiality,
     process_evaluator_modification,
     process_upload_resources,
     remove_poll_choice,
@@ -1084,6 +1085,7 @@ def shared_resources(request, user_id=""):
 
     context.update(
         {
+            "current_user": user,
             "shared_files": shared_files,
             "resource_search": search_query,
             "user_choices": user_choices,
@@ -1123,7 +1125,7 @@ def upload_resources(request):
         shared_files, errors = process_upload_resources(user, request.FILES)
         response = HttpResponse()
         if errors:
-            context.update({"file_upload_errors": errors})
+            context.update({"current_user": user, "file_upload_errors": errors})
             response.content = render_block_to_string(
                 "performance/shared_resources_section.html",
                 "file_upload_error_section",
@@ -1196,7 +1198,13 @@ def delete_resource(request, resource_id=""):
         shared_files = get_users_shared_resources(user).filter(
             resource_name__icontains=search_query
         )
-        context.update({"shared_files": shared_files, "search_query": search_query})
+        context.update(
+            {
+                "current_user": user,
+                "shared_files": shared_files,
+                "search_query": search_query,
+            }
+        )
         response = HttpResponse()
         response.content = render_block_to_string(
             "performance/shared_resources_section.html",
@@ -1306,7 +1314,7 @@ def resource_update_file_list_after_modifying_share_access(request):
             resource_name__icontains=resource_search
         )
 
-        context.update({"shared_files": shared_files})
+        context.update({"current_user": user, "shared_files": shared_files})
 
         response = HttpResponse()
         response.content = render_block_to_string(
@@ -1321,9 +1329,19 @@ def resource_update_file_list_after_modifying_share_access(request):
 
 def preview_resource(request, resource_id=""):
     context = {}
+    user = request.user
     if request.htmx and request.method == "POST":
         resource_to_preview = SharedResource.objects.get(id=resource_id)
-        context.update({"resource_to_preview": resource_to_preview})
+        user_has_access = not resource_to_preview.is_confidential or (
+            resource_to_preview.is_confidential
+            and user in resource_to_preview.confidential_access_users.all()
+        )
+        context.update(
+            {
+                "resource_to_preview": resource_to_preview,
+                "user_has_access": user_has_access,
+            }
+        )
         response = HttpResponse()
         response.content = render_block_to_string(
             "performance/shared_resources_section.html",
@@ -1375,6 +1393,7 @@ def shared_resources_management(request, user_id=""):
 
     context.update(
         {
+            "current_user": user,
             "shared_files": shared_files,
             "search_query": "",
             "user_choices": user_choices,
@@ -1415,7 +1434,7 @@ def shared_resources_management_upload(request):
         shared_files, errors = process_upload_resources(user, request.FILES)
         response = HttpResponse()
         if errors:
-            context.update({"file_upload_errors": errors})
+            context.update({"current_user": user, "file_upload_errors": errors})
             response.content = render_block_to_string(
                 "performance/shared_resources_section.html",
                 "file_upload_error_section",
@@ -1473,7 +1492,13 @@ def shared_resource_management_delete(request, resource_id=""):
         shared_files = get_users_shared_resources(user).filter(
             resource_name__icontains=search_query
         )
-        context.update({"shared_files": shared_files, "search_query": search_query})
+        context.update(
+            {
+                "current_user": user,
+                "shared_files": shared_files,
+                "search_query": search_query,
+            }
+        )
         response = HttpResponse()
         response.content = render_block_to_string(
             "performance/shared_resources_management.html",
@@ -1540,6 +1565,8 @@ def shared_resource_management_confidential_state_toggle(request, resource_id=""
     if request.htmx and request.method == "POST":
         resource_to_toggle = SharedResource.objects.get(id=resource_id)
         resource_to_toggle.is_confidential = not resource_to_toggle.is_confidential
+        if not resource_to_toggle.is_confidential:
+            resource_to_toggle.confidential_access_users.clear()
         resource_to_toggle.save()
 
         user_choices = get_users_per_shared_resources(user, resource_to_toggle)
@@ -1565,6 +1592,27 @@ def shared_resource_management_confidential_state_toggle(request, resource_id=""
         return response
 
 
+def shared_resource_management_modify_user_confidential_access(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        resource_id = data.get("resource_id", "")
+        selected_user_id = data.get("selected_user_id", "")
+        resource, selected_user = modify_user_file_confidentiality(
+            resource_id, selected_user_id
+        )
+        context.update({"resource_to_share": resource, "user": selected_user})
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "performance/shared_resources_management.html",
+            "user_confidential_switch",
+            context,
+        )
+        response = retarget(response, "#user_confidential_switch")
+        response = reswap(response, "outerHTML")
+        return response
+
+
 def shared_resource_management_modify_users_with_share_access(request, resource_id=""):
     context = {}
     user = request.user
@@ -1583,6 +1631,7 @@ def shared_resource_management_modify_users_with_share_access(request, resource_
         selected_users = resource_to_share.shared_to.all()
         context.update(
             {
+                "current_user": user,
                 "resource_to_share": resource_to_share,
                 "user_choices": user_choices,
                 "selected_users": selected_users,
@@ -1616,7 +1665,7 @@ def shared_resource_management_update_file_list_after_modifying_share_access(req
             resource_name__icontains=resource_search
         )
 
-        context.update({"shared_files": shared_files})
+        context.update({"current_user": user, "shared_files": shared_files})
 
         response = HttpResponse()
         response.content = render_block_to_string(

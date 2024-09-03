@@ -119,24 +119,28 @@
                                                                     </button>
                                                                 {% endif %}
                                                             </li>
-                                                            <li>
-                                                                <button type="submit"
-                                                                        hx-post="{% url "performance:resource_share_access" file.id %}"
-                                                                        class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
-                                                                    Share
-                                                                </button>
-                                                            </li>
+                                                            {% if current_user == file.uploader %}
+                                                                <li>
+                                                                    <button type="submit"
+                                                                            hx-post="{% url "performance:resource_share_access" file.id %}"
+                                                                            class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
+                                                                        Share
+                                                                    </button>
+                                                                </li>
+                                                            {% endif %}
                                                             <li>
                                                                 <a href="{% url "performance:download_resource" file.id %}"
                                                                    class="block px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Download</a>
                                                             </li>
-                                                            <li>
-                                                                <button type="submit"
-                                                                        hx-post="{% url "performance:delete_resource" file.id %}"
-                                                                        class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
-                                                                    Delete
-                                                                </button>
-                                                            </li>
+                                                            {% if current_user == file.uploader %}
+                                                                <li>
+                                                                    <button type="submit"
+                                                                            hx-post="{% url "performance:delete_resource" file.id %}"
+                                                                            class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
+                                                                        Delete
+                                                                    </button>
+                                                                </li>
+                                                            {% endif %}
                                                         </ul>
                                                     </div>
                                                 </div>
@@ -297,22 +301,27 @@
                                 </svg>
                             </button>
                             <div class="p-4 md:p-10 text-center w-full">
-                                {% if resource_to_preview.is_resource_media %}
-                                    {% if resource_to_preview.is_resource_video %}
-                                        <video controls>
-                                            <source src="{{ resource_to_preview.resource.url }}">
-                                        </video>
-                                    {% elif resource_to_preview.is_resource_image %}
-                                        <div class="w-full h-full flex items-center justify-center">
-                                            <img src="{{ resource_to_preview.resource.url }}" alt="Image Preview">
-                                        </div>
-                                    {% endif %}
+                                {% if not user_has_access %}
+                                    <h2 class="text-2xl font-extrabold dark:text-white">File is confidential. {{ request }}</h2>
+                                    <p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">Contact the HR to request for access.</p>
                                 {% else %}
-                                    <input id="resource_to_preview_url"
-                                           type="hidden"
-                                           value="{{ resource_to_preview.get_resource_url_for_preview }}">
-                                    <div id="pdf-container"
-                                         class="w-full h-[45rem] p-4 overflow-y-auto bg-white shadow-lg"></div>
+                                    {% if resource_to_preview.is_resource_media %}
+                                        {% if resource_to_preview.is_resource_video %}
+                                            <video controls>
+                                                <source src="{{ resource_to_preview.resource.url }}">
+                                            </video>
+                                        {% elif resource_to_preview.is_resource_image %}
+                                            <div class="w-full h-full flex items-center justify-center min-h-80 md:min-h-[30rem]">
+                                                <img src="{{ resource_to_preview.resource.url }}" alt="Image Preview">
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <input id="resource_to_preview_url"
+                                               type="hidden"
+                                               value="{{ resource_to_preview.get_resource_url_for_preview }}">
+                                        <div id="pdf-container"
+                                             class="w-full h-[45rem] p-4 overflow-y-auto bg-white shadow-lg"></div>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                         </div>
@@ -383,7 +392,6 @@
                                                                        value="{{ user.id }}"
                                                                        hx-trigger="input"
                                                                        hx-post="{% url "performance:resource_modify_users_with_share_access" resource_to_share.id %}"
-                                                                       hx-vals='{"url": "{{ request.get_full_path|escape }}"}'
                                                                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
                                                                 <label for="user-checkbox-item-{{ user.id }}"
                                                                        class="w-full ms-2 text-sm text-start font-medium text-gray-900 rounded dark:text-gray-300">
@@ -419,14 +427,13 @@
                                                                        checked
                                                                        hx-trigger="input"
                                                                        hx-post="{% url "performance:resource_modify_users_with_share_access" resource_to_share.id %}"
-                                                                       hx-vals='{"selected_user_to_remove": "{{ user.id }}", "url": "{{ request.get_full_path|escape }}"}'
+                                                                       hx-vals='{"selected_user_to_remove": "{{ user.id }}"}'
                                                                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
                                                                 <label for="user-selected-checkbox-item-{{ user.id }}"
                                                                        class="w-full ms-2 text-sm text-start font-medium text-gray-900 rounded dark:text-gray-300">
                                                                     {{ user.userdetails.get_user_fullname }}
                                                                     <br>
-                                                                    (
-                                                                    {% if not user.userdetails.is_employee %}{{ user.userdetails.get_user_full_user_role }} -{% endif %}
+                                                                    ({% if not user.userdetails.is_employee %}{{ user.userdetails.get_user_full_user_role }} -{% endif %}
                                                                     {{ user.userdetails.department }})
                                                                 </label>
                                                             </div>

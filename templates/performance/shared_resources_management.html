@@ -119,24 +119,28 @@
                                                                     </button>
                                                                 {% endif %}
                                                             </li>
-                                                            <li>
-                                                                <button type="submit"
-                                                                        hx-post="{% url "performance:shared_resource_management_share_access" file.id %}"
-                                                                        class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
-                                                                    Share
-                                                                </button>
-                                                            </li>
+                                                            {% if current_user == file.uploader %}
+                                                                <li>
+                                                                    <button type="submit"
+                                                                            hx-post="{% url "performance:shared_resource_management_share_access" file.id %}"
+                                                                            class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
+                                                                        Share
+                                                                    </button>
+                                                                </li>
+                                                            {% endif %}
                                                             <li>
                                                                 <a href="{% url "performance:download_resource" file.id %}"
                                                                    class="block px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Download</a>
                                                             </li>
-                                                            <li>
-                                                                <button type="submit"
-                                                                        hx-post="{% url "performance:shared_resource_management_delete" file.id %}"
-                                                                        class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
-                                                                    Delete
-                                                                </button>
-                                                            </li>
+                                                            {% if current_user == file.uploader %}
+                                                                <li>
+                                                                    <button type="submit"
+                                                                            hx-post="{% url "performance:shared_resource_management_delete" file.id %}"
+                                                                            class="block w-full px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
+                                                                        Delete
+                                                                    </button>
+                                                                </li>
+                                                            {% endif %}
                                                         </ul>
                                                     </div>
                                                 </div>
@@ -403,10 +407,9 @@
                                                                        value="{{ user.id }}"
                                                                        hx-trigger="input"
                                                                        hx-post="{% url "performance:shared_resource_management_modify_users_with_share_access" resource_to_share.id %}"
-                                                                       hx-vals='{"url": "{{ request.get_full_path|escape }}"}'
-                                                                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                                                                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500 cursor-pointer">
                                                                 <label for="user-checkbox-item-{{ user.id }}"
-                                                                       class="w-full ms-2 text-sm text-start font-medium text-gray-900 rounded dark:text-gray-300">
+                                                                       class="w-full ms-2 text-sm text-start font-medium text-gray-900 rounded dark:text-gray-300 cursor-pointer">
                                                                     {{ user.userdetails.get_user_fullname }}
                                                                     <br>
                                                                     ({% if not user.userdetails.is_employee %}{{ user.userdetails.get_user_full_user_role }} -{% endif %}
@@ -432,23 +435,61 @@
                                                     {% for user in selected_users %}
                                                         <li>
                                                             <div class="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                                <input id="user-selected-checkbox-item-{{ user.id }}"
-                                                                       name="selected_user_to_remove"
-                                                                       type="checkbox"
-                                                                       value="{{ user.id }}"
-                                                                       checked
-                                                                       hx-trigger="input"
-                                                                       hx-post="{% url "performance:shared_resource_management_modify_users_with_share_access" resource_to_share.id %}"
-                                                                       hx-vals='{"selected_user_to_remove": "{{ user.id }}", "url": "{{ request.get_full_path|escape }}"}'
-                                                                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
                                                                 <label for="user-selected-checkbox-item-{{ user.id }}"
                                                                        class="w-full ms-2 text-sm text-start font-medium text-gray-900 rounded dark:text-gray-300">
                                                                     {{ user.userdetails.get_user_fullname }}
                                                                     <br>
-                                                                    (
-                                                                    {% if not user.userdetails.is_employee %}{{ user.userdetails.get_user_full_user_role }} -{% endif %}
+                                                                    ({% if not user.userdetails.is_employee %}
+                                                                        {{ user.userdetails.get_user_full_user_role }} -
+                                                                    {% endif %}
                                                                     {{ user.userdetails.department }})
                                                                 </label>
+                                                                <div class="flex flex-row gap-2">
+                                                                    {% if resource_to_share.is_confidential %}
+                                                                        {% block user_confidential_switch %}
+                                                                            <button id="user_confidential_switch"
+                                                                                    type="button"
+                                                                                    hx-post="{% url "performance:shared_resource_management_modify_user_confidential_access" %}"
+                                                                                    hx-vals='{"resource_id": {{ resource_to_share.id }}, "selected_user_id": {{ user.id }}}'>
+                                                                                {% if user not in resource_to_share.confidential_access_users.all %}
+                                                                                    <svg class="w-6 h-6 text-gray-800 dark:text-white"
+                                                                                         aria-hidden="true"
+                                                                                         xmlns="http://www.w3.org/2000/svg"
+                                                                                         width="24"
+                                                                                         height="24"
+                                                                                         fill="none"
+                                                                                         viewBox="0 0 24 24">
+                                                                                        <path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" />
+                                                                                        <path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                                                    </svg>
+                                                                                {% else %}
+                                                                                    <svg class="w-6 h-6 text-gray-800 dark:text-white"
+                                                                                         aria-hidden="true"
+                                                                                         xmlns="http://www.w3.org/2000/svg"
+                                                                                         width="24"
+                                                                                         height="24"
+                                                                                         fill="none"
+                                                                                         viewBox="0 0 24 24">
+                                                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                                                    </svg>
+                                                                                {% endif %}
+                                                                            </button>
+                                                                        {% endblock %}
+                                                                    {% endif %}
+                                                                    <button type="button"
+                                                                            hx-post="{% url "performance:shared_resource_management_modify_users_with_share_access" resource_to_share.id %}"
+                                                                            hx-vals='{"selected_user_to_remove": "{{ user.id }}"}'>
+                                                                        <svg class="w-6 h-6 text-gray-800 dark:text-white"
+                                                                             aria-hidden="true"
+                                                                             xmlns="http://www.w3.org/2000/svg"
+                                                                             width="24"
+                                                                             height="24"
+                                                                             fill="none"
+                                                                             viewBox="0 0 24 24">
+                                                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12h4M4 18v-1a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Zm8-10a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </li>
                                                     {% endfor %}
