@@ -42,12 +42,12 @@ def get_user_evaluator_choices(selected_user):
 
     evaluator_choices = (
         user_model.objects.filter(
-            Q(userdetails__user_role=hr_role)
+            Q(userdetails__role=hr_role)
             | Q(userdetails__department=selected_user.userdetails.department),
             is_active=True,
         )
         .exclude(pk=selected_user.id)
-        .order_by("-userdetails__user_role", "first_name")
+        .order_by("-userdetails__role", "first_name")
     )
 
     return evaluator_choices
@@ -242,7 +242,7 @@ def get_user_with_hr_role():
     user_details_model = apps.get_model("core", "UserDetails")
 
     hr_role = user_details_model.Role.HR.value
-    hr = user_model.objects.filter(userdetails__user_role=hr_role)
+    hr = user_model.objects.filter(userdetails__role=hr_role)
     return hr
 
 
@@ -284,9 +284,9 @@ def get_users_for_shared_resources(user):
     employee_role = user_details_model.Role.EMPLOYEE.value
 
     users = user_model.objects.filter(
-        Q(userdetails__user_role=hr_role)
-        | Q(userdetails__user_role=department_head_role)
-        | Q(userdetails__user_role=employee_role)
+        Q(userdetails__role=hr_role)
+        | Q(userdetails__role=department_head_role)
+        | Q(userdetails__role=employee_role)
     ).exclude(pk=user.id)
 
     return users
@@ -304,9 +304,9 @@ def get_users_per_shared_resources(user, resource):
 
     users = (
         user_model.objects.filter(
-            Q(userdetails__user_role=hr_role)
-            | Q(userdetails__user_role=department_head_role)
-            | Q(userdetails__user_role=employee_role)
+            Q(userdetails__role=hr_role)
+            | Q(userdetails__role=department_head_role)
+            | Q(userdetails__role=employee_role)
         )
         .exclude(id=user.id)
         .exclude(id__in=users_shared_with_resource)
