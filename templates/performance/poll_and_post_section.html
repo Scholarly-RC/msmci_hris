@@ -1,0 +1,468 @@
+{% extends "layout.html" %}
+{% block content %}
+    {% include "navbar.html" %}
+    <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
+        <div class="w-full relative px-2 lg:px-10">
+            <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3 mt-10">Poll and Post Section</h1>
+            {% block poll_and_post_section %}
+                <div id="poll_and_post_section"
+                     class="w-full min-h-[45rem] flex flex-col gap-6 p-4 mb-10 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <div class="w-full flex flex-col md:flex-row gap-5">
+                        <form hx-post="{% url "performance:poll_and_post_section" %}"
+                              class="w-full max-w-sm p-5 border border-gray-100 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+                            <div>
+                                <h3 class="mb-4 font-semibold text-gray-900 dark:text-white">Filter</h3>
+                                <ul class="w-48 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <li class="w-full border-b border-gray-200 rounded-t-lg dark:border-gray-600">
+                                        <div class="flex items-center ps-3">
+                                            <input id="poll_filter"
+                                                   name="filter"
+                                                   type="checkbox"
+                                                   value="poll"
+                                                   {% if "poll" in filters %}checked{% endif %}
+                                                   class="choice-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                                            <label for="poll_filter"
+                                                   class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                Poll
+                                            </label>
+                                        </div>
+                                    </li>
+                                    <li class="w-full border-b border-gray-200 rounded-t-lg dark:border-gray-600">
+                                        <div class="flex items-center ps-3">
+                                            <input id="post_filter"
+                                                   name="filter"
+                                                   type="checkbox"
+                                                   value="post"
+                                                   {% if "post" in filters %}checked{% endif %}
+                                                   class="choice-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                                            <label for="post_filter"
+                                                   class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                Post
+                                            </label>
+                                        </div>
+                                    </li>
+                                    <li class="w-full border-b border-gray-200 rounded-t-lg dark:border-gray-600">
+                                        <div class="flex items-center ps-3">
+                                            <input id="important_filter"
+                                                   name="filter"
+                                                   type="checkbox"
+                                                   value="important"
+                                                   {% if "important" in filters %}checked{% endif %}
+                                                   class="choice-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                                            <label for="important_filter"
+                                                   class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                Important
+                                            </label>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="relative w-48 max-w-sm mt-5">
+                                <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400"
+                                         aria-hidden="true"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         fill="currentColor"
+                                         viewBox="0 0 20 20">
+                                        <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+                                    </svg>
+                                </div>
+                                <input id="date_filter"
+                                       name="date_filter"
+                                       datepicker
+                                       datepicker-autohide
+                                       datepicker-buttons
+                                       datepicker-autoselect-today
+                                       hx-post="{% url "performance:poll_and_post_section" %}"
+                                       hx-trigger="input changed delay:200ms"
+                                       hx-include=".choice-checkbox"
+                                       type="text"
+                                       value="{% if date_filter %}{{ date_filter }}{% endif %}"
+                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                       placeholder="Select date"
+                                       autocomplete="off">
+                            </div>
+                            <div class="mt-2">
+                                <button type="submit"
+                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                    Filter
+                                </button>
+                            </div>
+                        </form>
+                        <div class="w-full h-[42rem] overflow-y-auto md:px-2">
+                            {% for poll_or_post_data in polls_and_posts %}
+                                <div class="p-5 mb-4 border border-gray-100 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+                                    <time class="text-lg font-semibold text-gray-900 dark:text-white">{{ poll_or_post_data.date }}</time>
+                                    <ol class="mt-3 divide-y divider-gray-200 dark:divide-gray-700">
+                                        {% for poll_or_post in poll_or_post_data.polls_and_posts %}
+                                            <li>
+                                                {% if poll_or_post.is_post %}
+                                                    <div class="items-center block p-3 sm:flex hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                        <div class="w-full flex flex-row justify-between">
+                                                            <div class="text-gray-600 dark:text-gray-400">
+                                                                <div class="text-base font-normal">
+                                                                    <span class="font-medium text-gray-900 dark:text-white">{{ poll_or_post.title }}</span>
+                                                                </div>
+                                                                <div class="text-sm font-normal">{{ poll_or_post.description }}</div>
+                                                                <span class="inline-flex items-center text-xs font-normal text-gray-500 dark:text-gray-400">
+                                                                    <svg class="w-2.5 h-2.5 me-1"
+                                                                         aria-hidden="true"
+                                                                         xmlns="http://www.w3.org/2000/svg"
+                                                                         fill="currentColor"
+                                                                         viewBox="0 0 20 20">
+                                                                        <path d="M10 .5a9.5 9.5 0 1 0 0 19 9.5 9.5 0 0 0 0-19ZM8.374 17.4a7.6 7.6 0 0 1-5.9-7.4c0-.83.137-1.655.406-2.441l.239.019a3.887 3.887 0 0 1 2.082 2.5 4.1 4.1 0 0 0 2.441 2.8c1.148.522 1.389 2.007.732 4.522Zm3.6-8.829a.997.997 0 0 0-.027-.225 5.456 5.456 0 0 0-2.811-3.662c-.832-.527-1.347-.854-1.486-1.89a7.584 7.584 0 0 1 8.364 2.47c-1.387.208-2.14 2.237-2.14 3.307a1.187 1.187 0 0 1-1.9 0Zm1.626 8.053-.671-2.013a1.9 1.9 0 0 1 1.771-1.757l2.032.619a7.553 7.553 0 0 1-3.132 3.151Z" />
+                                                                    </svg>
+                                                                    {{ poll_or_post.updated.time }}
+                                                                </span>
+                                                            </div>
+                                                            <div class="flex items-center p-2">
+                                                                <button type="button"
+                                                                        hx-post="{% url "performance:select_post_content" poll_or_post.id %}"
+                                                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                                    View
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="items-center block p-3 sm:flex hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                        <div class="w-full flex flex-row justify-between">
+                                                            <div class="text-gray-600 dark:text-gray-400">
+                                                                <div class="text-base font-normal">
+                                                                    <span class="font-medium text-gray-900 dark:text-white">{{ poll_or_post.name }}</span>
+                                                                </div>
+                                                                <div class="text-sm font-normal">{{ poll_or_post.description }}</div>
+                                                                <span class="inline-flex items-center text-xs font-normal text-gray-500 dark:text-gray-400">
+                                                                    <svg class="w-2.5 h-2.5 me-1"
+                                                                         aria-hidden="true"
+                                                                         xmlns="http://www.w3.org/2000/svg"
+                                                                         fill="currentColor"
+                                                                         viewBox="0 0 20 20">
+                                                                        <path d="M10 .5a9.5 9.5 0 1 0 0 19 9.5 9.5 0 0 0 0-19ZM8.374 17.4a7.6 7.6 0 0 1-5.9-7.4c0-.83.137-1.655.406-2.441l.239.019a3.887 3.887 0 0 1 2.082 2.5 4.1 4.1 0 0 0 2.441 2.8c1.148.522 1.389 2.007.732 4.522Zm3.6-8.829a.997.997 0 0 0-.027-.225 5.456 5.456 0 0 0-2.811-3.662c-.832-.527-1.347-.854-1.486-1.89a7.584 7.584 0 0 1 8.364 2.47c-1.387.208-2.14 2.237-2.14 3.307a1.187 1.187 0 0 1-1.9 0Zm1.626 8.053-.671-2.013a1.9 1.9 0 0 1 1.771-1.757l2.032.619a7.553 7.553 0 0 1-3.132 3.151Z" />
+                                                                    </svg>
+                                                                    {{ poll_or_post.updated.time }}
+                                                                </span>
+                                                            </div>
+                                                            {% if poll_or_post.has_choices %}
+                                                                <div class="flex items-center p-2">
+                                                                    <button type="button"
+                                                                            hx-post="{% url "performance:select_poll_content" poll_or_post.id %}"
+                                                                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                                        View
+                                                                    </button>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </li>
+                                        {% endfor %}
+                                    </ol>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <!-- Content Modal -->
+                        <div id="static_content_modal"
+                             class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                            {% block poll_and_post_static_modal_content %}
+                                <div id="poll_and_post_static_modal_content"
+                                     class="relative p-4 w-full max-w-4xl max-h-full">
+                                    {% if selected_poll %}
+                                        <form hx-post="{% url "performance:submit_poll_vote" selected_poll.id %}"
+                                              class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                                            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Poll Details</h3>
+                                                <button type="button"
+                                                        hx-post="{% url "performance:performance_module_close_modals" %}"
+                                                        hx-vals='{"event_name": "closePollContent"}'
+                                                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                                    <svg class="w-3 h-3"
+                                                         aria-hidden="true"
+                                                         xmlns="http://www.w3.org/2000/svg"
+                                                         fill="none"
+                                                         viewBox="0 0 14 14">
+                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            {% if show_poll_result %}
+                                                <div class="p-4 md:p-5">
+                                                    <div class="py-6" id="poll_donut_chart"></div>
+                                                    <input id="current_poll_data"
+                                                           type="text"
+                                                           value="{{ selected_poll.get_stats_for_donut_chart }}"
+                                                           hidden>
+                                                </div>
+                                                <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600"></div>
+                                            {% else %}
+                                                {% if selected_poll.in_progress %}
+                                                    {% if user_already_voted %}
+                                                        <div class="p-4 md:p-5">
+                                                            <h2 class="text-xl font-extrabold dark:text-white">Vote submitted.</h2>
+                                                            <a href="#"
+                                                               hx-post="{% url "performance:view_poll_result" selected_poll.id %}"
+                                                               class="text-base leading-relaxed text-gray-500 dark:text-gray-400">Click here to view results.</a>
+                                                        </div>
+                                                        <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600"></div>
+                                                    {% else %}
+                                                        <div class="p-4 md:p-5">
+                                                            <h2 class="text-xl font-extrabold dark:text-white">{{ selected_poll.name }}</h2>
+                                                            <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">{{ selected_poll.description }}</p>
+                                                            <h3 class="my-2 font-semibold text-gray-900 dark:text-white">Choices:</h3>
+                                                            <ul class="items-center w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg sm:flex dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                                                {% for choice in selected_poll.get_choices %}
+                                                                    <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                                                                        <div class="flex items-center ps-3">
+                                                                            <input id="choice_{{ forloop.counter0 }}"
+                                                                                   type="radio"
+                                                                                   value="{{ forloop.counter0 }}"
+                                                                                   name="selected_choice"
+                                                                                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                                                                                   required>
+                                                                            <label for="choice_{{ forloop.counter0 }}"
+                                                                                   class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                                                {{ choice }}
+                                                                            </label>
+                                                                        </div>
+                                                                    </li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        </div>
+                                                        <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+                                                            <button type="submit"
+                                                                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                                Submit
+                                                            </button>
+                                                        </div>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <div class="p-4 md:p-5">
+                                                        <h2 class="text-xl font-extrabold dark:text-white">Poll Ended.</h2>
+                                                        <a href="#"
+                                                           hx-post="{% url "performance:view_poll_result" selected_poll.id %}"
+                                                           class="text-base leading-relaxed text-gray-500 dark:text-gray-400">Click here to view results.</a>
+                                                    </div>
+                                                    <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600"></div>
+                                                {% endif %}
+                                            {% endif %}
+                                        </form>
+                                    {% elif selected_post %}
+                                        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                                            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Post Details</h3>
+                                                <button type="button"
+                                                        hx-post="{% url "performance:performance_module_close_modals" %}"
+                                                        hx-vals='{"event_name": "closePollContent"}'
+                                                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                                    <svg class="w-3 h-3"
+                                                         aria-hidden="true"
+                                                         xmlns="http://www.w3.org/2000/svg"
+                                                         fill="none"
+                                                         viewBox="0 0 14 14">
+                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            <div id="post_content" class="p-4 md:p-5">
+                                                {{ selected_post.body.content|safe }}
+                                            </div>
+                                            <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600"></div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endblock %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endblock %}
+        {% include "performance/components/sections_menu.html" %}
+    </div>
+</div>
+{% endblock %}
+{% block javascript %}
+    <script>
+        const options = {
+            autohide: true,
+            format: 'mm/dd/yyyy',
+            maxDate: null,
+            minDate: null,
+            orientation: 'bottom',
+            buttons: true,
+            autoSelectToday: true,
+            title: null,
+            rangePicker: false,
+            onShow: () => {},
+            onHide: () => {},
+        };
+
+        const instanceOptions = {
+            id: 'date_filter',
+            override: true
+        };
+
+        const initializeDatePicker = () => {
+            const $datepickerElement = document.getElementById('date_filter');
+
+            if ($datepickerElement) {
+                const datepicker = new Datepicker($datepickerElement, options, instanceOptions);
+            }
+        }
+
+        document.body.addEventListener("htmx:afterSwap", (event) => {
+            initializeDatePicker();
+        });
+    </script>
+    <script>
+        const initializeContentModal = () => {
+            const modalElement = document.getElementById('static_content_modal');
+            const options = {
+                placement: 'center-center',
+                backdrop: 'dynamic',
+                backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
+                closable: true,
+            };
+
+            const instanceOptions = {
+                id: 'static_content_modal',
+                override: true
+            };
+
+            if (modalElement) {
+                const modal = new Modal(modalElement, options, instanceOptions);
+                modal.show();
+            }
+        }
+
+        const closeContentModal = () => {
+            const modalElement = document.getElementById('static_content_modal');
+
+            if (modalElement) {
+                const modal = new Modal(modalElement);
+                modal.hide();
+            }
+        }
+
+        document.addEventListener('selectPollOrPostContent', (event) => {
+            initializeContentModal();
+        });
+
+        document.addEventListener('closePollContent', (event) => {
+            closeContentModal();
+        });
+    </script>
+    <script>
+        let chartInstance = null;
+
+        const getChartOptions = () => {
+            const inputElement = document.getElementById('current_poll_data');
+            const inputValue = inputElement.value;
+            let parsedArray = {};
+
+            if (inputValue) {
+                parsedArray = JSON.parse(inputValue);
+            }
+
+            const labels = parsedArray.labels;
+            const values = parsedArray.counts;
+            const colors = parsedArray.colors;
+
+            return {
+                series: values,
+                colors: colors,
+                chart: {
+                    height: 320,
+                    width: "100%",
+                    type: "donut",
+                },
+                stroke: {
+                    colors: ["transparent"],
+                    lineCap: "",
+                },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            labels: {
+                                show: true,
+                                name: {
+                                    show: true,
+                                    fontFamily: "Inter, sans-serif",
+                                    offsetY: 20,
+                                },
+                                total: {
+                                    showAlways: true,
+                                    show: true,
+                                    label: "Total Votes",
+                                    fontFamily: "Inter, sans-serif",
+                                    formatter: function(w) {
+                                        const sum = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                                        return sum;
+                                    },
+                                },
+                                value: {
+                                    show: true,
+                                    fontFamily: "Inter, sans-serif",
+                                    offsetY: -20,
+                                    formatter: function(value) {
+                                        return value;
+                                    },
+                                },
+                            },
+                            size: "60%",
+                        },
+                    },
+                },
+                grid: {
+                    padding: {
+                        top: -2,
+                    },
+                },
+                labels: labels,
+                dataLabels: {
+                    enabled: true,
+                },
+                legend: {
+                    position: "bottom",
+                    fontFamily: "Inter, sans-serif",
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function(value) {
+                            return value;
+                        },
+                    },
+                },
+                xaxis: {
+                    labels: {
+                        formatter: function(value) {
+                            return value;
+                        },
+                    },
+                    axisTicks: {
+                        show: false,
+                    },
+                    axisBorder: {
+                        show: false,
+                    },
+                },
+            };
+        }
+
+
+        const initializeStatsChart = () => {
+            const chartElement = document.getElementById("poll_donut_chart");
+            if (chartElement && typeof ApexCharts !== 'undefined') {
+                chartInstance = new ApexCharts(chartElement, getChartOptions());
+                chartInstance.render();
+            }
+        }
+
+        document.addEventListener('showPollResult', (event) => {
+            // Destroy the existing chart instance if it exists
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            initializeStatsChart();
+        });
+    </script>
+{% endblock %}

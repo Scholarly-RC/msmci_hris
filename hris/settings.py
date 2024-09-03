@@ -38,6 +38,9 @@ INSTALLED_APPS = [
     "core",
     "attendance",
     "chat",
+    "performance",
+    "prose",
+    "django_q",
 ]
 
 MIDDLEWARE = [
@@ -80,7 +83,7 @@ WSGI_APPLICATION = "hris.wsgi.application"
 
 DATABASES = {
     "default": dj_database_url.parse(
-        os.getenv("DATABASE_URL", f'sqlite:///{BASE_DIR / "db.sqlite3"}'),
+        os.getenv("DATABASE_URL", f'sqlite:///{BASE_DIR / "db_res.sqlite3"}'),
     )
 }
 
@@ -136,3 +139,22 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
 BIOMETRIC_DEVICE_IP = os.getenv("BIOMETRIC_DEVICE_IP")
+
+PROSE_ATTACHMENT_ALLOWED_FILE_SIZE = 10
+
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
+Q_CLUSTER = {
+    "name": "Django-Q2-ORM",
+    "workers": 4,
+    "timeout": 60,
+    "retry": 90,
+    "queue_limit": 50,
+    "bulk": 10,
+    "orm": "default",
+    "ack_failures": True,
+    "max_attempts": 3,
+    "attempt_count": 1,
+}
+
+SOFFICE_PATH = os.getenv("SOFFICE_PATH")

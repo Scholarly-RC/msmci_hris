@@ -1,0 +1,475 @@
+{% extends "layout.html" %}
+{% block content %}
+    {% include "navbar.html" %}
+    <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
+        <div class="w-full relative px-2 lg:px-10">
+            <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3 mt-10">
+                Performance and Learning Management
+            </h1>
+            {% block performance_and_learning_management_section %}
+                <div id="performance_and_learning_management_section"
+                     class="min-h-[45rem] flex flex-col gap-6 p-4 mb-10 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <div class="sm:hidden">
+                        <select name="selected_evaluation"
+                                hx-post="{% url "performance:switch_performance_evalution" %}"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            <option value="{% url 'performance:performance_evaluation' %}"
+                                    {% if evaluation_section == "self" %}selected{% endif %}>Self Evaluation</option>
+                            <option value="{% url 'performance:performance_peer_evaluation' %}"
+                                    {% if evaluation_section == "peer" %}selected{% endif %}>Peer Evaluation</option>
+                        </select>
+                    </div>
+                    <ul class="hidden text-sm font-medium text-center text-gray-500 rounded-lg shadow sm:flex dark:divide-gray-700 dark:text-gray-400">
+                        <li class="w-full focus-within:z-10">
+                            <button type="button"
+                                    hx-post="{% url 'performance:performance_evaluation' %}"
+                                    class="inline-block w-full p-4 {% if evaluation_section == 'self' %} text-gray-900 bg-gray-100 border border-gray-200 dark:border-gray-700 rounded-l-lg focus:ring-4 focus:ring-blue-300 active focus:outline-none dark:bg-gray-700 dark:text-white {% else %} text-gray-700 bg-white border border-gray-200 dark:border-gray-700 hover:text-gray-900 hover:bg-gray-50 focus:ring-4 focus:ring-blue-300 focus:outline-none dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700 {% endif %}">
+                                Self Evaluation
+                            </button>
+                        </li>
+                        <li class="w-full focus-within:z-10">
+                            <button type="button"
+                                    hx-post="{% url 'performance:performance_peer_evaluation' %}"
+                                    class="inline-block w-full p-4 {% if evaluation_section == 'peer' %} text-gray-900 bg-gray-100 border border-gray-200 dark:border-gray-700 rounded-r-lg focus:ring-4 focus:ring-blue-300 active focus:outline-none dark:bg-gray-700 dark:text-white {% else %} text-gray-700 bg-white border border-gray-200 dark:border-gray-700 hover:text-gray-900 hover:bg-gray-50 focus:ring-4 focus:ring-blue-300 focus:outline-none dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700 {% endif %}">
+                                Peer Evaluation
+                            </button>
+                        </li>
+                    </ul>
+                    {% block evaluation_content %}
+                        <div id="evluation_content">
+                            {% if evaluation_section == "self" %}
+                                <div class="w-full flex flex-col items-center">
+                                    <div class="flex flex-col w-full items-center">
+                                        <div class="w-full lg:w-auto">
+                                            <div class="w-auto max-w-sm mb-2">
+                                                <label for="year_and_quarter"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    Select Year & Quarter
+                                                </label>
+                                                {% if user_evaluations %}
+                                                    <select id="year_and_quarter"
+                                                            name="selected_year_and_quarter"
+                                                            hx-post="{% url 'performance:performance_evaluation' %}"
+                                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                                        {% for user_evaluation in user_evaluations %}
+                                                            <option value="{{ user_evaluation.id }}"
+                                                                    {% if user_evaluation.id == current_user_evaluation.id %}selected{% endif %}>
+                                                                {{ user_evaluation.get_year_and_quarter }}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                {% else %}
+                                                    <input type="text"
+                                                           value="User dont have any recorded evaluations"
+                                                           readonly
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                                {% endif %}
+                                            </div>
+                                            {% if user_evaluations %}
+                                                <div class="w-full lg:w-[60rem] bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                                    <div class="flex flex-wrap text-sm font-medium text-center text-gray-500 border-b border-gray-200 rounded-t-lg bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800">
+                                                        {% block evaluation_counter_and_submit_section %}
+                                                            <div id="evaluation_counter_and_submit_section"
+                                                                 class="flex gap-5 self-center align-center ms-auto p-1">
+                                                                {% if current_evaluation.is_submitted %}
+                                                                    <span class="flex self-center text-md p-2 font-medium text-gray-900 dark:text-white">Date Submitted: {{ current_evaluation.date_submitted.date }}</span>
+                                                                {% else %}
+                                                                    <span class="text-lg p-2 font-medium text-gray-900 dark:text-white">{{ current_evaluation.get_total_answered_questions_count.0 }} | {{ current_evaluation.get_total_answered_questions_count.1 }}</span>
+                                                                    {% if current_evaluation.is_all_questions_answered %}
+                                                                        <button type="button"
+                                                                                hx-post="{% url "performance:submit_self_evaluation" %}"
+                                                                                hx-vals='{"current_evaluation": {{ current_evaluation.id }}}'
+                                                                                class="w-20 md:w-auto px-auto md:px-5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                                                                            Submit
+                                                                        </button>
+                                                                    {% else %}
+                                                                        <button type="button"
+                                                                                class="w-20 md:w-auto px-auto md:px-5 text-white bg-blue-400 dark:bg-blue-500 cursor-not-allowed font-medium rounded-lg text-sm text-center"
+                                                                                disabled>Submit</button>
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                            </div>
+                                                        {% endblock %}
+                                                    </div>
+                                                    <div class="h-[35rem] overflow-y-scroll grid grid-cols-1">
+                                                        {% if current_evaluation.is_submitted %}
+                                                            {% for content in current_submitted_evaluation_data %}
+                                                                <div class="p-4 bg-white rounded-lg md:px-10 dark:bg-gray-800">
+                                                                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+                                                                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                                                            <caption class="p-5 text-lg font-semibold text-left text-gray-900 border-t rounded-lg bg-white dark:text-white dark:bg-gray-800">
+                                                                                Domain #{{ content.domain_number }} - {{ content.name|title }}
+                                                                                <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
+                                                                                    {% if content.description %}({{ content.description|capfirst }}){% endif %}
+                                                                                </p>
+                                                                            </caption>
+                                                                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                                                <tr>
+                                                                                    <th scope="col" class="px-6 py-3">#</th>
+                                                                                    <th scope="col" class="px-6 py-3">Indicator</th>
+                                                                                    <th scope="col" class="px-6 py-3 text-center">Self</th>
+                                                                                    <th scope="col" class="px-6 py-3 text-center">Peer</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                {% for question in content.questions %}
+                                                                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                                                        <th scope="row" class="px-6 py-4">{{ question.indicator_number }}</th>
+                                                                                        <td class="px-6 py-4">{{ question.indicator }}</td>
+                                                                                        <td class="px-6 py-4 text-center">{{ question.self_rating }}</td>
+                                                                                        <td class="px-6 py-4 text-center">{{ question.peer_rating|floatformat:2 }}</td>
+                                                                                    </tr>
+                                                                                {% endfor %}
+                                                                            </tbody>
+                                                                            <tfoot>
+                                                                                <tr class="font-semibold text-gray-900 dark:text-white border-b-2 dark:border-gray-700">
+                                                                                    <td></td>
+                                                                                    <td class="px-6 py-3 text-end text-base font-bold">Mean</td>
+                                                                                    <td class="px-6 py-3 text-center text-base font-bold">{{ content.self_rating_mean|floatformat:2 }}</td>
+                                                                                    <td class="px-6 py-3 text-center text-base font-bold">{{ content.peer_rating_mean|floatformat:2 }}</td>
+                                                                                </tr>
+                                                                            </tfoot>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+                                                            {% endfor %}
+                                                            <div class="font-semibold text-gray-900 dark:text-white">
+                                                                <div class="pt-6 text-center text-lg font-bold">Overall Mean</div>
+                                                                <div class="pb-6 text-center text-lg font-bold">
+                                                                    <u>Self: {{ current_user_evaluation.get_overall_self_and_peer_rating_mean.0|floatformat:2 }}</u>
+                                                                    <u>Peer: {{ current_user_evaluation.get_overall_self_and_peer_rating_mean.1|floatformat:2 }}</u>
+                                                                </div>
+                                                            </div>
+                                                            <div class="flex flex-col md:flex-row gap-5 p-6">
+                                                                <div class="block w-full p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                                                                    <h5 class="mb-2 text-lg font-bold tracking-tight text-gray-900 dark:text-white">
+                                                                        Say something positive about the person
+                                                                    </h5>
+                                                                    {% for comment in current_user_evaluation.get_evaluator_comments.0 %}
+                                                                        <blockquote class="text-lg italic font-semibold text-gray-900 dark:text-white">
+                                                                            <p>{{ comment|title }}.</p>
+                                                                        </blockquote>
+                                                                    {% endfor %}
+                                                                </div>
+                                                                <div class="block w-full p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                                                                    <h5 class="mb-2 text-lg font-bold tracking-tight text-gray-900 dark:text-white">Suggestions for improvement</h5>
+                                                                    {% for comment in current_user_evaluation.get_evaluator_comments.1 %}
+                                                                        <blockquote class="text-lg italic font-semibold text-gray-900 dark:text-white">
+                                                                            <p>{{ comment|title }}.</p>
+                                                                        </blockquote>
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+                                                        {% else %}
+                                                            {% for content in current_evaluation.content_data %}
+                                                                <div class="p-4 bg-white rounded-lg md:px-10 dark:bg-gray-800">
+                                                                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+                                                                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                                                            <caption class="p-5 text-lg font-semibold text-left text-gray-900 border-t rounded-lg bg-white dark:text-white dark:bg-gray-800">
+                                                                                Domain #{{ content.domain_number }} - {{ content.name|title }}
+                                                                                <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
+                                                                                    {% if content.description %}({{ content.description|capfirst }}){% endif %}
+                                                                                </p>
+                                                                            </caption>
+                                                                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                                                <tr>
+                                                                                    <th scope="col" class="px-6 py-3">#</th>
+                                                                                    <th scope="col" class="px-6 py-3">Indicator</th>
+                                                                                    <th scope="col" class="px-6 py-3">1</th>
+                                                                                    <th scope="col" class="px-6 py-3">2</th>
+                                                                                    <th scope="col" class="px-6 py-3">3</th>
+                                                                                    <th scope="col" class="px-6 py-3">4</th>
+                                                                                    <th scope="col" class="px-6 py-3">5</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                {% for question in content.questions %}
+                                                                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                                                        <th scope="row" class="px-6 py- ">{{ question.indicator_number }}</th>
+                                                                                        <td class="px-6 py-4">{{ question.indicator }}</td>
+                                                                                        <td class="px-6 py-4">
+                                                                                            <input type="radio"
+                                                                                                   value="1"
+                                                                                                   {% if question.rating == '1' %}checked{% endif %}
+                                                                                                   hx-post="{% url "performance:submit_evaluation_rating" %}"
+                                                                                                   hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
+                                                                                                   name="{{ content.domain_number }}_{{ question.indicator_number }}"
+                                                                                                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                                        </td>
+                                                                                        <td class="px-6 py-4">
+                                                                                            <input type="radio"
+                                                                                                   value="2"
+                                                                                                   {% if question.rating == '2' %}checked{% endif %}
+                                                                                                   hx-post="{% url "performance:submit_evaluation_rating" %}"
+                                                                                                   name="{{ content.domain_number }}_{{ question.indicator_number }}"
+                                                                                                   hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
+                                                                                                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                                        </td>
+                                                                                        <td class="px-6 py-4">
+                                                                                            <input type="radio"
+                                                                                                   value="3"
+                                                                                                   {% if question.rating == '3' %}checked{% endif %}
+                                                                                                   hx-post="{% url "performance:submit_evaluation_rating" %}"
+                                                                                                   name="{{ content.domain_number }}_{{ question.indicator_number }}"
+                                                                                                   hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
+                                                                                                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                                        </td>
+                                                                                        <td class="px-6 py-4">
+                                                                                            <input type="radio"
+                                                                                                   value="4"
+                                                                                                   {% if question.rating == '4' %}checked{% endif %}
+                                                                                                   hx-post="{% url "performance:submit_evaluation_rating" %}"
+                                                                                                   hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
+                                                                                                   name="{{ content.domain_number }}_{{ question.indicator_number }}"
+                                                                                                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                                        </td>
+                                                                                        <td class="px-6 py-4">
+                                                                                            <input type="radio"
+                                                                                                   value="5"
+                                                                                                   {% if question.rating == '5' %}checked{% endif %}
+                                                                                                   hx-post="{% url "performance:submit_evaluation_rating" %}"
+                                                                                                   hx-vals='{"current_evaluation": {{ current_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
+                                                                                                   name="{{ content.domain_number }}_{{ question.indicator_number }}"
+                                                                                                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                {% endfor %}
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            {% else %}
+                                                <div class="w-full lg:w-[60rem]">
+                                                    <!-- PLACEHOLDER DIV -->
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="w-full flex flex-col items-center">
+                                    {% if selected_peer_evaluation %}
+                                        <div class="w-full lg:w-[60rem] bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                            <div class="flex flex-wrap text-sm font-medium text-center text-gray-500 border-b border-gray-200 rounded-t-lg bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:bg-gray-800">
+                                                <div class="flex w-full sm:w-auto justify-center">
+                                                    <h2 class="px-5 text-center self-center text-xl font-extrabold dark:text-white">
+                                                        {{ selected_peer_evaluation.user_evaluation.evaluatee.userdetails.get_user_fullname }}
+                                                    </h2>
+                                                </div>
+                                                {% block peer_evaluation_counter_and_submit_section %}
+                                                    <div id="peer_evaluation_counter_and_submit_section"
+                                                         class="flex flex-col sm:flex-row w-full sm:w-auto justify-center gap-2 sm:gap-5 self-center align-center ms-auto p-1">
+                                                        {% if selected_peer_evaluation.is_submitted %}
+                                                            <span class="flex self-center text-md p-2 font-medium text-gray-900 dark:text-white">Date Submitted: {{ selected_peer_evaluation.date_submitted.date }}</span>
+                                                        {% else %}
+                                                            <span class="text-lg p-2 font-medium text-gray-900 dark:text-white">{{ selected_peer_evaluation.get_total_answered_questions_count.0 }} | {{ selected_peer_evaluation.get_total_answered_questions_count.1 }}</span>
+                                                            <div class="w-full sm:w-auto">
+                                                                {% if selected_peer_evaluation.is_all_questions_answered %}
+                                                                    <button type="button"
+                                                                            hx-post="{% url "performance:submit_peer_evaluation" %}"
+                                                                            hx-vals='{"current_evaluation": {{ selected_peer_evaluation.id }}}'
+                                                                            class="w-20 md:w-auto min-h-10 px-auto md:px-5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                                                                        Submit
+                                                                    </button>
+                                                                {% else %}
+                                                                    <button type="button"
+                                                                            class="w-20 md:w-auto min-h-10 px-auto md:px-5 text-white bg-blue-400 dark:bg-blue-500 cursor-not-allowed font-medium rounded-lg text-sm text-center"
+                                                                            disabled>Submit</button>
+                                                                {% endif %}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endblock %}
+                                            </div>
+                                            <div class="h-[35rem] overflow-y-scroll grid grid-cols-1">
+                                                {% for content in selected_peer_evaluation.content_data %}
+                                                    <div class="p-4 bg-white rounded-lg md:px-10 dark:bg-gray-800">
+                                                        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+                                                            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                                                <caption class="p-5 text-lg font-semibold text-left text-gray-900 border-t rounded-lg bg-white dark:text-white dark:bg-gray-800">
+                                                                    Domain #{{ content.domain_number }} - {{ content.name|title }}
+                                                                    <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">
+                                                                        {% if content.description %}({{ content.description|capfirst }}){% endif %}
+                                                                    </p>
+                                                                </caption>
+                                                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                                    <tr>
+                                                                        <th scope="col" class="px-6 py-3">#</th>
+                                                                        <th scope="col" class="px-6 py-3">Indicator</th>
+                                                                        <th scope="col" class="px-6 py-3">1</th>
+                                                                        <th scope="col" class="px-6 py-3">2</th>
+                                                                        <th scope="col" class="px-6 py-3">3</th>
+                                                                        <th scope="col" class="px-6 py-3">4</th>
+                                                                        <th scope="col" class="px-6 py-3">5</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for question in content.questions %}
+                                                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                                            <th scope="row" class="px-6 py- ">{{ question.indicator_number }}</th>
+                                                                            <td class="px-6 py-4">{{ question.indicator }}</td>
+                                                                            <td class="px-6 py-4">
+                                                                                <input type="radio"
+                                                                                       value="1"
+                                                                                       {% if question.rating == '1' %}checked{% endif %}
+                                                                                       hx-post="{% url "performance:submit_peer_evaluation_rating" "True" %}"
+                                                                                       hx-vals='{"current_evaluation": {{ selected_peer_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
+                                                                                       {% if selected_peer_evaluation.is_submitted %}disabled{% endif %}
+                                                                                       name="{{ content.domain_number }}_{{ question.indicator_number }}"
+                                                                                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                            </td>
+                                                                            <td class="px-6 py-4">
+                                                                                <input type="radio"
+                                                                                       value="2"
+                                                                                       {% if question.rating == '2' %}checked{% endif %}
+                                                                                       hx-post="{% url "performance:submit_peer_evaluation_rating" "True" %}"
+                                                                                       hx-vals='{"current_evaluation": {{ selected_peer_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
+                                                                                       {% if selected_peer_evaluation.is_submitted %}disabled{% endif %}
+                                                                                       name="{{ content.domain_number }}_{{ question.indicator_number }}"
+                                                                                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                            </td>
+                                                                            <td class="px-6 py-4">
+                                                                                <input type="radio"
+                                                                                       value="3"
+                                                                                       {% if question.rating == '3' %}checked{% endif %}
+                                                                                       hx-post="{% url "performance:submit_peer_evaluation_rating" "True" %}"
+                                                                                       hx-vals='{"current_evaluation": {{ selected_peer_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
+                                                                                       {% if selected_peer_evaluation.is_submitted %}disabled{% endif %}
+                                                                                       name="{{ content.domain_number }}_{{ question.indicator_number }}"
+                                                                                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                            </td>
+                                                                            <td class="px-6 py-4">
+                                                                                <input type="radio"
+                                                                                       value="4"
+                                                                                       {% if question.rating == '4' %}checked{% endif %}
+                                                                                       hx-post="{% url "performance:submit_peer_evaluation_rating" "True" %}"
+                                                                                       hx-vals='{"current_evaluation": {{ selected_peer_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
+                                                                                       {% if selected_peer_evaluation.is_submitted %}disabled{% endif %}
+                                                                                       name="{{ content.domain_number }}_{{ question.indicator_number }}"
+                                                                                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                            </td>
+                                                                            <td class="px-6 py-4">
+                                                                                <input type="radio"
+                                                                                       value="5"
+                                                                                       {% if question.rating == '5' %}checked{% endif %}
+                                                                                       hx-post="{% url "performance:submit_peer_evaluation_rating" "True" %}"
+                                                                                       hx-vals='{"current_evaluation": {{ selected_peer_evaluation.id }}, "domain_number": {{ content.domain_number }}, "indicator_number": {{ question.indicator_number }}}'
+                                                                                       {% if selected_peer_evaluation.is_submitted %}disabled{% endif %}
+                                                                                       name="{{ content.domain_number }}_{{ question.indicator_number }}"
+                                                                                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                                            </td>
+                                                                        </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                                <div class="flex flex-col gap-5 my-5 mx-4 bg-white rounded-lg md:px-10 dark:bg-gray-800">
+                                                    <p class="mb-3 text-lg text-center md:text-start text-gray-500 md:text-xl dark:text-gray-400">
+                                                        For additional comments, please use the box below.
+                                                    </p>
+                                                    <div class="p-4 border shadow-md sm:rounded-lg border-gray-200 dark:border-gray-700">
+                                                        <label for="positive_feedback"
+                                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                            Say something positive about the person.
+                                                        </label>
+                                                        <textarea id="positive_feedback"
+                                                                  name="positive_feedback"
+                                                                  hx-post="{% url "performance:submit_peer_evaluation_rating" "True" %}"
+                                                                  hx-vals='{"current_evaluation": {{ selected_peer_evaluation.id }}}'
+                                                                  hx-trigger="input changed delay:500ms"
+                                                                  rows="4"
+                                                                  class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                                  placeholder="Write your thoughts here..."
+                                                                  {% if selected_peer_evaluation.is_submitted %}readonly{% endif %}>{% if selected_peer_evaluation.positive_feedback %}{{ selected_peer_evaluation.positive_feedback }}{% endif %}</textarea>
+                                                    </div>
+                                                    <div class="p-4 border shadow-md sm:rounded-lg border-gray-200 dark:border-gray-700">
+                                                        <label for="improvement_suggestion"
+                                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                            Suggestions for improvement.
+                                                        </label>
+                                                        <textarea id="improvement_suggestion"
+                                                                  name="improvement_suggestion"
+                                                                  hx-post="{% url "performance:submit_peer_evaluation_rating" "True" %}"
+                                                                  hx-vals='{"current_evaluation": {{ selected_peer_evaluation.id }}}'
+                                                                  hx-trigger="input changed delay:500ms"
+                                                                  rows="4"
+                                                                  class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                                  placeholder="Write your thoughts here..."
+                                                                  {% if selected_peer_evaluation.is_submitted %}readonly{% endif %}>{% if selected_peer_evaluation.improvement_suggestion %}{{ selected_peer_evaluation.improvement_suggestion }}{% endif %}</textarea>
+                                                    </div>
+                                                    <p class="mb-3 text-lg text-center md:text-start text-gray-500 md:text-xl dark:text-gray-400">
+                                                        Thank you for your participation.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <div class="flex flex-col w-full max-w-4xl">
+                                            <div class="w-full bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                                <div class="flex flex-col gap-2 p-2 h-[35rem] overflow-y-auto">
+                                                    {% for peer_evaluation in peer_evaluations %}
+                                                        <div>
+                                                            <div class="h-auto flex flex-col sm:flex-row gap-0 sm:gap-5 text-center sm:text-left w-full items-center justify-between p-4 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                                                <h5 class="max-w-lg mb-2 py-2 text-xl font-bold text-gray-900 dark:text-white">
+                                                                    {{ peer_evaluation.user_evaluation.evaluatee.userdetails.get_user_fullname }} - {{ peer_evaluation.user_evaluation.get_year_and_quarter }}
+                                                                </h5>
+                                                                <button type="button"
+                                                                        hx-post="{% url "performance:selected_performance_peer_evaluation" peer_evaluation.id %}"
+                                                                        class="max-h-10 inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                                    {% if peer_evaluation.is_submitted %}
+                                                                        View
+                                                                    {% else %}
+                                                                        Evaluate
+                                                                    {% endif %}
+                                                                    <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2"
+                                                                         aria-hidden="true"
+                                                                         xmlns="http://www.w3.org/2000/svg"
+                                                                         fill="none"
+                                                                         viewBox="0 0 14 10">
+                                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9" />
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    {% empty %}
+                                                        <h2 class="mx-auto my-auto text-4xl font-extrabold dark:text-white">No peer evaluation at the moment.</h2>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endblock %}
+            </div>
+        {% endblock %}
+        {% include "performance/components/sections_menu.html" %}
+    </div>
+</div>
+{% endblock %}
+{% block javascript %}
+    <script>
+        // Function to attach event handlers htmx afterSwap
+        function attachEventHandlers() {
+            $("[data-dismiss-target]").on("click", function() {
+                var dismissTargetId = $(this).attr("data-dismiss-target");
+                var dismissTarget = $(dismissTargetId);
+                if (dismissTarget) {
+                    dismissTarget.toggleClass("hidden");
+                }
+            });
+        }
+
+        $(document).on("htmx:afterSwap", function(event) {
+            attachEventHandlers();
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,257 @@
+{% extends "layout.html" %}
+{% block content %}
+    {% include "navbar.html" %}
+    <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
+        <div class="w-full relative px-2 lg:px-10">
+            <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3 mt-10">User Evaluation Management</h1>
+            {% block modify_user_evaluation_section %}
+                <div id="modify_user_evaluation_section"
+                     class="flex flex-col gap-6 p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <div class="flex flex-col md:flex-row gap-0 md:gap-6">
+                        <div class="flex flex-col md:flex-row w-full gap-2 md:gap-10 p-3 bg-white shadow border border-gray-200 dark:border-gray-700 rounded-lg dark:bg-gray-800">
+                            <div class="block max-w-full md:max-w-sm p-2 rounded-lg dark:bg-gray-800">
+                                <div class="text-lg font-bold text-gray-900 dark:text-white">Employee:</div>
+                                <div class="mb-2 text-lg font-bold text-gray-900 dark:text-white text-center">
+                                    {{ selected_user.userdetails.get_user_fullname }}
+                                </div>
+                                <div class="text-lg font-bold text-gray-900 dark:text-white">Department:</div>
+                                <div class="mb-2 text-lg font-bold text-gray-900 dark:text-white text-center">
+                                    {{ selected_user.userdetails.department }}
+                                </div>
+                                <div class="text-lg font-bold text-gray-900 dark:text-white">Year & Quarter:</div>
+                                <div class="mb-2 text-lg font-bold text-gray-900 dark:text-white text-center">{{ year_and_quarter }}</div>
+                                <div class="text-lg font-bold text-gray-900 dark:text-white">Status:</div>
+                                <div class="mb-2 text-lg font-bold text-gray-900 dark:text-white text-center">
+                                    {% if user_evaluation.is_finalized %}
+                                        Finalized
+                                    {% else %}
+                                        Pending
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% block select_evaluator_section %}
+                                <div id="select_evaluator_section"
+                                     class="block w-full md:w-96 h-auto p-2 my-4 bg-white rounded-lg shadow dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                                    <div class="text-lg font-bold text-gray-900 dark:text-white text-center mb-2">Select Evaluators</div>
+                                    <div class="z-10 bg-white rounded-lg shadow w-full dark:bg-gray-700 border border-gray-200 dark:border-gray-700">
+                                        <ul class="px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200 p-2 {% if user_evaluation.is_finalized %}h-auto{% else %}h-48{% endif %}">
+                                            {% for evaluator_choice in selected_choices %}
+                                                <li>
+                                                    <div class="flex items-center ps-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+                                                        <input id="employee_{{ evaluator_choice.id }}"
+                                                               name="selected_evaluator"
+                                                               type="checkbox"
+                                                               value="{{ evaluator_choice.id }}"
+                                                               {% if evaluator_choice.id in existing_evaluators %}checked{% endif %}
+                                                               hx-trigger="input"
+                                                               hx-post="{% url "performance:modify_user_evaluation_evaluators" user_evaluation.id %}"
+                                                               hx-vals='{"evaluator_to_remove": {{ evaluator_choice.id }}}'
+                                                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                                                               {% if user_evaluation.is_finalized %}disabled{% endif %}>
+                                                        <label for="employee_{{ evaluator_choice.id }}"
+                                                               class="w-full py-2 ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">
+                                                            {{ evaluator_choice.userdetails.get_user_fullname|title }}
+                                                            ({{ evaluator_choice.userdetails.get_user_full_user_role|title }})
+                                                        </label>
+                                                    </div>
+                                                </li>
+                                            {% endfor %}
+                                            {% for evaluator_choice in evaluator_choices %}
+                                                <li>
+                                                    <div class="flex items-center ps-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+                                                        <input id="employee_{{ evaluator_choice.id }}"
+                                                               name="selected_evaluator"
+                                                               type="checkbox"
+                                                               value="{{ evaluator_choice.id }}"
+                                                               {% if evaluator_choice.id in existing_evaluators %}checked{% endif %}
+                                                               hx-trigger="input"
+                                                               hx-post="{% url "performance:modify_user_evaluation_evaluators" user_evaluation.id %}"
+                                                               hx-vals='{"evaluator_to_remove": {{ evaluator_choice.id }}}'
+                                                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                                                               {% if user_evaluation.is_finalized %}disabled{% endif %}>
+                                                        <label for="employee_{{ evaluator_choice.id }}"
+                                                               class="w-full py-2 ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">
+                                                            {{ evaluator_choice.userdetails.get_user_fullname|title }}
+                                                            ({{ evaluator_choice.userdetails.get_user_full_user_role|title }})
+                                                        </label>
+                                                    </div>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                        {% if not user_evaluation.is_finalized %}
+                                            <div class="w-full flex items-center gap-2 p-3 text-sm font-medium border-t border-gray-200 rounded-b-lg bg-gray-50 dark:border-gray-600 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-red-500">
+                                                <button type="button"
+                                                        hx-post="{% url "performance:modify_user_evaluation_evaluators" user_evaluation.id %}"
+                                                        hx-vals='{"deselect_all": "True"}'
+                                                        class="flex hover:underline text-red-600">
+                                                    <svg class="w-4 h-4 me-2"
+                                                         aria-hidden="true"
+                                                         xmlns="http://www.w3.org/2000/svg"
+                                                         fill="currentColor"
+                                                         viewBox="0 0 20 18">
+                                                        <path d="M6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Zm11-3h-6a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2Z" />
+                                                    </svg>
+                                                    Deselect All
+                                                </button>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endblock %}
+                            <div class="pt-0 md:pt-4 mx-2 w-auto flex md:block justify-center md:justify-normal">
+                                {% if user_evaluation.is_finalized %}
+                                    <button type="button"
+                                            hx-post="{% url "performance:finalize_user_evaluation_toggle" user_evaluation.id %}"
+                                            class="w-96 md:w-auto focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
+                                        Cancel
+                                    </button>
+                                {% else %}
+                                    {% if existing_evaluators %}
+                                        <button type="button"
+                                                hx-post="{% url "performance:finalize_user_evaluation_toggle" user_evaluation.id %}"
+                                                class="w-96 md:w-auto px-5 py-2.5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                                            Finalize
+                                        </button>
+                                    {% else %}
+                                        <button type="button"
+                                                class="w-96 md:w-auto text-white bg-blue-400 dark:bg-blue-500 cursor-not-allowed font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                                                disabled>Finalize</button>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="w-full">
+                            <!-- Placeholder Div -->
+                        </div>
+                    </div>
+                    {% if user_evaluation.is_finalized %}
+                        <div class="grid grid-cols-1 lg:grid-cols-2 w-full gap-4">
+                            {% for evaluation in existing_evaluation_data %}
+                                {% block evaluation_display %}
+                                    <div id="evaluation_display_{{ evaluation.id }}"
+                                         class="pb-2 px-2 bg-white rounded-lg shadow dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                                        <div class="flex flex-row w-full items-center">
+                                            <div class="my-2 text-lg font-bold text-gray-900 dark:text-white px-2">
+                                                {{ evaluation.evaluator.userdetails.get_user_fullname }}
+                                            </div>
+                                            {% if evaluation.is_modified %}
+                                                <button type="button"
+                                                        hx-post="{% url "performance:reset_evaluation" %}"
+                                                        hx-vals='{"selected_evaluation": {{ evaluation.id }}}'
+                                                        hx-target="#evaluation_display_{{ evaluation.id }}"
+                                                        class="w-auto h-8 px-5 ms-auto focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
+                                                    Reset
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                        <div class="w-full h-96 overflow-y-scroll rounded-lg border shadow border border-gray-200 dark:border-gray-700">
+                                            {% for content in evaluation.get_content_data_with_mean_per_domain %}
+                                                <div class="px-8 dark:bg-gray-800 {% if forloop.last %}pt-6{% else %}py-6{% endif %}">
+                                                    <h2 class="mb-3 text-2xl font-extrabold text-gray-900 dark:text-white">Domain #{{ content.domain_number }}</h2>
+                                                    <div class="relative overflow-x-auto">
+                                                        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                                <tr>
+                                                                    <th scope="col" class="px-6 py-3 text-center">No.</th>
+                                                                    <th scope="col" class="px-6 py-3 text-center">Indicator</th>
+                                                                    <th scope="col" class="px-6 py-3 text-center">Score</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                                                    <td colspan="3"
+                                                                        class="w-full px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                                                        {{ content.name }}
+                                                                        {% if content.description %}- {{ content.description }}{% endif %}
+                                                                    </td>
+                                                                </tr>
+                                                                {% if evaluation.questionnaire.content.questionnaire_code == "NEPET" %}
+                                                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                                                        <td colspan="3"
+                                                                            class="max-w-sm px-6 py-2 font-medium text-gray-900 dark:text-white">
+                                                                            The employee...
+                                                                        </td>
+                                                                    </tr>
+                                                                {% endif %}
+                                                                {% for question in content.questions %}
+                                                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                                                        <th scope="row"
+                                                                            class="px-6 py-4 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                                            {{ question.indicator_number }}.
+                                                                        </th>
+                                                                        <td class="px-6 py-4">{{ question.indicator }}.</td>
+                                                                        <td class="px-6 py-4 text-center font-bold">{{ question.rating }}</td>
+                                                                    </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                            <tfoot>
+                                                                <tr class="font-semibold text-gray-900 dark:text-white border-b-2 dark:border-gray-700">
+                                                                    <td></td>
+                                                                    <td class="px-6 py-3 text-end text-base font-bold">Mean</td>
+                                                                    <td class="px-6 py-3 text-center text-base font-bold">{{ content.mean|floatformat:2 }}</td>
+                                                                </tr>
+                                                            </tfoot>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                            <div class="mb-6 font-semibold text-gray-900 dark:text-white dark:border-gray-700">
+                                                <div class="pt-6 text-center text-lg font-bold">
+                                                    Overall Mean: <u>{{ evaluation.get_overall_content_data_mean|floatformat:2 }}</u>
+                                                </div>
+                                            </div>
+                                            {% if not evaluation.is_self_evaluation %}
+                                                <div class="p-4 mx-4 mt-4">
+                                                    <label for="positive_feedback"
+                                                           class="block text-sm font-medium text-gray-900 dark:text-white">
+                                                        Say something positive about the person.
+                                                    </label>
+                                                    <textarea id="positive_feedback"
+                                                              name="positive_feedback"
+                                                              rows="4"
+                                                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                              placeholder="Write your thoughts here..."
+                                                              readonly>{% if evaluation.positive_feedback %}{{ evaluation.positive_feedback }}{% endif %}</textarea>
+                                                </div>
+                                                <div class="p-4 mb-4 mx-4">
+                                                    <label for="positive_feedback"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Suggestions for improvement.
+                                                    </label>
+                                                    <textarea id="positive_feedback"
+                                                              name="positive_feedback"
+                                                              rows="4"
+                                                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                              placeholder="Write your thoughts here..."
+                                                              readonly>{% if evaluation.improvement_suggestion %}{{ evaluation.improvement_suggestion }}{% endif %}</textarea>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endblock %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endblock %}
+        </div>
+    </div>
+{% endblock %}
+{% block javascript %}
+    <script>
+        // Function to attach event handlers htmx afterSwap
+        function attachEventHandlers() {
+            $('[data-dismiss-target]').on('click', function() {
+                var dismissTargetId = $(this).attr('data-dismiss-target');
+                var dismissTarget = $(dismissTargetId);
+                if (dismissTarget) {
+                    dismissTarget.toggleClass('hidden');
+                }
+            });
+        }
+
+        $(document).on('htmx:afterSwap', function(event) {
+            attachEventHandlers();
+        });
+    </script>
+{% endblock %}
