@@ -671,13 +671,6 @@ def select_post_content(request, content_id=""):
         return response
 
 
-def close_content_modal(request):
-    if request.htmx and request.method == "POST":
-        response = HttpResponse()
-        response = trigger_client_event(response, "closePollContent", after="swap")
-        return response
-
-
 def submit_poll_vote(request, poll_id=""):
     context = {}
     user = request.user
@@ -1359,22 +1352,6 @@ def preview_resource(request, resource_id=""):
         return response
 
 
-def close_delete_confirmation_modal(request):
-    if request.htmx and request.method == "POST":
-        response = HttpResponse()
-        response = trigger_client_event(
-            response, "closeDeleteConfirmationModal", after="swap"
-        )
-        return response
-
-
-def close_preview_file_modal(request):
-    if request.htmx and request.method == "POST":
-        response = HttpResponse()
-        response = trigger_client_event(response, "closePreviewFileModal", after="swap")
-        return response
-
-
 # Shared Resources Management Views
 def shared_resources_management(request, user_id=""):
     context = {}
@@ -1678,24 +1655,11 @@ def shared_resource_management_update_file_list_after_modifying_share_access(req
         return response
 
 
-def close_shared_resource_management_delete_confirmation_modal(request):
+# App Shared View
+def performance_module_close_modals(request):
     if request.htmx and request.method == "POST":
+        data = request.POST
+        event_name = data.get("event_name")
         response = HttpResponse()
-        response = trigger_client_event(
-            response, "closeDeleteConfirmationModal", after="swap"
-        )
-        return response
-
-
-def close_shared_resource_management_preview_file_modal(request):
-    if request.htmx and request.method == "POST":
-        response = HttpResponse()
-        response = trigger_client_event(response, "closePreviewFileModal", after="swap")
-        return response
-
-
-def close_shared_resource_management_share_access_modal(request):
-    if request.htmx and request.method == "POST":
-        response = HttpResponse()
-        response = trigger_client_event(response, "closeShareAccessModal", after="swap")
+        response = trigger_client_event(response, event_name, after="swap")
         return response

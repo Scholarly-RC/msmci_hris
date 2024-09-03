@@ -26,24 +26,9 @@ urlpatterns = [
         name="shared_resource_management_confidential_state_toggle",
     ),
     path(
-        "shared-resources-management/close-share-access-modal",
-        performance_views.close_shared_resource_management_share_access_modal,
-        name="close_shared_resource_management_share_access_modal",
-    ),
-    path(
         "shared-resources-management/<str:resource_id>/share-access",
         performance_views.shared_resource_management_share_access,
         name="shared_resource_management_share_access",
-    ),
-    path(
-        "shared-resources-management/close-preview-file-modal",
-        performance_views.close_shared_resource_management_preview_file_modal,
-        name="close_shared_resource_management_preview_file_modal",
-    ),
-    path(
-        "shared-resources-management/close-delete-confirmation",
-        performance_views.close_shared_resource_management_delete_confirmation_modal,
-        name="close_shared_resource_management_delete_confirmation_modal",
     ),
     path(
         "shared-resources-management/<str:resource_id>/view",
@@ -86,19 +71,9 @@ urlpatterns = [
         name="resource_share_access",
     ),
     path(
-        "shared-resources/close-preview-file-modal",
-        performance_views.close_preview_file_modal,
-        name="close_preview_file_modal",
-    ),
-    path(
         "shared-resources/<str:resource_id>/view",
         performance_views.preview_resource,
         name="preview_resource",
-    ),
-    path(
-        "shared-resources/close-delete-confirmation",
-        performance_views.close_delete_confirmation_modal,
-        name="close_delete_confirmation_modal",
     ),
     path(
         "shared-resources/<str:resource_id>/delete",
@@ -179,11 +154,6 @@ urlpatterns = [
         "poll-and-post/poll/<str:poll_id>/submit-vote",
         performance_views.submit_poll_vote,
         name="submit_poll_vote",
-    ),
-    path(
-        "poll-and-post/close-content-modal",
-        performance_views.close_content_modal,
-        name="close_content_modal",
     ),
     path(
         "poll-and-post/post/<str:content_id>",
@@ -269,6 +239,11 @@ urlpatterns = [
         "evaluation",
         performance_views.performance_evaluation,
         name="performance_evaluation",
+    ),
+    path(
+        "close-modals",
+        performance_views.performance_module_close_modals,
+        name="performance_module_close_modals",
     ),
     path(
         "section-switch",
