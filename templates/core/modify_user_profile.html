@@ -60,7 +60,7 @@
                                        name="middle_name"
                                        id="middle_name"
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       placeholder="Enter your middle name"
+                                       placeholder="Enter middle name"
                                        value="{% if selected_user.userdetails.middle_name %}{{ selected_user.userdetails.middle_name }}{% endif %}"
                                        required>
                             </div>
@@ -209,7 +209,7 @@
                                        name="rank"
                                        id="rank"
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       placeholder="Enter your rank"
+                                       placeholder="Enter rank"
                                        value="{% if selected_user.userdetails.rank %}{{ selected_user.userdetails.rank }}{% endif %}"
                                        disabled
                                        readonly>
@@ -257,20 +257,37 @@
                             </select>
                         </div>
                         <div class="col-span-6 sm:col-span-3">
+                            <label for="role"
+                                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                Role
+                            </label>
+                            <select id="role"
+                                    name="role"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                <option value="">Choose a Role...</option>
+                                {% for role in role_list %}
+                                    <option value="{{ role.0 }}"
+                                            {% if role.0 == selected_user.userdetails.role %}selected{% endif %}>
+                                        {{ role.1 }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-span-6 sm:col-span-3">
                             <label for="employee_number"
                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                 Employee Number
                             </label>
                             <input type="text"
                                    id="employee_number"
-                                   class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                   name="employee_number"
+                                   class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                    value="{% if selected_user.userdetails.employee_number %}{{ selected_user.userdetails.employee_number }}{% endif %}"
-                                   disabled
-                                   readonly>
+                                   placeholder="Enter employee id">
                         </div>
                         <div class="col-span-6 sm:col-full">
                             <button class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                                    type="submit">Save Details</button>
+                                    type="submit">Save</button>
                         </div>
                     </div>
                 </form>
@@ -323,7 +340,7 @@
                         </div>
                         <div class="col-span-6 sm:col-full">
                             <button class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                                    type="submit">Save Details</button>
+                                    type="submit">Save</button>
                         </div>
                     </div>
                 </form>

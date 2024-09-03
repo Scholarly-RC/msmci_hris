@@ -27,8 +27,8 @@ from core.utils import (
     get_religion_list,
     password_validation,
     profile_picture_validation,
-    string_to_date,
     update_user_and_user_details,
+    get_role_list,
 )
 
 
@@ -193,12 +193,14 @@ def user_profile(request):
     education_list = get_education_list()
     civil_status_list = get_civil_status_list()
     religion_list = get_religion_list()
+    roles = get_role_list()
     context = {
         "current_user": user,
         "department_list": departments,
         "civil_status_list": civil_status_list,
         "education_list": education_list,
         "religion_list": religion_list,
+        "role_list": roles,
     }
     get_or_create_intial_user_one_to_one_fields(user)
 
@@ -409,12 +411,14 @@ def modify_user_details(request, pk):
     civil_status_list = get_civil_status_list()
     education_list = get_education_list()
     religion_list = get_religion_list()
+    roles = get_role_list()
     context = {
         "selected_user": user,
         "department_list": departments,
         "civil_status_list": civil_status_list,
         "education_list": education_list,
         "religion_list": religion_list,
+        "role_list": roles,
     }
 
     if (

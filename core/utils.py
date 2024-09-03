@@ -73,6 +73,7 @@ def get_dict_for_user_and_user_details(querydict):
         "degrees_earned",
         "education",
         "employee_number",
+        "role",
     ]
 
     data = querydict.dict()
@@ -147,6 +148,11 @@ def get_civil_status_list():
 def get_religion_list():
     user_details_model = apps.get_model("core", "UserDetails")
     return user_details_model.Religion.choices
+
+
+def get_role_list():
+    user_details_model = apps.get_model("core", "UserDetails")
+    return user_details_model.Role.choices
 
 
 def get_or_create_intial_user_one_to_one_fields(user):
