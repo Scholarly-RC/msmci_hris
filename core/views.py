@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -339,8 +340,27 @@ def upload_user_profile_picture(request):
 ### USER MANAGEMENT ###
 @login_required(login_url="/login")
 def user_management(request):
-    users = User.objects.exclude(id=request.user.id)
+    users = User.objects.exclude(id=request.user.id).order_by("userdetails__department__name", "first_name")
     context = {"users": users}
+    if request.htmx and request.POST:
+        data = request.POST
+        users_search = data.get("users_search", "")
+        if users_search:
+            user_filter = (
+                Q(first_name__icontains=users_search)
+                | Q(last_name__icontains=users_search)
+                | Q(email__icontains=users_search)
+            )
+            users = users.filter(user_filter)
+            context.update({"users": users})
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "core/user_management.html", "user_management_table_content_container", context
+        )
+        response = reswap(response, "outerHTML")
+        response = retarget(response, "#user_management_table_content_container")
+        return response
+
     return render(request, "core/user_management.html", context)
 
 
