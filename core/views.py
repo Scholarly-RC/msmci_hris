@@ -2,8 +2,8 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db.utils import IntegrityError
 from django.db.models import Q
+from django.db.utils import IntegrityError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -26,10 +26,10 @@ from core.utils import (
     get_education_list_with_degrees_earned,
     get_or_create_intial_user_one_to_one_fields,
     get_religion_list,
+    get_role_list,
     password_validation,
     profile_picture_validation,
     update_user_and_user_details,
-    get_role_list,
 )
 
 
@@ -340,7 +340,9 @@ def upload_user_profile_picture(request):
 ### USER MANAGEMENT ###
 @login_required(login_url="/login")
 def user_management(request):
-    users = User.objects.exclude(id=request.user.id).order_by("userdetails__department__name", "first_name")
+    users = User.objects.exclude(id=request.user.id).order_by(
+        "userdetails__department__name", "first_name"
+    )
     context = {"users": users}
     if request.htmx and request.POST:
         data = request.POST
@@ -355,7 +357,9 @@ def user_management(request):
             context.update({"users": users})
         response = HttpResponse()
         response.content = render_block_to_string(
-            "core/user_management.html", "user_management_table_content_container", context
+            "core/user_management.html",
+            "user_management_table_content_container",
+            context,
         )
         response = reswap(response, "outerHTML")
         response = retarget(response, "#user_management_table_content_container")
