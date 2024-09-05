@@ -6,6 +6,11 @@ from payroll import views as payroll_views
 
 urlpatterns = [
     path(
+        "salary-and-rank-management/minimum-wage-settings",
+        payroll_views.minimum_wage_settings,
+        name="minimum_wage_settings",
+    ),
+    path(
         "salary-and-rank-management/view-job",
         payroll_views.view_job,
         name="view_job",

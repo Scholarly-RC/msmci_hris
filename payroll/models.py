@@ -7,22 +7,22 @@ from payroll.utils import calculate_basic_salary_for_grade, calculate_basic_sala
 
 
 # Create your models here.
-class BasicSalary(models.Model):
+class MinimumWage(models.Model):
     amount = models.DecimalField(
-        _("Basic Salary Amount"),
+        _("Minimum Wage Amount"),
         max_digits=10,
         decimal_places=2,
     )
 
     history = models.JSONField(
-        _("Basic Salary History"), null=True, blank=True, default=list
+        _("Minimum Wage History"), null=True, blank=True, default=list
     )
 
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     class Meta:
-        verbose_name_plural = "Basic Salary"
+        verbose_name_plural = "Minimum Wage"
 
     def __str__(self):
         return f"Basic Salary: {self.amount}"

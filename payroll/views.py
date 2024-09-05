@@ -10,9 +10,14 @@ from django_htmx.http import (
 )
 from render_block import render_block_to_string
 
-from payroll.actions import process_adding_job
+from payroll.actions import process_adding_job, process_setting_minimum_wage_amount
 from payroll.models import Job
-from payroll.utils import get_department_list, get_job_list
+from payroll.utils import (
+    get_department_list,
+    get_job_list,
+    get_minimum_wage_object,
+    minimum_wage_update_validation,
+)
 
 ### Salary and Rank Management Views
 
@@ -72,7 +77,6 @@ def update_job_list(request):
         data = request.POST
         selected_department_id = int(data.get("selected_department", "0"))
         jobs = get_job_list(selected_department_id)
-        breakpoint()
         context.update({"jobs": jobs})
         response = HttpResponse()
         response.content = render_block_to_string(
@@ -103,6 +107,47 @@ def view_job(request):
         response = retarget(response, "#view_job_modal_container")
         response = reswap(response, "outerHTML")
         return response
+
+
+def minimum_wage_settings(request):
+    context = {}
+    if request.htmx:
+        minimum_wage = get_minimum_wage_object()
+        response = HttpResponse()
+        if request.method == "GET":
+            context.update({"minimum_wage": minimum_wage})
+            response.content = render_block_to_string(
+                "payroll/salary_and_rank_management.html",
+                "minimum_wage_modal_container",
+                context,
+            )
+            response = trigger_client_event(
+                response, "openMinimumWageModal", after="swap"
+            )
+            response = retarget(response, "#minimum_wage_modal_container")
+            response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "POST":
+            data = request.POST
+            context = minimum_wage_update_validation(data, minimum_wage)
+            if "success" in context:
+                minimum_wage = process_setting_minimum_wage_amount(
+                    data.get("minimum_wage_basic_salary")
+                )
+                context.update({"minimum_wage": minimum_wage})
+                context["minimum_wage_update_success"] = (
+                    "Minimum wage has been successfully updated."
+                )
+            context.update({"minimum_wage": minimum_wage})
+            response.content = render_block_to_string(
+                "payroll/salary_and_rank_management.html",
+                "minimum_wage_modal_container",
+                context,
+            )
+            response = retarget(response, "#minimum_wage_modal_container")
+            response = reswap(response, "outerHTML")
+            return response
 
 
 # App Shared View

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from payroll.models import BasicSalary, Job
+from payroll.models import Job, MinimumWage
 
 # Register your models here.
-admin.site.register(BasicSalary)
 admin.site.register(Job)
+admin.site.register(MinimumWage)

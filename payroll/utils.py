@@ -24,15 +24,22 @@ def get_job_list(department: int):
     return jobs.filter(department=department)
 
 
+def get_minimum_wage_object():
+    """
+    Retrieves the first MinimumWage record from the payroll app.
+    """
+    MinimumWageModel = apps.get_model("payroll", "MinimumWage")
+    return MinimumWageModel.objects.first()
+
+
 def calculate_basic_salary_for_grade(salary_grade: int) -> float:
     """
     Calculates the basic salary for a given salary grade based on a base salary and a multiplier.
     The salary increases by applying the multiplier for each grade above the base grade.
     Raises ValueError if the provided salary grade is less than 1.
     """
-    SalaryModel = apps.get_model("payroll", "BasicSalary")
 
-    base_salary = SalaryModel.objects.first().amount
+    base_salary = get_minimum_wage_object().amount
     salary_multiplier = Decimal(settings.BASIC_SALARY_MULTIPLIER)
 
     if salary_grade < 1:
@@ -44,7 +51,7 @@ def calculate_basic_salary_for_grade(salary_grade: int) -> float:
         updated_salary = current_salary * salary_multiplier
         return _compute_salary(updated_salary, remaining_grades - 1)
 
-    basic_salary = _compute_salary(base_salary, salary_grade - 2)
+    basic_salary = _compute_salary(base_salary, salary_grade - 1)
     return Decimal(basic_salary)
 
 
@@ -68,3 +75,40 @@ def calculate_basic_salary_steps(basic_salary: int) -> list:
     _compute_step(basic_salary, 1)
 
     return basic_salary_steps
+
+
+def minimum_wage_update_validation(data, minimum_wage):
+    """
+    Validates the proposed update to the minimum wage. Checks if the new value matches the current minimum wage,
+    handles confirmation requirements, and updates the context with appropriate messages for success or errors.
+    """
+    context = {}
+    minimum_wage_basic_salary = Decimal(data.get("minimum_wage_basic_salary", "0.00"))
+
+    if minimum_wage_basic_salary == minimum_wage.amount:
+        context["error"] = (
+            "The value you entered matches the current minimum wage. Please enter a different amount."
+        )
+        return context
+
+    if "for_confirmation" in data:
+        context.update(
+            {
+                "show_confirmation": True,
+                "minimum_wage_value": minimum_wage_basic_salary,
+            }
+        )
+        return context
+
+    if "confirmation_box" not in data:
+        context.update(
+            {
+                "show_confirmation": True,
+                "confirmation_error": "Please check the box to confirm your changes.",
+                "minimum_wage_value": minimum_wage_basic_salary,
+            }
+        )
+        return context
+
+    context["success"] = True
+    return context
