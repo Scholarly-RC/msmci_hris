@@ -7,13 +7,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-from django_htmx.http import (
-    HttpResponseClientRedirect,
-    push_url,
-    reswap,
-    retarget,
-    trigger_client_event,
-)
+from django_htmx.http import push_url, reswap, retarget
 from render_block import render_block_to_string
 
 from attendance.actions import (
@@ -37,6 +31,7 @@ from attendance.utils.date_utils import (
     get_readable_date,
 )
 from core.models import BiometricDetail, Department
+from hris.utils import create_global_alert_instance
 
 
 ### Attendance Management ###
@@ -143,6 +138,15 @@ def sync_user_attendance(request, year="", month=""):
     if request.htmx and request.method == "POST":
         current_biometric_data = BiometricDetail.objects.get(user=current_user)
 
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "attendance/attendance_management.html",
+            "attendance_management_section",
+            context,
+        )
+        response = retarget(response, "#attendance_management_section")
+        response = reswap(response, "outerHTML")
+
         if current_biometric_data.user_id_in_device:
             attendance_records = AttendanceRecord.objects.filter(
                 user_biometric_detail__isnull=True,
@@ -157,23 +161,16 @@ def sync_user_attendance(request, year="", month=""):
                         current_biometric_data,
                     )
                     attendance_record.save()
-
-            context.update(
-                {
-                    "show_alert": True,
-                    "error": False,
-                    "alert_message": "Attendance data successfully synced.",
-                }
+            response = create_global_alert_instance(
+                response, "Attendance data successfully synced.", "SUCCESS"
             )
-            response = HttpResponse()
-            response.content = render_block_to_string(
-                "attendance/attendance_management.html",
-                "attendance_management_section",
-                context,
+        else:
+            response = create_global_alert_instance(
+                response,
+                "Your Biometric Device User ID has not been set. Please configure it in your profile before proceeding.",
+                "DANGER",
             )
-            response = retarget(response, "#attendance_management_section")
-            response = reswap(response, "outerHTML")
-            return response
+        return response
 
 
 def user_attendance_management(request, user_id="", year="", month=""):

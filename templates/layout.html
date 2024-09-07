@@ -111,26 +111,65 @@
                 },
             };
         </script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css" />
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.js"></script>
     </head>
     <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
           class="bg-gray-50 dark:bg-gray-800">
         {% block content %}{% endblock %}
-        <div id="chat_container"></div>
-        <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
-        <script src="{% static 'assets/js/dark-mode.js' %}"></script>
-        <script src="{% static 'assets/js/htmx.min.js' %}"></script>
-        <script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
-        {% block javascript %}{% endblock javascript %}
-        <script>
-            document.body.addEventListener("toggleChatWindow", (event) => {
-                var dropdown = document.getElementById("userMenuDropdown");
-                if (dropdown) {
-                    dropdown.classList.toggle("hidden");
-                }
-            });
-        </script>
-    </body>
-</html>
+        <div id="global_alert_container"
+             class="fixed top-20 right-4 flex flex-col items-end max-w-lg">
+            <div id="chat_container"></div>
+            <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+            <script src="{% static 'assets/js/dark-mode.js' %}"></script>
+            <script src="{% static 'assets/js/htmx.min.js' %}"></script>
+            <script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
+            {% block javascript %}
+            {% endblock javascript %}
+            <script>
+                document.body.addEventListener("initializeGlobalAlert", (event) => {
+                    htmx.ajax("GET", '{% url "show_alert" %}', {
+                        values: {
+                            details: event?.detail,
+                        },
+                    });
+                });
+
+                document.body.addEventListener("showGlobalAlert", (event) => {
+                    const alertId = event?.detail?.alertId
+                    const alertCloseId = event?.detail?.alertCloseId
+                    const alertDuration = event?.detail?.alertDuration
+
+
+                    const $targetAlert = document.getElementById(alertId);
+                    const $targetCloseTrigger = document.getElementById(alertCloseId);
+
+                    const options = {
+                        transition: 'transition-opacity',
+                        duration: 1000,
+                        timing: 'ease-out',
+                    };
+
+                    const instanceOptions = {
+                        id: alertId,
+                        override: true
+                    };
+
+                    const dismiss = new Dismiss($targetAlert, $targetCloseTrigger, options, instanceOptions);
+                    setTimeout(() => {
+                        dismiss.hide();
+                    }, alertDuration * 1000);
+                });
+            </script>
+            <script>
+                document.body.addEventListener("toggleChatWindow", (event) => {
+                    var dropdown = document.getElementById("userMenuDropdown");
+                    if (dropdown) {
+                        dropdown.classList.toggle("hidden");
+                    }
+                });
+            </script>
+        </body>
+    </html>

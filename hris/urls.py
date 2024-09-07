@@ -3,6 +3,8 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from hris import views as hris_views
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("attendance/", include("attendance.urls", namespace="attendance")),
@@ -14,6 +16,11 @@ urlpatterns = [
     path(
         "performance-and-learning/",
         include("performance.urls", namespace="performance"),
+    ),
+    path(
+        "alert/",
+        hris_views.show_alert,
+        name="show_alert",
     ),
     path("", include("core.urls", namespace="core")),
     path("prose/", include("prose.urls")),
