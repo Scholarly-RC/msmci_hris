@@ -259,19 +259,73 @@
                                     </div>
                                 {% endblock %}
                             </div>
+                            {% if not current_user.userdetails.is_hr %}
+                                <div class="col-span-6 sm:col-span-3">
+                                    <label for="department"
+                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        Department
+                                    </label>
+                                    <select id="department"
+                                            name="department"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 {% if current_user.userdetails.department and not current_user.userdetails.is_hr %}hidden{% endif %}">
+                                        <option value="">Choose a Department...</option>
+                                        {% for department_details in department_list %}
+                                            <option value="{{ department_details.id }}"
+                                                    {% if department_details.id == current_user.userdetails.department.id %}selected{% endif %}>
+                                                {{ department_details.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <input type="text"
+                                           name="department_display"
+                                           id="department_display"
+                                           class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 {% if current_user.userdetails.is_hr %}hidden{% endif %}"
+                                           value="{{ current_user.userdetails.department.name }}"
+                                           readonly
+                                           disabled>
+                                </div>
+                                <div class="col-span-6 sm:col-span-3">
+                                    <label for="rank"
+                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        Rank
+                                    </label>
+                                    <input type="text"
+                                           name="rank"
+                                           id="rank"
+                                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 {% if current_user.userdetails.str_date_of_hiring %}hidden{% endif %}"
+                                           value="{% if current_user.userdetails.rank %}{{ current_user.userdetails.rank }}{% endif %}">
+                                    <input type="text"
+                                           name="rank_display"
+                                           id="rank_display"
+                                           class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 {% if not current_user.userdetails.str_date_of_hiring %}hidden{% endif %}"
+                                           value="{% if current_user.userdetails.rank %}{{ current_user.userdetails.rank }}{% endif %}"
+                                           readonly
+                                           disabled>
+                                </div>
+                            {% endif %}
                             <div class="col-span-6 sm:col-span-3">
-                                <label for="rank"
+                                <label for="role"
                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Rank
+                                    Role
                                 </label>
+                                <select id="role"
+                                        name="role"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 {% if not current_user.userdetails.is_hr %}hidden{% endif %}">
+                                    <option value="">Choose a Role...</option>
+                                    {% for role in role_list %}
+                                        <option value="{{ role.0 }}"
+                                                {% if role.0 == current_user.userdetails.role %}selected{% endif %}>
+                                            {{ role.1 }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
                                 <input type="text"
-                                       name="rank"
-                                       id="rank"
-                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       placeholder="Enter your rank"
-                                       value="{% if current_user.userdetails.rank %}{{ current_user.userdetails.rank }}{% endif %}"
-                                       disabled
-                                       readonly>
+                                       name="role_display"
+                                       id="role_display"
+                                       class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 {% if current_user.userdetails.is_hr %}hidden{% endif %}"
+                                       value="{% if current_user.userdetails.role %}{{ current_user.userdetails.get_user_full_user_role }}{% endif %}"
+                                       readonly
+                                       disabled>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
                                 <div class="flex flex-row justify-between">
@@ -292,11 +346,16 @@
                                     {% endif %}
                                 </p>
                             </div>
-                            {% if current_user.userdetails.str_date_of_hiring and not current_user.userdetails.is_hr %}
+                            {% if not current_user.userdetails.is_hr %}
                                 <input type="date"
                                        name="date_of_hiring"
                                        id="date_of_hiring"
-                                       class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 {% if current_user.userdetails.str_date_of_hiring %}hidden{% endif %}"
+                                       value="{{ current_user.userdetails.str_date_of_hiring }}">
+                                <input type="date"
+                                       name="date_of_hiring_display"
+                                       id="date_of_hiring_display"
+                                       class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 {% if not current_user.userdetails.str_date_of_hiring %}hidden{% endif %}"
                                        value="{{ current_user.userdetails.str_date_of_hiring }}"
                                        readonly
                                        disabled>
@@ -304,52 +363,8 @@
                                 <input type="date"
                                        name="date_of_hiring"
                                        id="date_of_hiring"
-                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 {% if current_user.userdetails.str_date_of_hiring and not current_user.userdetails.is_hr %}hidden{% endif %}"
                                        value="{{ current_user.userdetails.str_date_of_hiring }}">
-                            {% endif %}
-                        </div>
-                        <div class="col-span-6 sm:col-span-3">
-                            <label for="department"
-                                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Department
-                            </label>
-                            <select id="department"
-                                    name="department"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                                <option value="">Choose a Department...</option>
-                                {% for department_details in department_list %}
-                                    <option value="{{ department_details.id }}"
-                                            {% if department_details.id == current_user.userdetails.department.id %}selected{% endif %}>
-                                        {{ department_details.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-span-6 sm:col-span-3">
-                            <label for="role"
-                                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Role
-                            </label>
-                            {% if current_user.userdetails.is_hr %}
-                            <select id="role"
-                                    name="role"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                                <option value="">Choose a Role...</option>
-                                {% for role in role_list %}
-                                    <option value="{{ role.0 }}"
-                                            {% if role.0 == current_user.userdetails.role %}selected{% endif %}>
-                                        {{ role.1 }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                            {% else %}
-                            <input type="text"
-                                       name="role"
-                                       id="role_input"
-                                       class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                       value="{{ current_user.userdetails.get_user_full_user_role }}"
-                                       readonly
-                                       disabled>
                             {% endif %}
                         </div>
                         <div class="col-span-6 sm:col-span-3">
@@ -357,20 +372,27 @@
                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                 Employee Number
                             </label>
-                            {% if current_user.userdetails.employee_number %}
+                            {% if not current_user.userdetails.is_hr %}
                                 <input type="text"
-                                       id="employee_number"
-                                       name="employee_number"
-                                       class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                       id="employee_number_display"
+                                       name="employee_number_display"
+                                       class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 {% if not current_user.userdetails.employee_number %}hidden{% endif %}"
                                        value="{{ current_user.userdetails.employee_number }}"
                                        disabled
                                        readonly>
+                                <input type="text"
+                                       id="employee_number"
+                                       name="employee_number"
+                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 {% if current_user.userdetails.employee_number %}hidden{% endif %}"
+                                       placeholder="Enter your employee ID"
+                                       value="{% if current_user.userdetails.employee_number %}{{ current_user.userdetails.employee_number }}{% endif %}">
                             {% else %}
                                 <input type="text"
                                        id="employee_number"
                                        name="employee_number"
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       placeholder="Enter your employee ID">
+                                       placeholder="Enter your employee ID"
+                                       value="{{ current_user.userdetails.employee_number }}">
                             {% endif %}
                         </div>
                         <div class="col-span-6 sm:col-full">

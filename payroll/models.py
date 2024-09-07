@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -37,6 +38,9 @@ class Job(models.Model):
     salary_grade = models.IntegerField(_("Job Salary Grade"), null=True, blank=True)
 
     is_active = models.BooleanField(_("Is Job Active"), default=True)
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Jobs"

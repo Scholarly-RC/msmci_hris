@@ -88,6 +88,7 @@ class UserDetails(models.Model):
     employee_number = models.CharField(
         _("User Employee Number"), max_length=500, null=True, blank=True
     )
+
     rank = models.CharField(_("User Rank"), max_length=500, null=True, blank=True)
 
     department = models.ForeignKey(

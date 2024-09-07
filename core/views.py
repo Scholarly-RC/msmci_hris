@@ -31,6 +31,7 @@ from core.utils import (
     profile_picture_validation,
     update_user_and_user_details,
 )
+from payroll.utils import get_rank_choices
 
 
 @login_required(login_url="/login")
@@ -203,7 +204,6 @@ def user_profile(request):
         "religion_list": religion_list,
         "role_list": roles,
     }
-    get_or_create_intial_user_one_to_one_fields(user)
 
     if (
         not request.htmx
@@ -430,8 +430,8 @@ def toggle_user_status(request, pk):
 @login_required(login_url="/login")
 def modify_user_details(request, pk):
     user = User.objects.get(id=pk)
-    get_or_create_intial_user_one_to_one_fields(user)
     departments = Department.objects.filter(is_active=True).order_by("name")
+    user_department = user.userdetails.department
     civil_status_list = get_civil_status_list()
     education_list = get_education_list()
     religion_list = get_religion_list()
@@ -444,6 +444,10 @@ def modify_user_details(request, pk):
         "religion_list": religion_list,
         "role_list": roles,
     }
+
+    if user_department:
+        rank_list = get_rank_choices(user_department.id)
+        context.update({"rank_list": rank_list})
 
     if (
         not request.htmx

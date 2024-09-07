@@ -100,6 +100,7 @@ def update_user_and_user_details(user_instance, querydict):
         user_payload, user_details_payload = get_dict_for_user_and_user_details(
             querydict
         )
+
         user_details = user_instance.userdetails
 
         for attr, value in user_payload.items():

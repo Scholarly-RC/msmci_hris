@@ -24,6 +24,29 @@ def get_job_list(department: int):
     return jobs.filter(department=department)
 
 
+def get_rank_choices(department_id: int) -> list:
+    rank_choices = []
+    jobs = get_job_list(department_id)
+
+    for job in jobs:
+        salary_data = job.get_salary_data()
+
+        job_rank_choices = {}
+        rank_names_list = []
+
+        for salary_rank in salary_data:
+            for rank_name, rank_details in salary_rank.items():
+                rank_names_list.append(rank_name)
+                for step in rank_details.get("steps", []):
+                    for step_name, _ in step.items():
+                        rank_names_list.append(f"{rank_name} - {step_name}")
+
+        job_rank_choices[job.title] = rank_names_list
+        rank_choices.append(job_rank_choices)
+
+    return rank_choices
+
+
 def get_minimum_wage_object():
     """
     Retrieves the first MinimumWage record from the payroll app.
