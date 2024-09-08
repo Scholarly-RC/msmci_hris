@@ -1,44 +1,43 @@
-const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
-const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+// Select DOM elements for theme toggle functionality
+const themeToggleDarkIcon = document.getElementById("theme-toggle-dark-icon");
+const themeToggleLightIcon = document.getElementById("theme-toggle-light-icon");
+const themeToggleBtn = document.getElementById("theme-toggle");
 
-// Change the icons inside the button based on previous settings
-if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    themeToggleLightIcon.classList.remove('hidden');
-} else {
-    themeToggleDarkIcon.classList.remove('hidden');
+// Function to apply the saved theme from localStorage
+function applyTheme() {
+  // Retrieve the saved theme from localStorage
+  const savedTheme = localStorage.getItem("color-theme");
+
+  // Apply the saved theme to the document
+  if (savedTheme === "dark") {
+    document.documentElement.classList.add("dark");
+    themeToggleLightIcon.classList.remove("hidden");
+    themeToggleDarkIcon.classList.add("hidden");
+  } else {
+    document.documentElement.classList.remove("dark");
+    themeToggleLightIcon.classList.add("hidden");
+    themeToggleDarkIcon.classList.remove("hidden");
+  }
 }
 
-const themeToggleBtn = document.getElementById('theme-toggle');
+// Apply the saved theme on page load
+applyTheme();
 
-let event = new Event('dark-mode');
+// Event listener for the theme toggle button
+themeToggleBtn.addEventListener("click", function () {
+  // Toggle the visibility of theme icons
+  themeToggleDarkIcon.classList.toggle("hidden");
+  themeToggleLightIcon.classList.toggle("hidden");
 
-themeToggleBtn.addEventListener('click', function () {
+  // Toggle the theme between dark and light
+  if (document.documentElement.classList.contains("dark")) {
+    document.documentElement.classList.remove("dark");
+    localStorage.setItem("color-theme", "light");
+  } else {
+    document.documentElement.classList.add("dark");
+    localStorage.setItem("color-theme", "dark");
+  }
 
-    // toggle icons
-    themeToggleDarkIcon.classList.toggle('hidden');
-    themeToggleLightIcon.classList.toggle('hidden');
-
-    // if set via local storage previously
-    if (localStorage.getItem('color-theme')) {
-        if (localStorage.getItem('color-theme') === 'light') {
-            document.documentElement.classList.add('dark');
-            localStorage.setItem('color-theme', 'dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-            localStorage.setItem('color-theme', 'light');
-        }
-
-        // if NOT set via local storage previously
-    } else {
-        if (document.documentElement.classList.contains('dark')) {
-            document.documentElement.classList.remove('dark');
-            localStorage.setItem('color-theme', 'light');
-        } else {
-            document.documentElement.classList.add('dark');
-            localStorage.setItem('color-theme', 'dark');
-        }
-    }
-
-    document.dispatchEvent(event);
-
+  // Dispatch a custom event to notify other parts of the application
+  document.dispatchEvent(new Event("dark-mode"));
 });
