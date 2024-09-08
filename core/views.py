@@ -11,13 +11,12 @@ from django_htmx.http import (
     HttpResponseClientRedirect,
     reswap,
     retarget,
-    trigger_client_event,
 )
 from openpyxl import load_workbook
 from render_block import render_block_to_string
 
 from core.actions import process_change_profile_picture
-from core.models import BiometricDetail, Department, UserDetails
+from core.models import Department
 from core.utils import (
     check_if_biometric_uid_exists,
     check_user_has_password,
