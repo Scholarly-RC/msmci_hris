@@ -354,131 +354,72 @@
 {% endblock %}
 {% block javascript %}
     <script>
-        const initializeMinimumWageModal = () => {
-            const modalElement = document.getElementById('minimum_wage_modal');
-            const options = {
-                placement: 'center-center',
-                backdrop: 'dynamic',
-                backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
-                closable: true,
-            };
+        document.addEventListener('DOMContentLoaded', () => {
+            // General function to initialize modals
+            const initializeModal = (id) => {
+                const modalElement = document.getElementById(id);
+                if (modalElement) {
+                    const options = {
+                        placement: 'center-center',
+                        backdrop: 'dynamic',
+                        backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
+                        closable: true,
+                    };
 
-            const instanceOptions = {
-                id: 'minimum_wage_modal',
-                override: true
-            };
+                    const instanceOptions = {
+                        id: id,
+                        override: true
+                    };
 
-            if (modalElement) {
-                const modal = new Modal(modalElement, options, instanceOptions);
-                modal.show();
-            }
-        }
-
-        const closeMinimumWageModal = () => {
-            const modalElement = document.getElementById('minimum_wage_modal');
-
-            if (modalElement) {
-                const modal = new Modal(modalElement);
-                modal.hide();
-            }
-        }
-
-        document.addEventListener('openMinimumWageModal', (event) => {
-            initializeMinimumWageModal();
-        });
-
-        document.addEventListener('closeMinimumWageModal', (event) => {
-            closeMinimumWageModal();
-        });
-    </script>
-    <script>
-        const initializeViewJobModal = () => {
-            const modalElement = document.getElementById('view_job_modal');
-            const options = {
-                placement: 'center-center',
-                backdrop: 'dynamic',
-                backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
-                closable: true,
-            };
-
-            const instanceOptions = {
-                id: 'view_job_modal',
-                override: true
-            };
-
-            if (modalElement) {
-                const modal = new Modal(modalElement, options, instanceOptions);
-                modal.show();
-            }
-        }
-
-        const closeViewJobModal = () => {
-            const modalElement = document.getElementById('view_job_modal');
-
-            if (modalElement) {
-                const modal = new Modal(modalElement);
-                modal.hide();
-            }
-        }
-
-        document.addEventListener('openViewJobModal', (event) => {
-            initializeViewJobModal();
-        });
-
-        document.addEventListener('closeViewJobModal', (event) => {
-            closeViewJobModal();
-        });
-    </script>
-    <script>
-        const updateJobList = () => {
-            const selected_department = document.getElementById('departments').value;
-
-            htmx.ajax('POST', '{% url "payroll:update_job_list" %}', {
-                values: {
-                    "selected_department": selected_department,
+                    const modal = new Modal(modalElement, options, instanceOptions);
+                    modal.show();
                 }
-            })
-        }
-        const initializeAddJobModal = () => {
-            const modalElement = document.getElementById('add_job_modal');
-            const options = {
-                placement: 'center-center',
-                backdrop: 'dynamic',
-                backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
-                closable: true,
             };
 
-            const instanceOptions = {
-                id: 'add_job_modal',
-                override: true
+            // General function to close modals
+            const closeModal = (id) => {
+                const modalElement = document.getElementById(id);
+                if (modalElement) {
+                    const modal = new Modal(modalElement);
+                    modal.hide();
+                }
             };
 
-            if (modalElement) {
-                const modal = new Modal(modalElement, options, instanceOptions);
-                modal.show();
-            }
-        }
+            // Initialize specific modals
+            const initializeMinimumWageModal = () => initializeModal('minimum_wage_modal');
+            const closeMinimumWageModal = () => closeModal('minimum_wage_modal');
 
-        const closeAddJobModal = () => {
-            const modalElement = document.getElementById('add_job_modal');
+            const initializeViewJobModal = () => initializeModal('view_job_modal');
+            const closeViewJobModal = () => closeModal('view_job_modal');
 
-            if (modalElement) {
-                const modal = new Modal(modalElement);
-                modal.hide();
-            }
-        }
+            const initializeAddJobModal = () => initializeModal('add_job_modal');
+            const closeAddJobModal = () => closeModal('add_job_modal');
 
-        document.addEventListener('openAddJobModal', (event) => {
-            initializeAddJobModal();
-        });
+            // Update job list
+            const updateJobList = () => {
+                const selectedDepartment = document.getElementById('departments').value;
 
-        document.addEventListener('closeAddJobModal', (event) => {
-            closeAddJobModal();
-        });
+                htmx.ajax('POST', '{% url "payroll:update_job_list" %}', {
+                    values: {
+                        "selected_department": selectedDepartment,
+                    }
+                });
+            };
 
-        document.addEventListener('newJobAdded', (event) => {
-            closeAddJobModal();
-            updateJobList();
+            // Event listeners for modals
+            document.addEventListener('openMinimumWageModal', initializeMinimumWageModal);
+            document.addEventListener('closeMinimumWageModal', closeMinimumWageModal);
+
+            document.addEventListener('openViewJobModal', initializeViewJobModal);
+            document.addEventListener('closeViewJobModal', closeViewJobModal);
+
+            document.addEventListener('openAddJobModal', initializeAddJobModal);
+            document.addEventListener('closeAddJobModal', closeAddJobModal);
+
+            document.addEventListener('newJobAdded', () => {
+                closeAddJobModal();
+                updateJobList();
+            });
         });
     </script>
 {% endblock %}
