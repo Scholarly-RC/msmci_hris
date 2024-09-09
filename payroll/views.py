@@ -1,16 +1,16 @@
 from django.http import HttpResponse
+from django.http.request import QueryDict
 from django.shortcuts import render
-from django.urls import reverse
-from django_htmx.http import (
-    HttpResponseClientRedirect,
-    push_url,
-    reswap,
-    retarget,
-    trigger_client_event,
-)
+from django_htmx.http import reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
 
-from payroll.actions import process_adding_job, process_setting_minimum_wage_amount
+from hris.utils import create_global_alert_instance
+from payroll.actions import (
+    process_adding_job,
+    process_deleting_job,
+    process_modifying_job,
+    process_setting_minimum_wage_amount,
+)
 from payroll.models import Job
 from payroll.utils import (
     get_department_list,
@@ -65,10 +65,27 @@ def add_job(request):
             return response
 
         if request.method == "POST":
-            data = request.POST
-            process_adding_job(data)
-            response = trigger_client_event(response, "newJobAdded", after="swap")
-            return response
+            try:
+                data = request.POST
+                job = process_adding_job(data)
+                response = trigger_client_event(response, "updateJobList", after="swap")
+                response = trigger_client_event(
+                    response, "closeAddJobModal", after="swap"
+                )
+                response = create_global_alert_instance(
+                    response,
+                    f"Job '{job.title}' has been successfully added to the job list.",
+                    "SUCCESS",
+                )
+                return response
+
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while adding the new job. Details: {error}",
+                    "DANGER",
+                )
+                return response
 
 
 def update_job_list(request):
@@ -107,6 +124,92 @@ def view_job(request):
         response = retarget(response, "#view_job_modal_container")
         response = reswap(response, "outerHTML")
         return response
+
+
+def modify_job(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "POST":
+            data = request.POST
+            job_id = data.get("job")
+            job = Job.objects.get(id=job_id)
+            departments = get_department_list()
+            context.update({"departments": departments, "job": job})
+            response.content = render_block_to_string(
+                "payroll/salary_and_rank_management.html",
+                "modify_job_modal_container",
+                context,
+            )
+            response = trigger_client_event(
+                response, "openModifyJobModal", after="swap"
+            )
+            response = retarget(response, "#modify_job_modal_container")
+            response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "PATCH":
+            try:
+                data = QueryDict(request.body)
+                job = process_modifying_job(data)
+                response = trigger_client_event(response, "updateJobList", after="swap")
+                response = create_global_alert_instance(
+                    response,
+                    f"Job #{job.id} has been successfully updated.",
+                    type="SUCCESS",
+                )
+                response = reswap(response, "none")
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while updating Job #{job.id}. Details: {error}",
+                    type="DANGER",
+                )
+                return response
+
+
+def delete_job(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "POST":
+            data = request.POST
+            context.update(
+                {
+                    "job_to_delete": data.get("job_to_delete", ""),
+                    "show_delete_confirmation": not "cancel_delete" in data,
+                }
+            )
+            response.content = render_block_to_string(
+                "payroll/salary_and_rank_management.html",
+                "delete_button_container",
+                context,
+            )
+            response = retarget(response, "#delete_button_container")
+            response = reswap(response, "outerHTML")
+            return response
+        if request.method == "DELETE":
+            try:
+                data = QueryDict(request.body)
+                job_id = data.get("job_to_delete", "")
+                process_deleting_job(job_id)
+                response = trigger_client_event(response, "updateJobList", after="swap")
+                response = trigger_client_event(
+                    response, "closeModifyJobModal", after="swap"
+                )
+                response = create_global_alert_instance(
+                    response, f"Job #{job_id} has been successfully deleted.", "SUCCESS"
+                )
+                return response
+
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while trying to delete Job #{job_id}. Details: {error}",
+                    "DANGER",
+                )
+                return response
 
 
 def minimum_wage_settings(request):

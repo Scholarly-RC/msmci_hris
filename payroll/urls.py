@@ -11,6 +11,16 @@ urlpatterns = [
         name="minimum_wage_settings",
     ),
     path(
+        "salary-and-rank-management/delete-job",
+        payroll_views.delete_job,
+        name="delete_job",
+    ),
+    path(
+        "salary-and-rank-management/modify-job",
+        payroll_views.modify_job,
+        name="modify_job",
+    ),
+    path(
         "salary-and-rank-management/view-job",
         payroll_views.view_job,
         name="view_job",

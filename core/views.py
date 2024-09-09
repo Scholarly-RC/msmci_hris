@@ -7,11 +7,7 @@ from django.db.utils import IntegrityError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django_htmx.http import (
-    HttpResponseClientRedirect,
-    reswap,
-    retarget,
-)
+from django_htmx.http import HttpResponseClientRedirect, reswap, retarget
 from openpyxl import load_workbook
 from render_block import render_block_to_string
 

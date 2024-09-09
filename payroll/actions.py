@@ -30,6 +30,41 @@ def process_adding_job(payload):
 
 
 @transaction.atomic
+def process_modifying_job(payload):
+    try:
+        JobModel = apps.get_model("payroll", "Job")
+        DepartmentModel = apps.get_model("core", "Department")
+
+        selected_department = DepartmentModel.objects.filter(
+            id__in=payload.getlist("selected_department", [])
+        )
+
+        job = JobModel.objects.get(id=payload.get("job", ""))
+        job.title = payload.get("job_title")
+        job.code = payload.get("job_code")
+        job.salary_grade = payload.get("salary_grade")
+        job.save()
+
+        job.department.add(*selected_department)
+
+        return job
+
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_deleting_job(job_id):
+    try:
+        JobModel = apps.get_model("payroll", "Job")
+        job = JobModel.objects.get(id=job_id)
+        job.delete()
+
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
 def process_setting_minimum_wage_amount(amount):
     try:
         minimum_wage = get_minimum_wage_object()
