@@ -4,11 +4,9 @@ from django.utils.timezone import make_aware
 
 def process_biometric_data_from_device(attendance_data):
     """
-    STATUS:
-        3 - pin
-        15 - face recog
+    Processes biometric data from a device, returning details including the user's biometric information,
+    user ID, timestamp, and punch type.
     """
-
     user_id = attendance_data.user_id
     user_biometric_detail = _get_biometric_detail_from_device_user_id(user_id)
 
@@ -30,11 +28,17 @@ def process_biometric_data_from_device(attendance_data):
 
 
 def get_biometric_detail_from_user_id(user_id):
+    """
+    Retrieves biometric detail for a user based on their user ID.
+    """
     biometric_detail_model = apps.get_model("core", "BiometricDetail")
     return biometric_detail_model.objects.filter(id=user_id).first()
 
 
 def _get_biometric_detail_from_device_user_id(device_user_id):
+    """
+    Retrieves biometric detail based on a device-specific user ID.
+    """
     biometric_detail_model = apps.get_model("core", "BiometricDetail")
     return biometric_detail_model.objects.filter(
         user_id_in_device=device_user_id
@@ -42,6 +46,9 @@ def _get_biometric_detail_from_device_user_id(device_user_id):
 
 
 def _get_punch_value(value):
+    """
+    Maps a punch value from the device to a corresponding punch type.
+    """
     attendance_record_model = apps.get_model("attendance", "AttendanceRecord")
     if value == 0:
         return attendance_record_model.Punch.TIME_IN.value

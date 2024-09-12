@@ -11,7 +11,11 @@ from django_htmx.http import HttpResponseClientRedirect, reswap, retarget
 from openpyxl import load_workbook
 from render_block import render_block_to_string
 
-from core.actions import process_change_profile_picture
+from core.actions import (
+    process_change_profile_picture,
+    process_get_or_create_intial_user_one_to_one_fields,
+    process_update_user_and_user_details,
+)
 from core.models import Department
 from core.utils import (
     check_if_biometric_uid_exists,
@@ -20,14 +24,12 @@ from core.utils import (
     get_civil_status_list,
     get_education_list,
     get_education_list_with_degrees_earned,
-    get_or_create_intial_user_one_to_one_fields,
     get_religion_list,
     get_role_list,
     get_users_sorted_by_department,
-    password_validation,
     profile_picture_validation,
-    update_user_and_user_details,
 )
+from core.validations import password_validation
 from hris.utils import create_global_alert_instance
 from payroll.utils import get_rank_choices
 
@@ -166,7 +168,7 @@ def user_register(request):
         user.set_password(password)
         user.save()
 
-        user_details, _ = get_or_create_intial_user_one_to_one_fields(user)
+        user_details, _ = process_get_or_create_intial_user_one_to_one_fields(user)
         user_details[0].employee_number = employee_id
         user_details[0].save()
 
@@ -220,7 +222,7 @@ def user_profile(request):
             )
             response = retarget(response, "#degrees_earned_section")
         else:
-            updated_user = update_user_and_user_details(
+            updated_user = process_update_user_and_user_details(
                 user_instance=user, querydict=data
             )
 
@@ -378,7 +380,9 @@ def add_new_user(request):
                 },
             )
             if created:
-                user_details, _ = get_or_create_intial_user_one_to_one_fields(user)
+                user_details, _ = process_get_or_create_intial_user_one_to_one_fields(
+                    user
+                )
                 user_details[0].employee_number = employee_id
                 user_details[0].save()
                 response = HttpResponseClientRedirect(reverse("core:user_management"))
@@ -455,7 +459,7 @@ def modify_user_details(request, pk):
             )
             response = retarget(response, "#degrees_earned_section")
         else:
-            updated_user = update_user_and_user_details(
+            updated_user = process_update_user_and_user_details(
                 user_instance=user, querydict=data
             )
             if user.userdetails.education in get_education_list_with_degrees_earned():
@@ -533,7 +537,7 @@ def bulk_add_new_users(request):
                 )
                 if created:
                     new_user_counter += 1
-                    get_or_create_intial_user_one_to_one_fields(user)
+                    process_get_or_create_intial_user_one_to_one_fields(user)
 
             if new_user_counter > 0:
                 messages.success(

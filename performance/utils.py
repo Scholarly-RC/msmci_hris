@@ -234,10 +234,16 @@ def get_poll_and_post_combined_list():
 
 
 def get_shared_resources_directory_path(instance, filename):
+    """
+    Returns the file path for saving a file based on the uploader's ID and the filename.
+    """
     return f"{instance.uploader.id}/resource/{filename}"
 
 
 def get_user_with_hr_role():
+    """
+    Retrieves users who have the HR role.
+    """
     user_model = apps.get_model("auth", "User")
     user_details_model = apps.get_model("core", "UserDetails")
 
@@ -247,6 +253,9 @@ def get_user_with_hr_role():
 
 
 def extract_filename_and_extension(filename: str):
+    """
+    Splits the filename into its name and extension parts.
+    """
     name, extension = os.path.splitext(filename)
     return name, extension
 
@@ -260,6 +269,12 @@ def validate_file_size(file):
 
 
 def get_users_shared_resources(uploader_id, shared_to_id):
+    """
+    Retrieves documents shared with a specific user or uploaded by them.
+    If `shared_to_id` is provided, it returns documents where the uploader is either `uploader_id` or `shared_to_id`,
+    and the document is shared with either `shared_to_id` or `uploader_id`.
+    If `shared_to_id` is not provided, it returns documents uploaded by `uploader_id` and not shared with anyone.
+    """
     shared_documents_model = apps.get_model("performance", "SharedResource")
 
     if shared_to_id:
@@ -276,6 +291,9 @@ def get_users_shared_resources(uploader_id, shared_to_id):
 
 
 def get_users_for_shared_resources(user):
+    """
+    Retrieves users with HR, Department Head, or Employee roles, excluding the specified user.
+    """
     user_model = apps.get_model("auth", "User")
     user_details_model = apps.get_model("core", "UserDetails")
 
@@ -293,6 +311,9 @@ def get_users_for_shared_resources(user):
 
 
 def get_users_per_shared_resources(user, resource):
+    """
+    Retrieves users who have the HR, Department Head, or Employee roles and are not the specified user or already shared with the resource.
+    """
     user_model = apps.get_model("auth", "User")
     user_details_model = apps.get_model("core", "UserDetails")
 

@@ -6,6 +6,9 @@ from django.contrib.auth.models import User
 
 
 def check_user_has_password(email):
+    """
+    Checks if a user with the given email has a usable password.
+    """
     try:
         user = User.objects.get(email=email)
         if user.password and user.has_usable_password():
@@ -16,36 +19,33 @@ def check_user_has_password(email):
 
 
 def generate_username_from_employee_id(employee_id):
+    """
+    Generates a username based on the provided employee ID.
+    """
     return f"emp-id-{employee_id}"
 
 
-def password_validation(password, confirm_password):
-    errors = []
-
-    if password != confirm_password:
-        errors.append("Passwords does not match.")
-        return errors
-
-    if len(password) < 5:
-        errors.append("Password must be at least 5 characters")
-
-    return errors
-
-
 def string_to_date(string_date):
+    """
+    Converts a date string in 'YYYY-MM-DD' format to a datetime object.
+    """
     return datetime.strptime(string_date, "%Y-%m-%d")
 
 
 def date_to_string(date):
+    """
+    Converts a datetime object to a string in 'YYYY-MM-DD' format, or returns an empty string if the date is None.
+    """
     return date.strftime("%Y-%m-%d") if date else ""
 
 
 def profile_picture_validation(image):
-    # Check file size (max 1MB)
+    """
+    Validates the profile picture by checking its file size and format.
+    """
     if image.size > 1 * 1024 * 1024:
         return "File size should be under 1MB."
 
-    # Check file type
     if not image.name.lower().endswith((".jpg", ".jpeg", ".png")):
         return "File should be a JPEG or PNG image."
 
@@ -53,12 +53,18 @@ def profile_picture_validation(image):
 
 
 def get_user_profile_picture_directory_path(instance, filename):
+    """
+    Generates the directory path for storing a user's profile picture with a unique filename.
+    """
     ext = filename.split(".")[1]
     new_filename = f"{uuid.uuid4()}.{ext}"
     return f"{instance.user.id}/profile_picture/{new_filename}"
 
 
 def get_dict_for_user_and_user_details(querydict):
+    """
+    Extracts and organizes user and user details fields from a QueryDict.
+    """
     user_fields = ["first_name", "last_name"]
     user_details_fields = [
         "middle_name",
@@ -95,38 +101,10 @@ def get_dict_for_user_and_user_details(querydict):
     return user_dict, user_details_dict
 
 
-def update_user_and_user_details(user_instance, querydict):
-    try:
-        user_payload, user_details_payload = get_dict_for_user_and_user_details(
-            querydict
-        )
-
-        user_details = user_instance.userdetails
-
-        for attr, value in user_payload.items():
-            setattr(user_instance, attr, value)
-        user_instance.save()
-
-        date_fields = ["date_of_birth", "date_of_hiring"]
-
-        processed_user_details = {
-            attr: string_to_date(value) if attr in date_fields and value else value
-            for attr, value in user_details_payload.items()
-        }
-
-        for attr, value in processed_user_details.items():
-            if attr in date_fields and not value:
-                value = None
-            setattr(user_details, attr, value)
-
-        user_details.save()
-
-        return user_instance
-    except Exception as e:
-        raise e
-
-
 def get_users_sorted_by_department():
+    """
+    Retrieves users, excluding those with the HR role, and sorts them by department and first name.
+    """
     user_details_model = apps.get_model("core", "UserDetails")
     hr_role = user_details_model.Role.HR.value
 
@@ -138,11 +116,17 @@ def get_users_sorted_by_department():
 
 
 def get_education_list():
+    """
+    Returns a list of educational attainment choices from the UserDetails model.
+    """
     user_details_model = apps.get_model("core", "UserDetails")
     return user_details_model.EducationalAttainment.choices
 
 
 def get_education_list_with_degrees_earned():
+    """
+    Returns a list of specific educational attainment values related to degrees earned.
+    """
     user_details_model = apps.get_model("core", "UserDetails")
     return [
         user_details_model.EducationalAttainment.VOCATIONAL.value,
@@ -153,35 +137,33 @@ def get_education_list_with_degrees_earned():
 
 
 def get_civil_status_list():
+    """
+    Returns a list of civil status choices from the UserDetails model.
+    """
     user_details_model = apps.get_model("core", "UserDetails")
     return user_details_model.CivilStatus.choices
 
 
 def get_religion_list():
+    """
+    Returns a list of religion choices from the UserDetails model.
+    """
     user_details_model = apps.get_model("core", "UserDetails")
     return user_details_model.Religion.choices
 
 
 def get_role_list():
+    """
+    Returns a list of role choices from the UserDetails model.
+    """
     user_details_model = apps.get_model("core", "UserDetails")
     return user_details_model.Role.choices
 
 
-def get_or_create_intial_user_one_to_one_fields(user):
-    user_details, user_details_created = apps.get_model(
-        "core", "UserDetails"
-    ).objects.get_or_create(user=user)
-    biometric_details, biometric_details_created = apps.get_model(
-        "core", "BiometricDetail"
-    ).objects.get_or_create(user=user)
-
-    return [
-        (user_details, user_details_created),
-        (biometric_details, biometric_details_created),
-    ]
-
-
 def check_if_biometric_uid_exists(current_user, uid):
+    """
+    Checks if a biometric UID exists in the system for any user other than the current user.
+    """
     biometric_detail_model = apps.get_model("core", "BiometricDetail")
     return (
         biometric_detail_model.objects.filter(user_id_in_device=uid)

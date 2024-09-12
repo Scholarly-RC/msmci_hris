@@ -10,6 +10,11 @@ from attendance.utils.date_utils import get_date_object, get_time_object
 
 @transaction.atomic
 def process_daily_shift_schedule(department, year, month, day, employee, shift):
+    """
+    Updates the shift schedule for a specific day.
+    Adds or removes a shift assignment for an employee based on the current schedule.
+    If the shift assignment does not already exist for the day, it is added; otherwise, it is removed.
+    """
     daily_shift_schedule_model = apps.get_model("attendance", "DailyShiftSchedule")
     daily_shift_records_model = apps.get_model("attendance", "DailyShiftRecord")
 
@@ -38,6 +43,12 @@ def process_daily_shift_schedule(department, year, month, day, employee, shift):
 def process_bulk_daily_shift_schedule(
     department, year, month, day, shifts, selected_shift, employees, deselect: bool
 ):
+    """
+    Updates shift schedules for multiple employees on a specific day.
+    Adds or removes shift assignments based on the `deselect` flag:
+    - If `deselect` is False, it adds the selected shift to employees who are not already assigned.
+    - If `deselect` is True, it removes the selected shift from employees who are assigned.
+    """
     daily_shift_schedule_model = apps.get_model("attendance", "DailyShiftSchedule")
     daily_shift_records_model = apps.get_model("attendance", "DailyShiftRecord")
 
@@ -78,6 +89,9 @@ def process_bulk_daily_shift_schedule(
 
 @transaction.atomic
 def add_user_attendance_record(attendance_data):
+    """
+    Creates a new attendance record for a user based on the provided biometric data from the device.
+    """
     attendance_record_model = apps.get_model("attendance", "AttendanceRecord")
 
     user_biometric_detail, user_id_from_device, timestamp, punch = (
@@ -94,6 +108,10 @@ def add_user_attendance_record(attendance_data):
 
 @transaction.atomic
 def manually_set_user_clocked_time(user, selected_date, clock_in_time, clock_out_time):
+    """
+    Manually sets or updates the clock-in and clock-out times for a user on a specific date.
+    If provided, updates the clock-in and/or clock-out times in the attendance records.
+    """
     attendance_record_model = apps.get_model("attendance", "AttendanceRecord")
     clock_in_punch = attendance_record_model.Punch.TIME_IN.value
     clock_out_punch = attendance_record_model.Punch.TIME_OUT.value

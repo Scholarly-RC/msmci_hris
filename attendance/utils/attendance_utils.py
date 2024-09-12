@@ -22,6 +22,9 @@ from attendance.utils.date_utils import (
 
 
 def get_user_daily_shift_record(department, year: int, month: int, day: int):
+    """
+    Retrieves the daily shift record for a specific department on a given date.
+    """
     daily_shift_record_model = apps.get_model("attendance", "DailyShiftRecord")
     selected_date = get_date_object(year=year, month=month, day=day)
     selected_daily_shift_record = daily_shift_record_model.objects.filter(
@@ -32,6 +35,9 @@ def get_user_daily_shift_record(department, year: int, month: int, day: int):
 
 
 def get_user_daily_shift_record_shifts(user, year: int, month: int, day: int):
+    """
+    Retrieves the shift record for a specific user on a given date.
+    """
     user_daily_shift_record = get_user_daily_shift_record(
         user.userdetails.department, year, month, day
     )
@@ -41,6 +47,10 @@ def get_user_daily_shift_record_shifts(user, year: int, month: int, day: int):
 
 
 def get_user_clocked_time(user, year: int, month: int, day: int, shift):
+    """
+    Retrieves and calculates the clock-in and clock-out times for a user on a specific date,
+    including their time differences from the expected shift times.
+    """
     attendance_record_model = apps.get_model("attendance", "AttendanceRecord")
 
     selected_date = get_date_object(year=year, month=month, day=day)
@@ -160,12 +170,18 @@ def get_user_clocked_time(user, year: int, month: int, day: int, shift):
 
 
 def get_all_holidays_list():
+    """
+    Retrieves a list of all holidays from the Holiday model.
+    """
     holiday_model = apps.get_model("attendance", "Holiday")
     all_holidays = holiday_model.objects.all()
     return all_holidays
 
 
 def get_holiday_for_specific_month_and_year(month: int, year: int):
+    """
+    Retrieves holidays for a specific month and year, combining regular and non-regular holidays.
+    """
     holidays_for_this_specific_month_and_year = (
         get_all_holidays_list()
         .filter(month=month, year=year, is_regular=False)
@@ -184,6 +200,9 @@ def get_holiday_for_specific_month_and_year(month: int, year: int):
 
 
 def get_employees_list_per_department():
+    """
+    Retrieves a list of active users, annotated with department existence and sorted by department and name.
+    """
     all_users = (
         User.objects.filter(is_active=True)
         .annotate(

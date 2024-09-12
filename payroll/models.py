@@ -4,10 +4,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from core.models import Department
-from payroll.utils import (
-    calculate_basic_salary_for_grade,
-    calculate_basic_salary_steps,
-)
+from payroll.utils import calculate_basic_salary_for_grade, calculate_basic_salary_steps
 
 
 # Create your models here.

@@ -29,7 +29,7 @@ from payroll.validations import minimum_wage_update_validation
 ### Salary and Rank Management Views
 
 
-def salary_and_rank_management(request, section=""):
+def salary_and_rank_management(request):
     context = {}
 
     departments = get_department_list().exclude(jobs__isnull=True)
