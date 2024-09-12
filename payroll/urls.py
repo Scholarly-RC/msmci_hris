@@ -6,6 +6,26 @@ from payroll import views as payroll_views
 
 urlpatterns = [
     path(
+        "salary-and-rank-management/mp2-amount-settings",
+        payroll_views.mp2_amount_settings,
+        name="mp2_amount_settings",
+    ),
+    path(
+        "salary-and-rank-management/mp2-settings/toggle-status",
+        payroll_views.toggle_user_mp2_status,
+        name="toggle_user_mp2_status",
+    ),
+    path(
+        "salary-and-rank-management/mp2-settings",
+        payroll_views.mp2_settings,
+        name="mp2_settings",
+    ),
+    path(
+        "salary-and-rank-management/deductions-settings",
+        payroll_views.deductions_settings,
+        name="deductions_settings",
+    ),
+    path(
         "salary-and-rank-management/minimum-wage-settings",
         payroll_views.minimum_wage_settings,
         name="minimum_wage_settings",

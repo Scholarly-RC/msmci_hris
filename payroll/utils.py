@@ -1,7 +1,10 @@
+import copy
 from decimal import Decimal
 
 from django.apps import apps
 from django.conf import settings
+
+from hris.exceptions import InitializationError
 
 
 def get_department_list():
@@ -49,9 +52,14 @@ def get_rank_choices(department_id: int) -> list:
 
 def get_minimum_wage_object():
     """
-    Retrieves the first MinimumWage record from the payroll app.
+    Retrieves the first MinimumWage record from the database.
+    If no records are found, an InitializationError is raised.
     """
     MinimumWageModel = apps.get_model("payroll", "MinimumWage")
+    if not MinimumWageModel.objects.exists():
+        raise InitializationError(
+            "Minimum Wage configuration settings have not been initialized."
+        )
     return MinimumWageModel.objects.first()
 
 
@@ -100,38 +108,95 @@ def calculate_basic_salary_steps(basic_salary: int) -> list:
     return basic_salary_steps
 
 
-def minimum_wage_update_validation(data, minimum_wage):
+def get_deduction_configuration_object():
     """
-    Validates the proposed update to the minimum wage. Checks if the new value matches the current minimum wage,
-    handles confirmation requirements, and updates the context with appropriate messages for success or errors.
+    Retrieves the first DeductionConfiguration record from the database.
+    If no records are found, an InitializationError is raised.
     """
-    context = {}
-    minimum_wage_basic_salary = Decimal(data.get("minimum_wage_basic_salary", "0.00"))
+    DeductionConfigurationModel = apps.get_model("payroll", "DeductionConfiguration")
 
-    if minimum_wage_basic_salary == minimum_wage.amount:
-        context["error"] = (
-            "The value you entered matches the current minimum wage. Please enter a different amount."
+    if not DeductionConfigurationModel.objects.exists():
+        raise InitializationError(
+            "Deduction configuration settings have not been initialized."
         )
-        return context
 
-    if "for_confirmation" in data:
-        context.update(
-            {
-                "show_confirmation": True,
-                "minimum_wage_value": minimum_wage_basic_salary,
-            }
-        )
-        return context
+    return DeductionConfigurationModel.objects.first()
 
-    if "confirmation_box" not in data:
-        context.update(
-            {
-                "show_confirmation": True,
-                "confirmation_error": "Please check the box to confirm your changes.",
-                "minimum_wage_value": minimum_wage_basic_salary,
-            }
-        )
-        return context
 
-    context["success"] = True
-    return context
+def get_deduction_configuration_with_submitted_changes(
+    payload, deduction_configuration
+):
+    def _update_config_data(config_copy, payload, config_keys):
+        config_data = config_copy.get("data")
+        for config_key, payload_key in config_keys.items():
+            config_data[config_key] = payload.get(payload_key)
+
+    data = []
+
+    # SSS Configuration
+    sss_config = deduction_configuration.sss_config()
+    sss_config_copy = copy.deepcopy(sss_config)
+    sss_keys = {
+        "min_compensation": "sss_minimum_compensation",
+        "max_compensation": "sss_maximum_compensation",
+        "min_contribution": "sss_minimum_contribution",
+        "max_contribution": "sss_maximum_contribution",
+        "contribution_difference": "sss_contribution_difference",
+    }
+    _update_config_data(sss_config_copy, payload, sss_keys)
+    data.append(sss_config_copy)
+
+    # PhilHealth Configuration
+    philhealth_config = deduction_configuration.philhealth_config()
+    philhealth_config_copy = copy.deepcopy(philhealth_config)
+    philhealth_keys = {
+        "min_compensation": "philhealth_minimum_compensation",
+        "max_compensation": "philhealth_maximum_compensation",
+        "min_contribution": "philhealth_minimum_contribution",
+        "max_contribution": "philhealth_maximum_contribution",
+        "rate": "philhealth_contribution_rate",
+    }
+    _update_config_data(philhealth_config_copy, payload, philhealth_keys)
+    data.append(philhealth_config_copy)
+
+    # Tax Configuration
+    tax_config = deduction_configuration.tax_config()
+    tax_config_copy = copy.deepcopy(tax_config)
+    tax_keys = {
+        "compensation_range": "tax_compensation_range",
+        "percentage": "tax_parcentage",
+        "base_tax": "tax_base_tax",
+    }
+    _update_config_data(tax_config_copy, payload, tax_keys)
+    data.append(tax_config_copy)
+
+    # PagIBIG Configuration
+    pagibig_config = deduction_configuration.pagibig_config()
+    pagibig_config_copy = copy.deepcopy(pagibig_config)
+    pagibig_keys = {"amount": "pagibig_contribution_amount"}
+    _update_config_data(pagibig_config_copy, payload, pagibig_keys)
+    data.append(pagibig_config_copy)
+
+    return data
+
+
+def convert_decimal_list_to_string(list: list) -> str:
+    return ", ".join(map(str, list))
+
+
+def convert_string_to_decimal_list(str: str) -> list:
+    return [Decimal(x) for x in str.split(", ")]
+
+
+def get_mp2_object():
+    """
+    Retrieves the first Mp2 record from the database.
+    This function returns the first record of the 'Mp2' model. If no records are found, it raises an
+    InitializationError indicating that the 'Mp2' settings have not been initialized.
+    """
+    Mp2Model = apps.get_model("payroll", "Mp2")
+
+    if not Mp2Model.objects.exists():
+        raise InitializationError("Mp2 settings have not been initialized.")
+
+    return Mp2Model.objects.first()

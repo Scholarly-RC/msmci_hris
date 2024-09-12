@@ -23,6 +23,7 @@ from core.utils import (
     get_or_create_intial_user_one_to_one_fields,
     get_religion_list,
     get_role_list,
+    get_users_sorted_by_department,
     password_validation,
     profile_picture_validation,
     update_user_and_user_details,
@@ -330,9 +331,7 @@ def upload_user_profile_picture(request):
 ### USER MANAGEMENT ###
 @login_required(login_url="/login")
 def user_management(request):
-    users = User.objects.exclude(id=request.user.id).order_by(
-        "userdetails__department__name", "first_name"
-    )
+    users = get_users_sorted_by_department()
     context = {"users": users}
     if request.htmx and request.POST:
         data = request.POST

@@ -1,10 +1,16 @@
 from datetime import datetime
+from decimal import Decimal
 
 from django.apps import apps
 from django.db import transaction
 from django.utils.timezone import make_aware
 
-from payroll.utils import get_minimum_wage_object
+from payroll.utils import (
+    get_deduction_configuration_object,
+    get_deduction_configuration_with_submitted_changes,
+    get_minimum_wage_object,
+    get_mp2_object,
+)
 
 
 @transaction.atomic
@@ -75,5 +81,63 @@ def process_setting_minimum_wage_amount(amount):
 
         return minimum_wage
 
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_setting_deduction_config(payload):
+    try:
+        deduction_configuration = get_deduction_configuration_object()
+        modified_payload = get_deduction_configuration_with_submitted_changes(
+            payload, deduction_configuration
+        )
+
+        if modified_payload != deduction_configuration.config:
+            deduction_configuration.config = modified_payload
+            current_date = make_aware(datetime.now()).date().strftime("%Y-%m-%d")
+            deduction_configuration.history.append(
+                {"date_set": current_date, "config": modified_payload}
+            )
+            deduction_configuration.save()
+
+        return deduction_configuration
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_toggle_user_mp2_status(payload):
+    try:
+        UserModel = apps.get_model("auth", "User")
+
+        mp2 = get_mp2_object()
+
+        user_id = payload.get("selected_user", "")
+
+        user = UserModel.objects.get(id=user_id)
+
+        if user in mp2.users.all():
+            mp2.users.remove(user)
+            added = False
+        else:
+            mp2.users.add(user)
+            added = True
+
+        return mp2, user, added
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_setting_mp2_amount(payload):
+    try:
+        amount = payload.get("mp2_amount", 0)
+        mp2 = get_mp2_object()
+
+        mp2.amount = Decimal(amount)
+        mp2.save()
+
+        return mp2
     except Exception as error:
         raise error

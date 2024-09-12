@@ -126,6 +126,17 @@ def update_user_and_user_details(user_instance, querydict):
         raise e
 
 
+def get_users_sorted_by_department():
+    user_details_model = apps.get_model("core", "UserDetails")
+    hr_role = user_details_model.Role.HR.value
+
+    users = User.objects.exclude(userdetails__role=hr_role).order_by(
+        "userdetails__department__name", "first_name"
+    )
+
+    return users
+
+
 def get_education_list():
     user_details_model = apps.get_model("core", "UserDetails")
     return user_details_model.EducationalAttainment.choices

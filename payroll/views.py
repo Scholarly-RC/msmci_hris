@@ -1,48 +1,66 @@
+from django.db.models import Q
 from django.http import HttpResponse
 from django.http.request import QueryDict
 from django.shortcuts import render
 from django_htmx.http import reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
 
+from core.utils import get_users_sorted_by_department
 from hris.utils import create_global_alert_instance
 from payroll.actions import (
     process_adding_job,
     process_deleting_job,
     process_modifying_job,
+    process_setting_deduction_config,
     process_setting_minimum_wage_amount,
+    process_setting_mp2_amount,
+    process_toggle_user_mp2_status,
 )
 from payroll.models import Job
 from payroll.utils import (
+    get_deduction_configuration_object,
     get_department_list,
     get_job_list,
     get_minimum_wage_object,
-    minimum_wage_update_validation,
+    get_mp2_object,
 )
+from payroll.validations import minimum_wage_update_validation
 
 ### Salary and Rank Management Views
 
 
-def salary_and_rank_management(request):
+def salary_and_rank_management(request, section=""):
     context = {}
-    departments = get_department_list().exclude(jobs__isnull=True)
 
+    departments = get_department_list().exclude(jobs__isnull=True)
     selected_department_id = int(request.POST.get("selected_department", "0"))
     jobs = get_job_list(selected_department_id)
     context.update({"departments": departments, "jobs": jobs})
 
-    if request.POST and request.htmx:
-        if selected_department_id:
-            context.update({"selected_department": selected_department_id})
-
+    if request.htmx:
         response = HttpResponse()
-        response.content = render_block_to_string(
-            "payroll/salary_and_rank_management.html",
-            "salary_and_rank_management_section",
-            context,
-        )
-        response = retarget(response, "#salary_and_rank_management_section")
-        response = reswap(response, "outerHTML")
-        return response
+        if request.method == "GET":
+            response.content = render_block_to_string(
+                "payroll/salary_and_rank_management.html",
+                "salary_and_rank_management_section",
+                context,
+            )
+            response = retarget(response, "#salary_and_rank_management_section")
+            response = reswap(response, "outerHTML")
+            return response
+
+        if request.POST:
+            if selected_department_id:
+                context.update({"selected_department": selected_department_id})
+
+            response.content = render_block_to_string(
+                "payroll/salary_and_rank_management.html",
+                "salary_and_rank_management_section",
+                context,
+            )
+            response = retarget(response, "#salary_and_rank_management_section")
+            response = reswap(response, "outerHTML")
+            return response
 
     return render(request, "payroll/salary_and_rank_management.html", context)
 
@@ -250,6 +268,188 @@ def minimum_wage_settings(request):
             )
             response = retarget(response, "#minimum_wage_modal_container")
             response = reswap(response, "outerHTML")
+            return response
+
+
+def deductions_settings(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "GET":
+            deduction_configuration = get_deduction_configuration_object()
+            context["deduction_configuration"] = deduction_configuration
+            response.content = render_block_to_string(
+                "payroll/salary_and_rank_management.html",
+                "deductions_settings_modal_container",
+                context,
+            )
+            response = trigger_client_event(
+                response, "openDeductionsSettingsModal", after="swap"
+            )
+            response = retarget(response, "#deductions_settings_modal_container")
+            response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "POST":
+            try:
+                data = request.POST
+                process_setting_deduction_config(data)
+                response = create_global_alert_instance(
+                    response,
+                    "Deduction settings have been successfully saved.",
+                    "SUCCESS",
+                )
+                response = trigger_client_event(
+                    response, "closeDeductionsSettingsModal", after="swap"
+                )
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while saving the deduction settings. Please try again later. Error details: {error}",
+                    "DANGER",
+                )
+                return response
+
+
+def mp2_settings(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "GET":
+            if "back" in request.GET:
+                response = trigger_client_event(
+                    response, "openDeductionsSettingsModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response, "closeMp2SettingsModal", after="swap"
+                )
+                response = reswap(response, "none")
+            else:
+                users = get_users_sorted_by_department()
+                context["users"] = users
+                response.content = render_block_to_string(
+                    "payroll/salary_and_rank_management.html",
+                    "mp2_settings_modal_container",
+                    context,
+                )
+                response = retarget(response, "#mp2_settings_modal_container")
+                response = reswap(response, "outerHTML")
+                response = trigger_client_event(
+                    response, "openMp2SettingsModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response, "closeDeductionsSettingsModal", after="swap"
+                )
+                response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "POST":
+            data = request.POST
+            users = get_users_sorted_by_department()
+            user_search = data.get("user_search", "")
+            if user_search:
+                user_filter = (
+                    Q(first_name__icontains=user_search)
+                    | Q(last_name__icontains=user_search)
+                    | Q(email__icontains=user_search)
+                )
+                users = users.filter(user_filter)
+            context["users"] = users
+            context.update({"users": users, "user_search": user_search})
+            response.content = render_block_to_string(
+                "payroll/salary_and_rank_management.html",
+                "mp2_settings_modal_container",
+                context,
+            )
+            response = retarget(response, "#mp2_settings_modal_container")
+            response = reswap(response, "outerHTML")
+            return response
+
+
+def mp2_amount_settings(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "GET":
+            if "back" in request.GET:
+                response = trigger_client_event(
+                    response, "closeMp2AmountSettingsModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response, "openMp2SettingsModal", after="swap"
+                )
+                response = reswap(response, "none")
+            else:
+                mp2 = get_mp2_object()
+                context["mp2"] = mp2
+                response = trigger_client_event(
+                    response, "openMp2AmountSettingsModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response, "closeMp2SettingsModal", after="swap"
+                )
+                response.content = render_block_to_string(
+                    "payroll/salary_and_rank_management.html",
+                    "mp2_amount_settings_modal_container",
+                    context,
+                )
+                response = retarget(response, "#mp2_amount_settings_modal_container")
+                response = reswap(response, "outerHTML")
+
+            return response
+
+        if request.method == "POST":
+            try:
+                data = request.POST
+                mp2 = process_setting_mp2_amount(data)
+                context["mp2"] = mp2
+                response.content = render_block_to_string(
+                    "payroll/salary_and_rank_management.html",
+                    "mp2_amount_settings_modal_container",
+                    context,
+                )
+                response = create_global_alert_instance(
+                    response, "MP2 Amount has been successfully updated.", "SUCCESS"
+                )
+                response = retarget(response, "#mp2_amount_settings_modal_container")
+                response = reswap(response, "outerHTML")
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while updating the MP2 Amount. Details: {error}",
+                    "DANGER",
+                )
+                return response
+
+
+def toggle_user_mp2_status(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        try:
+            response = HttpResponse()
+            data = request.POST
+            _, user, added = process_toggle_user_mp2_status(data)
+            context["user"] = user
+            response.content = render_block_to_string(
+                "payroll/salary_and_rank_management.html",
+                "mp2_user_block",
+                context,
+            )
+            response = reswap(response, "outerHTML")
+            response = create_global_alert_instance(
+                response,
+                f"User #{user.id} has been successfully {'added to' if added else 'removed from'} MP2.",
+                "SUCCESS",
+            )
+            return response
+        except Exception as error:
+            response = create_global_alert_instance(
+                response,
+                f"An error occurred while updating the user's MP2 status. Details: {error}",
+                "DANGER",
+            )
             return response
 
 
