@@ -6,6 +6,46 @@ from payroll import views as payroll_views
 
 urlpatterns = [
     path(
+        "payslip-management/modify",
+        payroll_views.modify_payslip,
+        name="modify_payslip",
+    ),
+    path(
+        "payslip-management",
+        payroll_views.payslip_management,
+        name="payslip_management",
+    ),
+    path(
+        "salary-and-rank-management/compensations-settings/modify-specific-compensation-users",
+        payroll_views.modify_specific_compensation_users,
+        name="modify_specific_compensation_users",
+    ),
+    path(
+        "salary-and-rank-management/compensations-settings/toggle-user-view",
+        payroll_views.toggle_specific_compensation_users_view,
+        name="toggle_specific_compensation_users_view",
+    ),
+    path(
+        "salary-and-rank-management/compensations-settings/remove",
+        payroll_views.remove_specific_compensation,
+        name="remove_specific_compensation",
+    ),
+    path(
+        "salary-and-rank-management/compensations-settings/modify",
+        payroll_views.modify_specific_compensation,
+        name="modify_specific_compensation",
+    ),
+    path(
+        "salary-and-rank-management/compensations-settings/add",
+        payroll_views.add_specific_compensation,
+        name="add_specific_compensation",
+    ),
+    path(
+        "salary-and-rank-management/compensations-settings",
+        payroll_views.compensations_settings,
+        name="compensations_settings",
+    ),
+    path(
         "salary-and-rank-management/mp2-amount-settings",
         payroll_views.mp2_amount_settings,
         name="mp2_amount_settings",

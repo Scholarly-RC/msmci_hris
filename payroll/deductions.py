@@ -103,7 +103,7 @@ class Tax:
             if salary <= self.compensation_range[i]:
                 # Calculate the tax based on the bracket found
                 if i == 0:
-                    return 0.00
+                    return Decimal(0.00)
                 else:
                     compensation_level = self.compensation_range[i - 1]
                     percentage = self.percentage[i - 1]
@@ -117,7 +117,7 @@ class Tax:
         percentage = self.percentage[-1]
         base_tax = self.base_tax[-1]
         additional_tax = (salary - compensation_level) * (percentage / 100)
-        return base_tax + additional_tax
+        return Decimal(base_tax + additional_tax)
 
 
 class PagIbig:

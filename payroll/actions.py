@@ -141,3 +141,88 @@ def process_setting_mp2_amount(payload):
         return mp2
     except Exception as error:
         raise error
+
+
+@transaction.atomic
+def process_get_or_create_user_payslip(user_id: int, month: int, year: int):
+    try:
+        PayslipModel = apps.get_model("payroll", "Payslip")
+        UserModel = apps.get_model("auth", "User")
+
+        user = UserModel.objects.get(id=user_id)
+
+        payslip = PayslipModel.objects.get_or_create(
+            user=user,
+            month=month,
+            year=year,
+            defaults={"1st_period": "DRAFT", "2nd_period": "DRAFT"},
+        )
+
+        return user, payslip
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_add_or_create_compensation(
+    type: str, specific_type: str, month: int, year: int
+):
+    try:
+        CompensationModel = apps.get_model("payroll", "Compensation")
+        compensation, _ = CompensationModel.objects.get_or_create(
+            type=type, month=month, year=year
+        )
+
+        if specific_type:
+            compensation.specific_type = specific_type
+            compensation.save()
+
+        return compensation
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_modifying_compensation(payload):
+    try:
+        CompensationModel = apps.get_model("payroll", "Compensation")
+        compensation = CompensationModel.objects.get(
+            id=payload.get("selected_compensation")
+        )
+        compensation.amount = Decimal(payload.get("amount"))
+        compensation.save()
+        return compensation
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_removing_compensation(payload):
+    try:
+        CompensationModel = apps.get_model("payroll", "Compensation")
+        compensation = CompensationModel.objects.get(
+            id=payload.get("selected_compensation")
+        )
+        compensation.delete()
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_modifying_compensation_user(
+    user_id: int, compensation_id: int, remove: bool = False
+):
+    try:
+        CompensationModel = apps.get_model("payroll", "Compensation")
+        UserModel = apps.get_model("auth", "User")
+        user = UserModel.objects.get(id=user_id)
+        compensation = CompensationModel.objects.get(id=compensation_id)
+
+        if not remove:
+            compensation.users.add(user)
+        else:
+            compensation.users.remove(user)
+
+        return compensation, user
+    except Exception as error:
+        raise error

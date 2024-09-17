@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.apps import apps
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 
 def check_user_has_password(email):
@@ -101,16 +102,30 @@ def get_dict_for_user_and_user_details(querydict):
     return user_dict, user_details_dict
 
 
-def get_users_sorted_by_department():
+def get_users_sorted_by_department(user_query: str = "", selected_department: int = 0):
     """
-    Retrieves users, excluding those with the HR role, and sorts them by department and first name.
+    Retrieves and sorts users by department and first name, excluding those with the HR role.
+    Optionally filters users by a search query and/or a selected department.
     """
     user_details_model = apps.get_model("core", "UserDetails")
     hr_role = user_details_model.Role.HR.value
 
-    users = User.objects.exclude(userdetails__role=hr_role).order_by(
-        "userdetails__department__name", "first_name"
+    users = (
+        User.objects.exclude(userdetails__role=hr_role)
+        .exclude(userdetails__rank__isnull=True)
+        .order_by("userdetails__department__name", "first_name")
     )
+
+    if selected_department:
+        users = users.filter(userdetails__department=selected_department)
+
+    if user_query:
+        user_filter = (
+            Q(first_name__icontains=user_query)
+            | Q(last_name__icontains=user_query)
+            | Q(email__icontains=user_query)
+        )
+        users = users.filter(user_filter)
 
     return users
 

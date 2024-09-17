@@ -1,8 +1,11 @@
 import copy
+import re
+from datetime import datetime
 from decimal import Decimal
 
 from django.apps import apps
 from django.conf import settings
+from django.utils.timezone import make_aware
 
 from hris.exceptions import InitializationError
 
@@ -200,3 +203,109 @@ def get_mp2_object():
         raise InitializationError("Mp2 settings have not been initialized.")
 
     return Mp2Model.objects.first()
+
+
+def get_current_month_and_year():
+    now = make_aware(datetime.now())
+    current_month = now.month
+    current_year = now.year
+
+    return current_month, current_year
+
+
+def get_payslip_year_list() -> list:
+    PayslipModel = apps.get_model("payroll", "Payslip")
+
+    payslip_years = (
+        PayslipModel.objects.values_list("year", flat=True).order_by("year").distinct()
+    )
+
+    return list(payslip_years)
+
+
+def get_compensation_year_list() -> list:
+    CompensationModel = apps.get_model("payroll", "Compensation")
+
+    compensation_years = (
+        CompensationModel.objects.values_list("year", flat=True)
+        .order_by("year")
+        .distinct()
+    )
+
+    return list(compensation_years)
+
+
+def get_compensation_types(month: int, year: int) -> list:
+    CompensationModel = apps.get_model("payroll", "Compensation")
+    others_type = CompensationModel.CompensationType.OTHERS.value
+    existing_compensations = CompensationModel.objects.filter(month=month, year=year)
+    existing_compensation_types = existing_compensations.values_list("type", flat=True)
+    existing_compensation_list = [
+        choice
+        for choice in CompensationModel.CompensationType.choices
+        if choice[0] in existing_compensation_types
+    ]
+    non_existent_compensations_list = [
+        choice
+        for choice in CompensationModel.CompensationType.choices
+        if choice[0] not in existing_compensation_types and choice[0] != others_type
+    ]
+    return (
+        existing_compensation_list,
+        existing_compensations,
+        non_existent_compensations_list,
+    )
+
+
+def get_specific_compensation_and_users(compensation_id: int):
+    CompensationModel = apps.get_model("payroll", "Compensation")
+    compensation = CompensationModel.objects.get(id=compensation_id)
+    return compensation, compensation.users.all()
+
+
+def get_users_with_payslip_data(users, month: int, year: int):
+    PayslipModel = apps.get_model("payroll", "Payslip")
+
+    data = []
+    for user in users:
+        payslip_data = PayslipModel.objects.filter(user=user, month=month, year=year)
+        payslip_data = payslip_data if payslip_data else None
+        data.append(
+            {
+                "user": user,
+                "payslip_data": payslip_data,
+            }
+        )
+    return data
+
+
+def get_salary_from_rank(rank_code):
+    def _extract_details(rank_code):
+        pattern = re.compile(
+            r"^(?P<job_code>[A-Z]+)-(?P<rank>\d+)(?: - STEP (?P<step>\d+))?$"
+        )
+
+        match = pattern.match(rank_code)
+
+        if match:
+            job_code = match.group("job_code")
+            job_rank = f"{job_code}-{match.group('rank')}"
+            step_code = match.group("step")
+            if step_code:
+                step_code = f"STEP {step_code}"
+            return job_code, job_rank, step_code
+
+        return None, None, None
+
+    JobModel = apps.get_model("payroll", "Job")
+    job_code, job_rank, step_code = _extract_details(rank_code)
+    job = JobModel.objects.get(code=job_code)
+
+    for data in job.get_salary_data():
+        if job_rank in data:
+            if not step_code:
+                return data[job_rank].get("basic_salary")
+            else:
+                for step_data in data[job_rank].get("steps"):
+                    if step_code in step_data:
+                        return step_data[step_code]

@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from attendance.enums import Months
 from core.models import Department
 from payroll.utils import calculate_basic_salary_for_grade, calculate_basic_salary_steps
 
@@ -125,3 +126,83 @@ class Mp2(models.Model):
 
     def __str__(self):
         return "MP2 - Users"
+
+
+class Compensation(models.Model):
+    class CompensationType(models.TextChoices):
+        ALLOWANCE = "AL", _("Allowance")
+        HONORARIUM = "HO", _("Honorarium")
+        GOVERNMENT_GRANT = "GG", _("Government Grant")
+        THIRTEENTH_MONTH = "13", _("13th Month")
+        OTHERS = "OT", _("Others")
+
+    type = models.CharField(
+        _("Compensation Type"),
+        max_length=2,
+        choices=CompensationType.choices,
+        default=None,
+        null=True,
+        blank=True,
+    )
+
+    specific_type = models.CharField(
+        _("Specific Type"), max_length=500, null=True, blank=True
+    )
+
+    amount = models.DecimalField(
+        _("Compensation Amount"), blank=True, null=True, max_digits=9, decimal_places=2
+    )
+
+    users = models.ManyToManyField(User, blank=True, related_name="compensations")
+
+    month = models.IntegerField(_("Compensation Month"), null=True, blank=True)
+    year = models.IntegerField(_("Compensation Month"), null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Compensations"
+
+    def __str__(self):
+        return f"{self.CompensationType(self.type).name} - {Months(self.month).name} - {self.year}"
+
+    def get_type_display(self):
+        if self.type == self.CompensationType.OTHERS.value:
+            return self.specific_type.title()
+        return self.CompensationType(self.type).name.title()
+
+
+class Payslip(models.Model):
+    user = models.ForeignKey(User, on_delete=models.RESTRICT)
+    rank = models.CharField(
+        _("Current User Rank"), max_length=500, null=True, blank=True
+    )
+    salary = models.DecimalField(
+        _("Current User Salary"), blank=True, null=True, max_digits=9, decimal_places=2
+    )
+    deductions = models.DecimalField(
+        _("Current Total Deductions"),
+        blank=True,
+        null=True,
+        max_digits=9,
+        decimal_places=2,
+    )
+    compensations = models.DecimalField(
+        _("Current Total Compensation"),
+        blank=True,
+        null=True,
+        max_digits=9,
+        decimal_places=2,
+    )
+
+    status = models.JSONField(_("Payslip Status"), null=True, blank=True, default=dict)
+
+    month = models.IntegerField(_("Payslip Month"), null=True, blank=True)
+    year = models.IntegerField(_("Payslip Year"), null=True, blank=True)
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Payslips"
+
+    def __str__(self):
+        return f"{Months(self.month).name} - {self.year} payslip of User: {self.user.userdetails.get_user_fullname()}"

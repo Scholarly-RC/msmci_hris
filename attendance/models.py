@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from attendance.utils.date_utils import (
     get_date_object,
     get_months_dict,
-    get_readable_date_from_date_oject,
+    get_readable_date_from_date_object,
 )
 from core.models import BiometricDetail, Department
 
@@ -120,7 +120,7 @@ class DailyShiftRecord(models.Model):
 
     def __str__(self):
         str_details = [
-            get_readable_date_from_date_oject(self.date) if self.date else "",
+            get_readable_date_from_date_object(self.date) if self.date else "",
             self.department.name if self.department else "",
             "Approved" if self.is_approved else "",
         ]

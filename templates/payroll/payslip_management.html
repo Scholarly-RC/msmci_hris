@@ -1,0 +1,461 @@
+{% extends "layout.html" %}
+{% block content %}
+    {% include "navbar.html" %}
+    <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
+        <div class="w-full relative px-2 lg:px-10">
+            <div class="flex flex-row justify-between mt-10">
+                <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3">Payslip Management</h1>
+            </div>
+            {% block payslip_management_section %}
+                <div id="payslip_management_section"
+                     class="h-[48rem] flex flex-col gap-6 p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <div class="flex flex-row gap-4 h-full">
+                        <div class="w-1/2 p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                            <form class="max-w-md mx-auto flex flex-col gap-4">
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400"
+                                             aria-hidden="true"
+                                             xmlns="http://www.w3.org/2000/svg"
+                                             fill="none"
+                                             viewBox="0 0 20 20">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                        </svg>
+                                    </div>
+                                    <input type="search"
+                                           id="user_search_id"
+                                           name="user_search"
+                                           hx-post="{% url "payroll:payslip_management" %}"
+                                           hx-trigger="input changed delay:200ms"
+                                           value="{{ user_search }}"
+                                           class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                           placeholder="Search User..."
+                                           required />
+                                </div>
+                                <div class="w-full flex flex-row gap-2">
+                                    <div class="w-full">
+                                        <label for="selected_month_id"
+                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Month
+                                        </label>
+                                        <select id="selected_month_id"
+                                                name="selected_month"
+                                                hx-post="{% url "payroll:payslip_management" %}"
+                                                hx-trigger="change"
+                                                class="block py-2.5 px-2.5 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer">
+                                            {% for month in months %}
+                                                <option value="{{ month.1 }}"
+                                                        {% if selected_month == month.1 %}selected{% endif %}>
+                                                    {{ month.0 }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="w-full">
+                                        <label for="selected_year_id"
+                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Year
+                                        </label>
+                                        <select id="selected_year_id"
+                                                name="selected_year"
+                                                hx-post="{% url "payroll:payslip_management" %}"
+                                                hx-trigger="change"
+                                                class="block py-2.5 px-2.5 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer">
+                                            {% for year in years %}
+                                                <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>{{ year }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="selected_department_id"
+                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        Department
+                                    </label>
+                                    <select id="selected_department_id"
+                                            name="selected_department"
+                                            hx-post="{% url "payroll:payslip_management" %}"
+                                            hx-trigger="change"
+                                            class="block py-2.5 px-2.5 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer">
+                                        <option selected value="0">Choose a Department</option>
+                                        {% for department in departments %}
+                                            <option value="{{ department.id }}"
+                                                    {% if selected_department == department.id %}selected{% endif %}>
+                                                {{ department.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                            <div class="relative h-[40rem] overflow-y-auto overflow-x-auto shadow-md sm:rounded-lg">
+                                <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-10">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3">User</th>
+                                            <th scope="col" class="px-6 py-3">Department</th>
+                                            <th scope="col" class="px-6 py-3">Rank</th>
+                                            <th scope="col" class="px-6 py-3">Status</th>
+                                            <th scope="col" class="px-6 py-3">Payslip</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for data in users_with_payslip_data %}
+                                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                <th scope="row"
+                                                    class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                    {{ data.user.userdetails.get_user_fullname|title }}
+                                                </th>
+                                                <td class="px-6 py-4">{{ data.user.userdetails.department }}</td>
+                                                <td class="px-6 py-4">{{ data.user.userdetails.rank }}</td>
+                                                <td class="px-6 py-4">
+                                                    {% if not data.payslip_data %}
+                                                        <span class="bg-gray-100 text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-gray-700 dark:text-gray-300">None</span>
+                                                    {% else %}
+                                                        <span class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">Draft</span>
+                                                        <span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">Finalized</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <button type="button"
+                                                            hx-get="{% url "payroll:modify_payslip" %}"
+                                                            hx-vals='{"selected_month": {{ selected_month }}, "selected_year": {{ selected_year }}, "selected_user": {{ data.user.id }}}'
+                                                            class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-3 py-1 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                        {% if not data.payslip_data %}
+                                                            Create
+                                                        {% else %}
+                                                            View
+                                                        {% endif %}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
+        </div>
+        <div id="modify_payslip_modal"
+             tabindex="-1"
+             aria-hidden="true"
+             class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+            {% block modify_payslip_modal_container %}
+                <div id="modify_payslip_modal_container"
+                     class="relative w-full max-w-7xl max-h-full">
+                    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 mx-4">
+                        <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                            <div class="flex flex-row gap-4">
+                                <button hx-get="{% url "payroll:mp2_amount_settings" %}"
+                                        hx-vals='{"back": "true"}'>
+                                    <svg class="w-6 h-6 text-gray-800 dark:text-white"
+                                         aria-hidden="true"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         width="24"
+                                         height="24"
+                                         fill="none"
+                                         viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12l4-4m-4 4 4 4" />
+                                    </svg>
+                                </button>
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">User #{{ selected_user.id }} Payslip</h3>
+                            </div>
+                            <button hx-post="{% url "payroll:payroll_module_close_modals" %}"
+                                    hx-vals='{"event_name": "closeModifyPayslipModal"}'
+                                    type="button"
+                                    class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                <svg class="w-3 h-3"
+                                     aria-hidden="true"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     fill="none"
+                                     viewBox="0 0 14 14">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                </svg>
+                                <span class="sr-only">Close modal</span>
+                            </button>
+                        </div>
+                        <div class="p-4 md:p-5 h-[48rem]">
+                            <h2 class="text-lg font-extrabold dark:text-white mb-4">Name: {{ selected_user.userdetails.get_user_fullname }}</h2>
+                            <div class="flex flex-row gap-4">
+                                <div class="h-[43rem] overflow-y-auto w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                    <h2 class="text-lg font-extrabold dark:text-white">First Period</h2>
+                                    <div class="max-w-xl mx-auto flex flex-col gap-4">
+                                        <div class="flex flex-row gap-2">
+                                            <div class="w-full">
+                                                <label for="rank_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    Rank
+                                                </label>
+                                                <input type="text"
+                                                       id="rank_id"
+                                                       name="rank"
+                                                       value="{{ selected_user.userdetails.rank }}"
+                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                       readonly />
+                                            </div>
+                                            <div class="w-full">
+                                                <label for="base_pay_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    Base Pay
+                                                </label>
+                                                <input type="text"
+                                                       id="base_pay_id"
+                                                       name="base_pay"
+                                                       value="{{ selected_user.userdetails.get_payslip_data.salary|floatformat:2 }}"
+                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                       readonly />
+                                            </div>
+                                        </div>
+                                        <h2 class="text-xl font-extrabold dark:text-white text-center">Deductions</h2>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label for="sss_deduction_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    SSS
+                                                </label>
+                                                <input type="text"
+                                                       id="sss_deduction_id"
+                                                       name="sss_deduction"
+                                                       value="{{ selected_user.userdetails.get_payslip_data.sss_deduction|floatformat:2 }}"
+                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                       readonly />
+                                            </div>
+                                            <div>
+                                                <label for="phihealth_deduction_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    PhilHealth
+                                                </label>
+                                                <input type="text"
+                                                       id="phihealth_deduction_id"
+                                                       name="phihealth_deduction"
+                                                       value="{{ selected_user.userdetails.get_payslip_data.philhealth_deduction|floatformat:2 }}"
+                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                       readonly />
+                                            </div>
+                                            <div>
+                                                <label for="pag_ibig_deduction_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    Pag-IBIG
+                                                </label>
+                                                <input type="text"
+                                                       id="pag_ibig_deduction_id"
+                                                       name="pag_ibig_deduction"
+                                                       value="{{ selected_user.userdetails.get_payslip_data.pag_ibig_deduction|floatformat:2 }}"
+                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                       readonly />
+                                            </div>
+                                            <div>
+                                                <label for="mp2_deduction_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    MP2
+                                                </label>
+                                                <input type="text"
+                                                       id="mp2_deduction_id"
+                                                       name="mp2_deduction"
+                                                       value="{{ selected_user.userdetails.get_payslip_data.mp2_deduction|floatformat:2 }}"
+                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                       readonly />
+                                            </div>
+                                            <div>
+                                                <label for="tax_deduction_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    Tax
+                                                </label>
+                                                <input type="text"
+                                                       id="tax_deduction_id"
+                                                       name="tax_deduction"
+                                                       value="{{ selected_user.userdetails.get_payslip_data.tax_deduction|floatformat:2 }}"
+                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                       readonly />
+                                            </div>
+                                        </div>
+                                        <div class="w-full">
+                                            <label for="net_salary_id"
+                                                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                Net Salary
+                                            </label>
+                                            <input type="text"
+                                                   id="net_salary_id"
+                                                   name="net_salary"
+                                                   value="{{ selected_user.userdetails.get_payslip_data.net_salary|floatformat:2 }}"
+                                                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                   readonly />
+                                        </div>
+                                    </div>
+                                    <label class="w-full mt-5 inline-flex items-center justify-center cursor-pointer">
+                                        <span class="me-3 text-sm font-medium text-gray-900 dark:text-gray-300">Draft</span>
+                                        <input type="checkbox" value="" class="sr-only peer">
+                                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
+                                        </div>
+                                        <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Release</span>
+                                    </label>
+                                </div>
+                                <div class="h-[43rem] overflow-y-auto w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                    <h2 class="text-lg font-extrabold dark:text-white">Second Period</h2>
+                                    <div class="max-w-xl mx-auto flex flex-col gap-4">
+                                        <div class="flex flex-row gap-2">
+                                            <div class="w-full">
+                                                <label for="rank_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    Rank
+                                                </label>
+                                                <input type="text"
+                                                       id="rank_id"
+                                                       name="rank"
+                                                       value="{{ selected_user.userdetails.rank }}"
+                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                       readonly />
+                                            </div>
+                                            <div class="w-full">
+                                                <label for="base_pay_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    Base Pay
+                                                </label>
+                                                <input type="text"
+                                                       id="base_pay_id"
+                                                       name="base_pay"
+                                                       value="{{ selected_user.userdetails.get_payslip_data.salary|floatformat:2 }}"
+                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                       readonly />
+                                            </div>
+                                        </div>
+                                        <h2 class="text-xl font-extrabold dark:text-white text-center">Deductions</h2>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label for="sss_deduction_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    SSS
+                                                </label>
+                                                <input type="text"
+                                                       id="sss_deduction_id"
+                                                       name="sss_deduction"
+                                                       value="{{ selected_user.userdetails.get_payslip_data.sss_deduction|floatformat:2 }}"
+                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                       readonly />
+                                            </div>
+                                            <div>
+                                                <label for="phihealth_deduction_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    PhilHealth
+                                                </label>
+                                                <input type="text"
+                                                       id="phihealth_deduction_id"
+                                                       name="phihealth_deduction"
+                                                       value="{{ selected_user.userdetails.get_payslip_data.philhealth_deduction|floatformat:2 }}"
+                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                       readonly />
+                                            </div>
+                                            <div>
+                                                <label for="pag_ibig_deduction_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    Pag-IBIG
+                                                </label>
+                                                <input type="text"
+                                                       id="pag_ibig_deduction_id"
+                                                       name="pag_ibig_deduction"
+                                                       value="{{ selected_user.userdetails.get_payslip_data.pag_ibig_deduction|floatformat:2 }}"
+                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                       readonly />
+                                            </div>
+                                            <div>
+                                                <label for="mp2_deduction_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    MP2
+                                                </label>
+                                                <input type="text"
+                                                       id="mp2_deduction_id"
+                                                       name="mp2_deduction"
+                                                       value="{{ selected_user.userdetails.get_payslip_data.mp2_deduction|floatformat:2 }}"
+                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                       readonly />
+                                            </div>
+                                            <div>
+                                                <label for="tax_deduction_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    Tax
+                                                </label>
+                                                <input type="text"
+                                                       id="tax_deduction_id"
+                                                       name="tax_deduction"
+                                                       value="{{ selected_user.userdetails.get_payslip_data.tax_deduction|floatformat:2 }}"
+                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                       readonly />
+                                            </div>
+                                        </div>
+                                        <div class="w-full">
+                                            <label for="net_salary_id"
+                                                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                Net Salary
+                                            </label>
+                                            <input type="text"
+                                                   id="net_salary_id"
+                                                   name="net_salary"
+                                                   value="{{ selected_user.userdetails.get_payslip_data.net_salary|floatformat:2 }}"
+                                                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                   readonly />
+                                        </div>
+                                        <label class="w-full sticky bottom-0 mt-5 inline-flex items-center justify-center cursor-pointer">
+                                            <span class="me-3 text-sm font-medium text-gray-900 dark:text-gray-300">Draft</span>
+                                            <input type="checkbox" value="" class="sr-only peer">
+                                            <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
+                                            </div>
+                                            <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Release</span>
+                                        </label>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
+        </div>
+    </div>
+{% endblock %}
+{% block javascript %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // General function to initialize modals
+            const initializeModal = (id) => {
+                const modalElement = document.getElementById(id);
+                if (modalElement) {
+                    const options = {
+                        placement: 'center-center',
+                        backdrop: 'dynamic',
+                        backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
+                        closable: true,
+                    };
+
+                    const instanceOptions = {
+                        id: id,
+                        override: true
+                    };
+
+                    const modal = new Modal(modalElement, options, instanceOptions);
+                    modal.show();
+                }
+            };
+
+            // General function to close modals
+            const closeModal = (id) => {
+                const modalElement = document.getElementById(id);
+                if (modalElement) {
+                    const modal = new Modal(modalElement);
+                    modal.hide();
+                }
+            };
+
+
+            // Initialize specific modals
+            const initializeModifyPayslipModal = () => initializeModal('modify_payslip_modal');
+            const closeModifyPayslipModal = () => closeModal('modify_payslip_modal');
+
+            // Event listeners for modals
+            document.addEventListener('openModifyPayslipModal', initializeModifyPayslipModal);
+            document.addEventListener('closeModifyPayslipModal', closeModifyPayslipModal);
+
+        });
+    </script>
+{% endblock %}

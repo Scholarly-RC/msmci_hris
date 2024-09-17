@@ -1,5 +1,7 @@
 from decimal import Decimal
 
+from django.apps import apps
+
 
 def minimum_wage_update_validation(data, minimum_wage):
     """
@@ -35,4 +37,20 @@ def minimum_wage_update_validation(data, minimum_wage):
         return context
 
     context["success"] = True
+    return context
+
+
+def payslip_data_validation(payload):
+    context = {}
+
+    UserModel = apps.get_model("auth", "User")
+    user_id = payload.get("selected_user")
+    user = UserModel.objects.get(id=user_id)
+    user_details = user.userdetails
+
+    if not user_details.rank:
+        context["empty_rank_error"] = (
+            "The employee does not have a rank assigned. Please assign a rank before proceeding."
+        )
+
     return context
