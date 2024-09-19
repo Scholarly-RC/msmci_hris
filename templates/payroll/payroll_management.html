@@ -1,0 +1,111 @@
+{% extends "layout.html" %}
+{% block content %}
+    {% include "navbar.html" %}
+    <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
+        <div class="w-full relative px-2 lg:px-10">
+            <div class="flex flex-row justify-between mt-10">
+                <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3">Payroll Management</h1>
+            </div>
+            {% block payroll_management_section %}
+                <div id="payroll_management_section"
+                     class="h-[48rem] overflow-y-auto flex flex-col gap-6 p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <div class="flex flex-col gap-4 h-full">
+                        <form class="w-full p-3 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                            <div class="flex">
+                                <div class="w-96 flex flex-row gap-2">
+                                    <div class="w-full">
+                                        <label for="selected_month_id"
+                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Month
+                                        </label>
+                                        <select id="selected_month_id"
+                                                name="selected_month"
+                                                hx-post="{% url "payroll:payroll_management" %}"
+                                                hx-trigger="change"
+                                                class="block py-2.5 px-2.5 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer">
+                                            {% for month in months %}
+                                                <option value="{{ month.1 }}"
+                                                        {% if selected_month == month.1 %}selected{% endif %}>
+                                                    {{ month.0 }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="w-full">
+                                        <label for="selected_year_id"
+                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Year
+                                        </label>
+                                        <select id="selected_year_id"
+                                                name="selected_year"
+                                                hx-post="{% url "payroll:payroll_management" %}"
+                                                hx-trigger="change"
+                                                class="block py-2.5 px-2.5 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer">
+                                            {% for year in years %}
+                                                <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>{{ year }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        {% block payslip_table_section %}
+                            <div id="payslip_table_section"
+                                 class="h-[40rem] relative overflow-x-auto shadow-md sm:rounded-lg">
+                                <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3">Date</th>
+                                            <th scope="col" class="px-6 py-3 text-center">Period</th>
+                                            <th scope="col" class="px-6 py-3 text-center">Modified</th>
+                                            <th scope="col" class="px-6 py-3 text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for payslip in payslips %}
+                                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                <th scope="row"
+                                                    class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                    {{ payslip.get_month_and_year }}
+                                                </th>
+                                                <td class="px-6 py-4 text-center">{{ payslip.period }}</td>
+                                                <td class="px-6 py-4 text-center">{{ payslip.updated }}</td>
+                                                <td class="px-6 py-4">
+                                                    <div class="flex justify-center">
+                                                        <button type="button"
+                                                                hx-get="{% url "payroll:view_user_payslip" %}"
+                                                                hx-vals='{"payslip": {{ payslip.id }}}'
+                                                                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                                            View
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endblock %}
+                    </div>
+                </div>
+            {% endblock %}
+        </div>
+    </div>
+{% endblock %}
+{% block javascript %}
+    <script>
+        const viewUserPayslip = (url) => {
+            // Specify the dimensions and features of the popup window
+            const options = 'width=600,height=400,scrollbars=yes';
+
+            // Open a new window or tab with the provided URL
+            window.open(url, '_blank', options);
+        };
+        document.addEventListener('viewUserPayslip', (event) => {
+            const {
+                payslip_url_view
+            } = event.detail;
+            viewUserPayslip(payslip_url_view);
+        });
+    </script>
+{% endblock %}

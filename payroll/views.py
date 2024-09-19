@@ -2,6 +2,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.http.request import QueryDict
 from django.shortcuts import render
+from django.urls import reverse
 from django_htmx.http import push_url, reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
 
@@ -12,18 +13,20 @@ from hris.utils import create_global_alert_instance
 from payroll.actions import (
     process_add_or_create_compensation,
     process_adding_job,
+    process_adding_other_payslip_deduction,
     process_deleting_job,
     process_get_or_create_user_payslip,
     process_modifying_compensation,
     process_modifying_compensation_user,
     process_modifying_job,
     process_removing_compensation,
+    process_removing_other_payslip_deduction,
     process_setting_deduction_config,
     process_setting_minimum_wage_amount,
     process_setting_mp2_amount,
     process_toggle_user_mp2_status,
 )
-from payroll.models import Compensation, Job
+from payroll.models import Compensation, Job, Payslip
 from payroll.utils import (
     get_compensation_types,
     get_compensation_year_list,
@@ -35,9 +38,15 @@ from payroll.utils import (
     get_mp2_object,
     get_payslip_year_list,
     get_specific_compensation_and_users,
+    get_user_payslips,
     get_users_with_payslip_data,
 )
-from payroll.validations import minimum_wage_update_validation, payslip_data_validation
+from payroll.validations import (
+    minimum_wage_update_validation,
+    other_payslip_deduction_validation,
+    payslip_data_validation,
+)
+from performance.utils import get_user_with_hr_role
 
 ### Salary and Rank Management Views
 
@@ -785,7 +794,7 @@ def payslip_management(request):
     return render(request, "payroll/payslip_management.html", context)
 
 
-def modify_payslip(request):
+def access_payslip(request):
     context = {}
     if request.htmx:
         response = HttpResponse()
@@ -793,31 +802,197 @@ def modify_payslip(request):
             data = request.GET
             errors = payslip_data_validation(data)
             if errors:
-                response = create_global_alert_instance(
-                    response, errors["empty_rank_error"], "WARNING"
-                )
-                response = reswap(response, "none")
-                return response
+                for error in errors:
+                    response = create_global_alert_instance(
+                        response, errors[error], "WARNING"
+                    )
+                    response = reswap(response, "none")
+                    return response
 
             selected_month = data.get("selected_month")
             selected_year = data.get("selected_year")
             selected_user_id = data.get("selected_user")
-            user, payslip = process_get_or_create_user_payslip(
-                int(selected_user_id), int(selected_month), int(selected_year)
-            )
+            selected_period = data.get("period")
 
+            user, payslip = process_get_or_create_user_payslip(
+                int(selected_user_id),
+                int(selected_month),
+                int(selected_year),
+                selected_period,
+            )
             context.update({"selected_user": user, "payslip": payslip})
             response.content = render_block_to_string(
                 "payroll/payslip_management.html",
-                "modify_payslip_modal_container",
+                "access_payslip_modal_container",
                 context,
             )
             response = trigger_client_event(
-                response, "openModifyPayslipModal", after="swap"
+                response, "openAccessPayslipModal", after="swap"
             )
-            response = retarget(response, "#modify_payslip_modal_container")
+            response = retarget(response, "#access_payslip_modal_container")
             response = reswap(response, "outerHTML")
             return response
+
+
+def add_other_payslip_deduction(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        try:
+            if request.method == "GET":
+                data = request.GET
+                context.update({"payslip": data.get("payslip")})
+                response.content = render_block_to_string(
+                    "payroll/payslip_management.html",
+                    "add_other_payslip_deduction_modal_container",
+                    context,
+                )
+                response = trigger_client_event(
+                    response, "openAddOtherPayslipDeductionModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response, "closeAccessPayslipModal", after="swap"
+                )
+                response = retarget(
+                    response, "#add_other_payslip_deduction_modal_container"
+                )
+                response = reswap(response, "outerHTML")
+                return response
+
+            if request.method == "POST":
+                data = request.POST
+                errors = other_payslip_deduction_validation(data)
+                if errors:
+                    for error in errors:
+                        response = create_global_alert_instance(
+                            response, errors[error], "WARNING"
+                        )
+                        response = reswap(response, "none")
+                        return response
+
+                process_adding_other_payslip_deduction(data)
+                response = create_global_alert_instance(
+                    response, "A new deduction has been successfully added.", "SUCCESS"
+                )
+                response = trigger_client_event(
+                    response, "openAccessPayslipModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response, "closeAddOtherPayslipDeductionModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response, "updatePayslipData", after="swap"
+                )
+                return response
+        except Exception as error:
+            response = create_global_alert_instance(
+                response,
+                f"An error has occured while adding a deduction. Details: {error}",
+                "DANGER",
+            )
+            response = reswap(response, "none")
+            return response
+
+
+def remove_other_payslip_deduction(request):
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        try:
+            data = request.POST
+            process_removing_other_payslip_deduction(data)
+            response = create_global_alert_instance(
+                response, "Selected deduction successfully removed.", "SUCCESS"
+            )
+            response = trigger_client_event(response, "updatePayslipData", after="swap")
+            return response
+        except Exception as error:
+            response = create_global_alert_instance(
+                response,
+                f"An error has occured while removing the selected deduction. Details: {error}",
+                "DANGER",
+            )
+            response = reswap(response, "none")
+            return response
+
+
+def update_payslip_data(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        data = request.POST
+        payslip = Payslip.objects.get(id=data.get("selected_payslip"))
+        context.update({"selected_user": payslip.user, "payslip": payslip})
+        response.content = render_block_to_string(
+            "payroll/payslip_management.html",
+            "access_payslip_modal_container",
+            context,
+        )
+        response = retarget(response, "#access_payslip_modal_container")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def payroll_management(request):
+    context = {}
+    user = request.user
+    current_month, current_year = get_current_month_and_year()
+    selected_month = request.POST.get("selected_month") or current_month
+    selected_year = request.POST.get("selected_year") or current_year
+    months = get_list_of_months()
+    years = get_payslip_year_list()
+    # TODO: Filter by finalized
+    payslips = get_user_payslips(user, selected_month, selected_year)
+    context.update(
+        {
+            "months": months,
+            "years": years if years else [current_year],
+            "selected_month": int(selected_month),
+            "selected_year": int(selected_year),
+            "payslips": payslips,
+        }
+    )
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "payroll/payroll_management.html",
+            "payroll_management_section",
+            context,
+        )
+        response = retarget(response, "#payroll_management_section")
+        response = reswap(response, "outerHTML")
+        return response
+
+    return render(request, "payroll/payroll_management.html", context)
+
+
+def view_user_payslip(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "GET":
+            data = request.GET
+            selected_payslip_id = data.get("payslip")
+            response = trigger_client_event(
+                response,
+                "viewUserPayslip",
+                {
+                    "payslip_url_view": reverse(
+                        "payroll:access_user_payslip",
+                        kwargs={"payslip_id": selected_payslip_id},
+                    )
+                },
+                after="swap",
+            )
+            response = reswap(response, "none")
+            return response
+
+
+def access_user_payslip(request, payslip_id):
+    context = {}
+    payslip = Payslip.objects.get(id=payslip_id)
+    hr = get_user_with_hr_role().first()
+    context.update({"payslip": payslip, "hr": hr})
+    return render(request, "payroll/components/payslip_view.html", context)
 
 
 # App Shared View

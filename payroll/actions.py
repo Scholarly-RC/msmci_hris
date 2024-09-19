@@ -144,19 +144,26 @@ def process_setting_mp2_amount(payload):
 
 
 @transaction.atomic
-def process_get_or_create_user_payslip(user_id: int, month: int, year: int):
+def process_get_or_create_user_payslip(
+    user_id: int, month: int, year: int, period: str
+):
     try:
         PayslipModel = apps.get_model("payroll", "Payslip")
         UserModel = apps.get_model("auth", "User")
 
         user = UserModel.objects.get(id=user_id)
 
-        payslip = PayslipModel.objects.get_or_create(
+        payslip, _ = PayslipModel.objects.get_or_create(
             user=user,
             month=month,
             year=year,
-            defaults={"1st_period": "DRAFT", "2nd_period": "DRAFT"},
+            period=period,
+            defaults={
+                "rank": user.userdetails.rank,
+            },
         )
+
+        payslip.update_salary()
 
         return user, payslip
     except Exception as error:
@@ -224,5 +231,42 @@ def process_modifying_compensation_user(
             compensation.users.remove(user)
 
         return compensation, user
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_adding_other_payslip_deduction(payload):
+    try:
+        VariableDeductionConfiguration = apps.get_model(
+            "payroll", "VariableDeductionConfiguration"
+        )
+        PayslipModel = apps.get_model("payroll", "Payslip")
+        selected_payslip_id = payload.get("payslip")
+        selected_payslip = PayslipModel.objects.get(id=selected_payslip_id)
+
+        deduction_name = payload.get("deduction_name").strip()
+        deduction_amount = Decimal(payload.get("deduction_amount", 0))
+
+        new_deduction = VariableDeductionConfiguration.objects.create(
+            name=deduction_name, payslip=selected_payslip, amount=deduction_amount
+        )
+
+        return new_deduction
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_removing_other_payslip_deduction(payload):
+    try:
+        VariableDeductionConfiguration = apps.get_model(
+            "payroll", "VariableDeductionConfiguration"
+        )
+        deduction_id = payload.get("deduction")
+
+        VariableDeductionConfiguration.objects.get(id=deduction_id).delete()
+
+        return
     except Exception as error:
         raise error

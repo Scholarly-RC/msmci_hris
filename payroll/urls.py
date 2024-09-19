@@ -6,9 +6,39 @@ from payroll import views as payroll_views
 
 urlpatterns = [
     path(
-        "payslip-management/modify",
-        payroll_views.modify_payslip,
-        name="modify_payslip",
+        "payroll-management/user-payslip/<str:payslip_id>/access",
+        payroll_views.access_user_payslip,
+        name="access_user_payslip",
+    ),
+    path(
+        "payroll-management/user-payslip/view",
+        payroll_views.view_user_payslip,
+        name="view_user_payslip",
+    ),
+    path(
+        "payroll-management",
+        payroll_views.payroll_management,
+        name="payroll_management",
+    ),
+    path(
+        "payslip-management/update-payslip-data",
+        payroll_views.update_payslip_data,
+        name="update_payslip_data",
+    ),
+    path(
+        "payslip-management/access/remove-other-payslip-deduction",
+        payroll_views.remove_other_payslip_deduction,
+        name="remove_other_payslip_deduction",
+    ),
+    path(
+        "payslip-management/access/add-other-payslip-deduction",
+        payroll_views.add_other_payslip_deduction,
+        name="add_other_payslip_deduction",
+    ),
+    path(
+        "payslip-management/access",
+        payroll_views.access_payslip,
+        name="access_payslip",
     ),
     path(
         "payslip-management",

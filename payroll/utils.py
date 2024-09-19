@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from django.apps import apps
 from django.conf import settings
+from django.db.models import Sum
 from django.utils.timezone import make_aware
 
 from hris.exceptions import InitializationError
@@ -113,17 +114,19 @@ def calculate_basic_salary_steps(basic_salary: int) -> list:
 
 def get_deduction_configuration_object():
     """
-    Retrieves the first DeductionConfiguration record from the database.
+    Retrieves the first MandatoryDeductionConfiguration record from the database.
     If no records are found, an InitializationError is raised.
     """
-    DeductionConfigurationModel = apps.get_model("payroll", "DeductionConfiguration")
+    MandatoryDeductionConfigurationModel = apps.get_model(
+        "payroll", "MandatoryDeductionConfiguration"
+    )
 
-    if not DeductionConfigurationModel.objects.exists():
+    if not MandatoryDeductionConfigurationModel.objects.exists():
         raise InitializationError(
             "Deduction configuration settings have not been initialized."
         )
 
-    return DeductionConfigurationModel.objects.first()
+    return MandatoryDeductionConfigurationModel.objects.first()
 
 
 def get_deduction_configuration_with_submitted_changes(
@@ -263,20 +266,50 @@ def get_specific_compensation_and_users(compensation_id: int):
     return compensation, compensation.users.all()
 
 
-def get_users_with_payslip_data(users, month: int, year: int):
+def get_user_payslips(user, month: int, year: int, finalized: bool = False):
     PayslipModel = apps.get_model("payroll", "Payslip")
+    payslips = PayslipModel.objects.filter(user=user, month=month, year=year)
+
+    if not finalized:
+        return payslips
+
+    return payslips.filter(finalized=True)
+
+
+def get_users_with_payslip_data(users, month: int, year: int):
 
     data = []
     for user in users:
-        payslip_data = PayslipModel.objects.filter(user=user, month=month, year=year)
-        payslip_data = payslip_data if payslip_data else None
+        payslip_data = get_user_payslips(user=user, month=month, year=year)
         data.append(
             {
                 "user": user,
-                "payslip_data": payslip_data,
+                "1st_period_payslip": payslip_data.filter(period="1ST").first(),
+                "2nd_period_payslip": payslip_data.filter(period="2ND").first(),
             }
         )
     return data
+
+
+def get_payslip_compensations(payslip):
+    CompensationModel = apps.get_model("payroll", "Compensation")
+    month = payslip.month
+    year = payslip.year
+    user = payslip.user
+
+    compensations = CompensationModel.objects.filter(users=user, month=month, year=year)
+
+    total_amount = compensations.aggregate(total=Sum("amount"))["total"] or 0
+
+    return compensations, total_amount
+
+
+def get_payslip_variable_deductions(payslip):
+    deductions = payslip.variable_deductions.all()
+
+    total_amount = deductions.aggregate(total=Sum("amount"))["total"] or 0
+
+    return deductions, total_amount
 
 
 def get_salary_from_rank(rank_code):

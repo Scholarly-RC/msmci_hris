@@ -194,50 +194,6 @@ class UserDetails(models.Model):
         role = role.replace("_", " ")
         return role
 
-    def get_payslip_data(self) -> dict:
-        data = {}
-
-        if not self.rank:
-            return data
-
-        salary = get_salary_from_rank(self.rank)
-
-        # Initialize deductions
-        sss_deduction = Sss(salary).get_employee_deduction()
-        philhealth_deduction = Philhealth(salary).get_employee_deduction()
-        pag_ibig_deduction = PagIbig().get_employee_deduction()
-        mp2_deduction = (
-            get_mp2_object().amount if self.user.mp2.all() else Decimal(0.00)
-        )
-
-        # Calculate salary after contributions
-        salary_after_contribution = salary - (
-            sss_deduction + philhealth_deduction + mp2_deduction
-        )
-
-        # Calculate tax
-        tax_deduction = Tax(salary_after_contribution / 2).get_employee_deduction()
-
-        # Calculate net salary
-        net_salary = salary - (
-            sss_deduction + philhealth_deduction + mp2_deduction + tax_deduction
-        )
-
-        # Populate the data dictionary
-        data.update(
-            {
-                "salary": salary / 2,
-                "sss_deduction": sss_deduction / 2,
-                "philhealth_deduction": philhealth_deduction / 2,
-                "pag_ibig_deduction": pag_ibig_deduction / 2,
-                "mp2_deduction": mp2_deduction / 2,
-                "tax_deduction": tax_deduction,
-                "net_salary": net_salary / 2,
-            }
-        )
-
-        return data
-
 
 class BiometricDetail(models.Model):
     user = models.OneToOneField(User, on_delete=models.RESTRICT, null=True, blank=True)
