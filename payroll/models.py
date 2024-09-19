@@ -355,22 +355,20 @@ class Payslip(models.Model):
 
             return combined_list
 
-        earnings = []
-        deductions = []
         data = self.get_data()
-        earnings.append({"Base Pay": data.get("salary")})
-        for compensation in data.get("compensations"):
-            earnings.append(
-                {
-                    compensation.get_type_display(): compensation.get_semi_monthly_amount()
-                }
-            )
 
-        deductions.append({"SSS": data.get("sss_deduction")})
-        deductions.append({"PhilHealth": data.get("philhealth_deduction")})
-        deductions.append({"Pag-Ibig": data.get("pag_ibig_deduction")})
-        deductions.append({"MP2": data.get("mp2_deduction")})
-        deductions.append({"Tax": data.get("tax_deduction")})
+        earnings = [{"Base Pay": data.get("salary")}] + [
+            {compensation.get_type_display(): compensation.get_semi_monthly_amount()}
+            for compensation in data.get("compensations")
+        ]
+
+        deductions = [
+            {"SSS": data.get("sss_deduction")},
+            {"PhilHealth": data.get("philhealth_deduction")},
+            {"Pag-Ibig": data.get("pag_ibig_deduction")},
+            {"MP2": data.get("mp2_deduction")},
+            {"Tax": data.get("tax_deduction")},
+        ]
 
         data_for_payslip_table = _combine_lists(earnings, deductions)
 
