@@ -158,46 +158,29 @@ class Mp2(models.Model):
         return "MP2 - Users"
 
 
-class Compensation(models.Model):
-    class CompensationType(models.TextChoices):
-        ALLOWANCE = "AL", _("Allowance")
-        HONORARIUM = "HO", _("Honorarium")
-        GOVERNMENT_GRANT = "GG", _("Government Grant")
-        THIRTEENTH_MONTH = "13", _("13th Month")
-        OTHERS = "OT", _("Others")
-
-    type = models.CharField(
-        _("Compensation Type"),
-        max_length=2,
-        choices=CompensationType.choices,
-        default=None,
-        null=True,
-        blank=True,
-    )
-
-    specific_type = models.CharField(
-        _("Specific Type"), max_length=500, null=True, blank=True
+class FixedCompensation(models.Model):
+    name = models.CharField(
+        _("Fixed Compensation Name"), max_length=500, null=True, blank=True
     )
 
     amount = models.DecimalField(
-        _("Compensation Amount"), blank=True, null=True, max_digits=9, decimal_places=2
+        _("Fixed Compensation Amount"),
+        blank=True,
+        null=True,
+        max_digits=9,
+        decimal_places=2,
     )
 
-    users = models.ManyToManyField(User, blank=True, related_name="compensations")
+    users = models.ManyToManyField(User, blank=True, related_name="fixed_compensations")
 
-    month = models.IntegerField(_("Compensation Month"), null=True, blank=True)
-    year = models.IntegerField(_("Compensation Month"), null=True, blank=True)
+    month = models.IntegerField(_("Fixed Compensation Month"), null=True, blank=True)
+    year = models.IntegerField(_("Fixed Compensation Month"), null=True, blank=True)
 
     class Meta:
-        verbose_name_plural = "Compensations"
+        verbose_name_plural = "Fixed Compensations"
 
     def __str__(self):
-        return f"{self.CompensationType(self.type).name} - {Months(self.month).name} - {self.year}"
-
-    def get_type_display(self):
-        if self.type == self.CompensationType.OTHERS.value:
-            return self.specific_type.title()
-        return self.CompensationType(self.type).name.title()
+        return f"{self.name} - {Months(self.month).name} - {self.year}"
 
     def get_semi_monthly_amount(self):
         return self.amount / 2
@@ -225,7 +208,10 @@ class Payslip(models.Model):
         blank=True,
     )
 
-    finalized = models.BooleanField(_("Is Payslip Finalized"), default=False)
+    released = models.BooleanField(_("Is Payslip Released"), default=False)
+    release_date = models.DateTimeField(
+        _("Payslip Release Date"), null=True, blank=True
+    )
 
     month = models.IntegerField(_("Payslip Month"), null=True, blank=True)
     year = models.IntegerField(_("Payslip Year"), null=True, blank=True)
@@ -358,7 +344,7 @@ class Payslip(models.Model):
         data = self.get_data()
 
         earnings = [{"Base Pay": data.get("salary")}] + [
-            {compensation.get_type_display(): compensation.get_semi_monthly_amount()}
+            {compensation.name: compensation.get_semi_monthly_amount()}
             for compensation in data.get("compensations")
         ]
 

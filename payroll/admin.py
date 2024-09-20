@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from payroll.models import (
-    Compensation,
+    FixedCompensation,
     Job,
     MandatoryDeductionConfiguration,
     MinimumWage,
@@ -11,7 +11,7 @@ from payroll.models import (
 )
 
 # Register your models here.
-admin.site.register(Compensation)
+admin.site.register(FixedCompensation)
 admin.site.register(Job)
 admin.site.register(MandatoryDeductionConfiguration)
 admin.site.register(MinimumWage)

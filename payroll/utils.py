@@ -227,10 +227,10 @@ def get_payslip_year_list() -> list:
 
 
 def get_compensation_year_list() -> list:
-    CompensationModel = apps.get_model("payroll", "Compensation")
+    FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
 
     compensation_years = (
-        CompensationModel.objects.values_list("year", flat=True)
+        FixedCompensationModel.objects.values_list("year", flat=True)
         .order_by("year")
         .distinct()
     )
@@ -238,31 +238,18 @@ def get_compensation_year_list() -> list:
     return list(compensation_years)
 
 
-def get_compensation_types(month: int, year: int) -> list:
-    CompensationModel = apps.get_model("payroll", "Compensation")
-    others_type = CompensationModel.CompensationType.OTHERS.value
-    existing_compensations = CompensationModel.objects.filter(month=month, year=year)
-    existing_compensation_types = existing_compensations.values_list("type", flat=True)
-    existing_compensation_list = [
-        choice
-        for choice in CompensationModel.CompensationType.choices
-        if choice[0] in existing_compensation_types
-    ]
-    non_existent_compensations_list = [
-        choice
-        for choice in CompensationModel.CompensationType.choices
-        if choice[0] not in existing_compensation_types and choice[0] != others_type
-    ]
-    return (
-        existing_compensation_list,
-        existing_compensations,
-        non_existent_compensations_list,
+def get_existing_compensation(month: int, year: int) -> list:
+    FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
+    existing_compensations = FixedCompensationModel.objects.filter(
+        month=month, year=year
     )
 
+    return existing_compensations
 
-def get_specific_compensation_and_users(compensation_id: int):
-    CompensationModel = apps.get_model("payroll", "Compensation")
-    compensation = CompensationModel.objects.get(id=compensation_id)
+
+def get_fix_compensation_and_users(compensation_id: int):
+    FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
+    compensation = FixedCompensationModel.objects.get(id=compensation_id)
     return compensation, compensation.users.all()
 
 
@@ -292,12 +279,14 @@ def get_users_with_payslip_data(users, month: int, year: int):
 
 
 def get_payslip_compensations(payslip):
-    CompensationModel = apps.get_model("payroll", "Compensation")
+    FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
     month = payslip.month
     year = payslip.year
     user = payslip.user
 
-    compensations = CompensationModel.objects.filter(users=user, month=month, year=year)
+    compensations = FixedCompensationModel.objects.filter(
+        users=user, month=month, year=year
+    )
 
     total_amount = compensations.aggregate(total=Sum("amount"))["total"] or 0
 

@@ -11,24 +11,25 @@ from attendance.utils.date_utils import get_list_of_months, get_months_dict
 from core.utils import get_users_sorted_by_department
 from hris.utils import create_global_alert_instance
 from payroll.actions import (
-    process_add_or_create_compensation,
+    process_add_or_create_fixed_compensation,
     process_adding_job,
     process_adding_other_payslip_deduction,
     process_deleting_job,
     process_get_or_create_user_payslip,
-    process_modifying_compensation,
-    process_modifying_compensation_user,
+    process_modifying_fixed_compensation,
+    process_modifying_fixed_compensation_users,
     process_modifying_job,
-    process_removing_compensation,
+    process_removing_fixed_compensation,
     process_removing_other_payslip_deduction,
     process_setting_deduction_config,
     process_setting_minimum_wage_amount,
     process_setting_mp2_amount,
     process_toggle_user_mp2_status,
+    process_toggle_payslip_release_status,
 )
-from payroll.models import Compensation, Job, Payslip
+from payroll.models import Job, Payslip
 from payroll.utils import (
-    get_compensation_types,
+    get_existing_compensation,
     get_compensation_year_list,
     get_current_month_and_year,
     get_deduction_configuration_object,
@@ -37,7 +38,7 @@ from payroll.utils import (
     get_minimum_wage_object,
     get_mp2_object,
     get_payslip_year_list,
-    get_specific_compensation_and_users,
+    get_fix_compensation_and_users,
     get_user_payslips,
     get_users_with_payslip_data,
 )
@@ -481,7 +482,7 @@ def toggle_user_mp2_status(request):
             return response
 
 
-def compensations_settings(request):
+def fixed_compensations_settings(request):
     context = {}
     if request.htmx:
         response = HttpResponse()
@@ -491,11 +492,9 @@ def compensations_settings(request):
             selected_year = request.POST.get("selected_year") or current_year
             months = get_list_of_months()
             years = get_compensation_year_list()
-            (
-                _,
-                existent_compensation_types,
-                non_existent_compensation_type_choices,
-            ) = get_compensation_types(selected_month, selected_year)
+            existent_compensation_types = get_existing_compensation(
+                selected_month, selected_year
+            )
             context.update(
                 {
                     "months": months,
@@ -503,32 +502,33 @@ def compensations_settings(request):
                     "selected_month": int(selected_month),
                     "selected_year": int(selected_year),
                     "existent_compensation_types": existent_compensation_types,
-                    "non_existent_compensation_type_choices": non_existent_compensation_type_choices,
                 }
             )
             response.content = render_block_to_string(
                 "payroll/salary_and_rank_management.html",
-                "compensations_settings_modal_container",
+                "fixed_compensations_settings_modal_container",
                 context,
             )
-            response = retarget(response, "#compensations_settings_modal_container")
+            response = retarget(
+                response, "#fixed_compensations_settings_modal_container"
+            )
             response = reswap(response, "outerHTML")
             if request.method == "GET":
                 response = trigger_client_event(
-                    response, "openCompensationsSettingsModal", after="swap"
+                    response, "openFixedCompensationsSettingsModal", after="swap"
                 )
             return response
         except Exception as error:
             response = create_global_alert_instance(
                 response,
-                f"An error occurred while accessing compensation settings. Details: {error}",
+                f"An error occurred while accessing fixed compensation settings. Details: {error}",
                 "DANGER",
             )
             response = reswap(response, "none")
             return response
 
 
-def modify_specific_compensation(request):
+def modify_fixed_compensation(request):
     if request.htmx and request.method == "POST":
         response = HttpResponse()
         response = reswap(response, "none")
@@ -539,24 +539,24 @@ def modify_specific_compensation(request):
                     response, "Please enter a valid amount.", "WARNING"
                 )
                 return response
-            process_modifying_compensation(data)
+            process_modifying_fixed_compensation(data)
             response = create_global_alert_instance(
                 response,
-                "Compensation details have been successfully updated.",
+                "Fixed compensation details have been successfully updated.",
                 "SUCCESS",
             )
             return response
         except Exception as error:
             response = create_global_alert_instance(
                 response,
-                f"An error occurred while updating the compensation details. Details: {error}",
+                f"An error occurred while updating the fixed compensation details. Details: {error}",
                 "DANGER",
             )
             response = reswap(response, "none")
             return response
 
 
-def add_specific_compensation(request):
+def add_fixed_compensation(request):
     context = {}
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -567,24 +567,34 @@ def add_specific_compensation(request):
             selected_year = request.POST.get("selected_year") or current_year
             months = get_list_of_months()
             years = get_compensation_year_list()
-            type = data.get("selected_non_existent_type", "OT")
-            specific_type = data.get("other_types")
-            if type == "OT" and (not specific_type or specific_type.strip() == ""):
+            fixed_compensation = data.get("fixed_compensation")
+            if not fixed_compensation or fixed_compensation.strip() == "":
                 response = create_global_alert_instance(
                     response,
-                    "The specific compensation name is required.",
+                    "The fixed compensation name is required.",
                     "WARNING",
                 )
                 response = reswap(response, "none")
                 return response
-            compensation = process_add_or_create_compensation(
-                type, specific_type, int(selected_month), int(selected_year)
+            compensation, compensation_created = (
+                process_add_or_create_fixed_compensation(
+                    fixed_compensation, int(selected_month), int(selected_year)
+                )
             )
-            (
-                _,
-                existent_compensation_types,
-                non_existent_compensation_type_choices,
-            ) = get_compensation_types(selected_month, selected_year)
+            month_name = Months(compensation.month).name
+
+            if not compensation_created:
+                response = create_global_alert_instance(
+                    response,
+                    f"{compensation.name} fixed compensation already exists for {month_name} {compensation.year}.",
+                    "INFO",
+                )
+                response = reswap(response, "none")
+                return response
+
+            existent_compensation_types = get_existing_compensation(
+                selected_month, selected_year
+            )
             context.update(
                 {
                     "months": months,
@@ -592,35 +602,34 @@ def add_specific_compensation(request):
                     "selected_month": int(selected_month),
                     "selected_year": int(selected_year),
                     "existent_compensation_types": existent_compensation_types,
-                    "non_existent_compensation_type_choices": non_existent_compensation_type_choices,
                 }
             )
             response.content = render_block_to_string(
                 "payroll/salary_and_rank_management.html",
-                "compensations_settings_modal_container",
+                "fixed_compensations_settings_modal_container",
                 context,
             )
-            type_name = Compensation.CompensationType(compensation.type).name
-            month_name = Months(compensation.month).name
             response = create_global_alert_instance(
                 response,
-                f"{compensation.get_type_display()} compensation has been successfully added for {month_name} {compensation.year}.",
+                f"{compensation.name} fixed compensation has been successfully added for {month_name} {compensation.year}.",
                 "SUCCESS",
             )
-            response = retarget(response, "#compensations_settings_modal_container")
+            response = retarget(
+                response, "#fixed_compensations_settings_modal_container"
+            )
             response = reswap(response, "outerHTML")
             return response
         except Exception as error:
             response = create_global_alert_instance(
                 response,
-                f"An error occurred while adding the compensation. Details: {error}",
+                f"An error occurred while adding the fixed compensation. Details: {error}",
                 "DANGER",
             )
             response = reswap(response, "none")
             return response
 
 
-def remove_specific_compensation(request):
+def remove_fixed_compensation(request):
     context = {}
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -631,12 +640,10 @@ def remove_specific_compensation(request):
             months = get_list_of_months()
             years = get_compensation_year_list()
             data = request.POST
-            process_removing_compensation(data)
-            (
-                _,
-                existent_compensation_types,
-                non_existent_compensation_type_choices,
-            ) = get_compensation_types(selected_month, selected_year)
+            process_removing_fixed_compensation(data)
+            existent_compensation_types = get_existing_compensation(
+                selected_month, selected_year
+            )
             context.update(
                 {
                     "months": months,
@@ -644,51 +651,47 @@ def remove_specific_compensation(request):
                     "selected_month": int(selected_month),
                     "selected_year": int(selected_year),
                     "existent_compensation_types": existent_compensation_types,
-                    "non_existent_compensation_type_choices": non_existent_compensation_type_choices,
                 }
             )
             response.content = render_block_to_string(
                 "payroll/salary_and_rank_management.html",
-                "compensations_settings_modal_container",
+                "fixed_compensations_settings_modal_container",
                 context,
             )
             response = create_global_alert_instance(
-                response, "Compensation successfully removed.", "SUCCESS"
+                response, "Fixed compensation successfully removed.", "SUCCESS"
             )
-            response = retarget(response, "#compensations_settings_modal_container")
+            response = retarget(
+                response, "#fixed_compensations_settings_modal_container"
+            )
             response = reswap(response, "outerHTML")
             return response
         except Exception as error:
             response = create_global_alert_instance(
                 response,
-                f"An error occurred while removing the compensation. Details: {error}",
+                f"An error occurred while removing the fixed compensation. Details: {error}",
                 "DANGER",
             )
             response = reswap(response, "none")
             return response
 
 
-def toggle_specific_compensation_users_view(request):
+def toggle_fixed_compensation_users_view(request):
     context = {}
     if request.htmx and request.method == "POST":
         data = request.POST
         response = HttpResponse()
         selected_compensation_id = data.get("selected_compensation")
-        compensation, compensation_users = get_specific_compensation_and_users(
+        fixed_compensation, fixed_compensation_users = get_fix_compensation_and_users(
             int(selected_compensation_id)
         )
-        context["compensation"] = compensation
+        context["compensation"] = fixed_compensation
         if "hide" not in data:
             users = get_users_sorted_by_department()
-            context.update(
-                {
-                    "users": users,
-                    "compensation_users": compensation_users,
-                }
-            )
+            context["users"] = users
         response.content = render_block_to_string(
             "payroll/salary_and_rank_management.html",
-            "specific_compensation_section",
+            "specific_fixed_compensation_section",
             context,
         )
         response = retarget(response, "closest form")
@@ -696,7 +699,7 @@ def toggle_specific_compensation_users_view(request):
         return response
 
 
-def modify_specific_compensation_users(request):
+def modify_fixed_compensation_users(request):
     context = {}
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -704,7 +707,7 @@ def modify_specific_compensation_users(request):
             data = request.POST
             selected_compensation_id = data.get("selected_compensation")
             if "for_search" in data:
-                compensation, compensation_users = get_specific_compensation_and_users(
+                compensation, compensation_users = get_fix_compensation_and_users(
                     int(selected_compensation_id)
                 )
                 context["compensation"] = compensation
@@ -726,9 +729,9 @@ def modify_specific_compensation_users(request):
                 response = reswap(response, "outerHTML")
                 return response
 
-            selected_user_id = data.get("selected_user") or data.get("user_to_remove")
-            to_remove = "user_to_remove" in data and "selected_user" not in data
-            compensation, user = process_modifying_compensation_user(
+            to_remove = "user_to_remove" in data
+            selected_user_id = data.get("user_to_add") or data.get("user_to_remove")
+            compensation, user = process_modifying_fixed_compensation_users(
                 int(selected_user_id), int(selected_compensation_id), to_remove
             )
             context.update({"user": user, "compensation": compensation})
@@ -841,6 +844,16 @@ def add_other_payslip_deduction(request):
         try:
             if request.method == "GET":
                 data = request.GET
+                if "back" in data:
+                    response = trigger_client_event(
+                        response, "closeAddOtherPayslipDeductionModal", after="swap"
+                    )
+                    response = trigger_client_event(
+                        response, "openAccessPayslipModal", after="swap"
+                    )
+                    response = reswap(response, "none")
+                    return response
+
                 context.update({"payslip": data.get("payslip")})
                 response.content = render_block_to_string(
                     "payroll/payslip_management.html",
@@ -909,6 +922,37 @@ def remove_other_payslip_deduction(request):
             response = create_global_alert_instance(
                 response,
                 f"An error has occured while removing the selected deduction. Details: {error}",
+                "DANGER",
+            )
+            response = reswap(response, "none")
+            return response
+
+
+def toggle_payslip_release_status(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        try:
+            data = request.POST
+            payslip = process_toggle_payslip_release_status(data)
+            context["payslip"] = payslip
+            response.content = render_block_to_string(
+                "payroll/payslip_management.html",
+                "modify_payslip_section",
+                context,
+            )
+            response = create_global_alert_instance(
+                response,
+                f"The status of the selected payslip has been successfully set to {'released' if payslip.released else 'draft'}.",
+                "SUCCESS",
+            )
+            response = retarget(response, "#modify_payslip_section")
+            response = reswap(response, "outerHTML")
+            return response
+        except Exception as error:
+            response = create_global_alert_instance(
+                response,
+                f"An error occurred while updating the payslip status. Details: {error}",
                 "DANGER",
             )
             response = reswap(response, "none")

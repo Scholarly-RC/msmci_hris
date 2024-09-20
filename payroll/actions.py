@@ -171,29 +171,23 @@ def process_get_or_create_user_payslip(
 
 
 @transaction.atomic
-def process_add_or_create_compensation(
-    type: str, specific_type: str, month: int, year: int
-):
+def process_add_or_create_fixed_compensation(name: str, month: int, year: int):
     try:
-        CompensationModel = apps.get_model("payroll", "Compensation")
-        compensation, _ = CompensationModel.objects.get_or_create(
-            type=type, month=month, year=year
+        FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
+        name = name.strip().title()
+        return FixedCompensationModel.objects.get_or_create(
+            name=name, month=month, year=year
         )
 
-        if specific_type:
-            compensation.specific_type = specific_type
-            compensation.save()
-
-        return compensation
     except Exception as error:
         raise error
 
 
 @transaction.atomic
-def process_modifying_compensation(payload):
+def process_modifying_fixed_compensation(payload):
     try:
-        CompensationModel = apps.get_model("payroll", "Compensation")
-        compensation = CompensationModel.objects.get(
+        FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
+        compensation = FixedCompensationModel.objects.get(
             id=payload.get("selected_compensation")
         )
         compensation.amount = Decimal(payload.get("amount"))
@@ -204,10 +198,10 @@ def process_modifying_compensation(payload):
 
 
 @transaction.atomic
-def process_removing_compensation(payload):
+def process_removing_fixed_compensation(payload):
     try:
-        CompensationModel = apps.get_model("payroll", "Compensation")
-        compensation = CompensationModel.objects.get(
+        FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
+        compensation = FixedCompensationModel.objects.get(
             id=payload.get("selected_compensation")
         )
         compensation.delete()
@@ -216,14 +210,14 @@ def process_removing_compensation(payload):
 
 
 @transaction.atomic
-def process_modifying_compensation_user(
+def process_modifying_fixed_compensation_users(
     user_id: int, compensation_id: int, remove: bool = False
 ):
     try:
-        CompensationModel = apps.get_model("payroll", "Compensation")
+        FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
         UserModel = apps.get_model("auth", "User")
         user = UserModel.objects.get(id=user_id)
-        compensation = CompensationModel.objects.get(id=compensation_id)
+        compensation = FixedCompensationModel.objects.get(id=compensation_id)
 
         if not remove:
             compensation.users.add(user)
@@ -268,5 +262,27 @@ def process_removing_other_payslip_deduction(payload):
         VariableDeductionConfiguration.objects.get(id=deduction_id).delete()
 
         return
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_toggle_payslip_release_status(payload):
+    try:
+        PayslipModel = apps.get_model("payroll", "Payslip")
+        payslip_id = payload.get("payslip")
+        payslip = PayslipModel.objects.get(id=payslip_id)
+
+        payslip.released = not payslip.released
+
+        if payslip.released:
+            current_datetime = make_aware(datetime.now())
+            payslip.release_date = current_datetime
+        else:
+            payslip.release_date = None
+
+        payslip.save()
+
+        return payslip
     except Exception as error:
         raise error
