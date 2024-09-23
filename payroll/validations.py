@@ -56,7 +56,7 @@ def payslip_data_validation(payload):
     return context
 
 
-def other_payslip_deduction_validation(payload):
+def variable_payslip_deduction_validation(payload):
     context = {}
 
     deduction_name = payload.get("deduction_name").strip()
@@ -67,5 +67,22 @@ def other_payslip_deduction_validation(payload):
 
     if not deduction_amount:
         context["zero_deduction_amount_error"] = "Deduction amount should be above 0."
+
+    return context
+
+
+def variable_payslip_compensation_validation(payload):
+    context = {}
+
+    deduction_name = payload.get("compensation_name").strip()
+    deduction_amount = Decimal(payload.get("compensation_amount", 0))
+
+    if not deduction_name:
+        context["empty_compensation_name_error"] = "Compensation name required."
+
+    if not deduction_amount:
+        context["zero_compensation_amount_error"] = (
+            "Compensation amount should be above 0."
+        )
 
     return context

@@ -993,7 +993,7 @@
                     </div>
                 {% endblock %}
             </div>
-            <!-- Compensation Settings Modal -->
+            <!-- Fixed Compensation Settings Modal -->
             <div id="fixed_compensations_settings_modal"
                  tabindex="-1"
                  aria-hidden="true"
@@ -1004,7 +1004,7 @@
                         <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 mx-4">
                             <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                                 <div class="flex flex-row gap-4">
-                                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Compensation Settings</h3>
+                                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Fixed Compensation Settings</h3>
                                 </div>
                                 <button hx-post="{% url "payroll:payroll_module_close_modals" %}"
                                         hx-vals='{"event_name": "closeFixedCompensationsSettingsModal"}'

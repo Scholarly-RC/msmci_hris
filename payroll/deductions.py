@@ -78,7 +78,7 @@ class Philhealth:
         if self.salary > self.max_compensation:
             return self.max_contribution
 
-        return self.salary * self.rate
+        return self.salary * (self.rate / 2)
 
 
 class Tax:
@@ -131,4 +131,4 @@ class PagIbig:
         self.amount = Decimal(pagibig_deduction_configuration_data.get("amount"))
 
     def get_employee_deduction(self):
-        return self.amount
+        return self.amount / 2

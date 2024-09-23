@@ -12,7 +12,7 @@ from payroll.utils import (
     calculate_basic_salary_for_grade,
     calculate_basic_salary_steps,
     get_mp2_object,
-    get_payslip_compensations,
+    get_payslip_fixed_compensations,
     get_payslip_variable_deductions,
     get_salary_from_rank,
 )
@@ -121,7 +121,7 @@ class MandatoryDeductionConfiguration(models.Model):
         return self.get_config("TAX")
 
 
-class VariableDeductionConfiguration(models.Model):
+class VariableDeduction(models.Model):
     name = models.CharField(_("Deduction Name"), max_length=500)
     payslip = models.ForeignKey(
         "Payslip", on_delete=models.RESTRICT, related_name="variable_deductions"
@@ -135,10 +135,10 @@ class VariableDeductionConfiguration(models.Model):
     updated = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     class Meta:
-        verbose_name_plural = "Variable Deduction Configurations"
+        verbose_name_plural = "Variable Deductions"
 
     def __str__(self):
-        return "Variable Deduction Configuration"
+        return f"{self.name} - {Months(self.payslip.month).name} - {self.payslip.year}"
 
 
 class Mp2(models.Model):
@@ -184,6 +184,26 @@ class FixedCompensation(models.Model):
 
     def get_semi_monthly_amount(self):
         return self.amount / 2
+
+
+class VariableCompensation(models.Model):
+    name = models.CharField(_("Compensation Name"), max_length=500)
+    payslip = models.ForeignKey(
+        "Payslip", on_delete=models.RESTRICT, related_name="variable_compensation"
+    )
+
+    amount = models.DecimalField(
+        _("Compensation Amount"), blank=True, null=True, max_digits=9, decimal_places=2
+    )
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Variable Compensations"
+
+    def __str__(self):
+        return f"{self.name} - {Months(self.payslip.month).name} - {self.payslip.year}"
 
 
 class Payslip(models.Model):
@@ -240,24 +260,21 @@ class Payslip(models.Model):
 
         base_salary = self.salary
 
-        payslip_compensations, total_compensation = get_payslip_compensations(self)
+        fixed_compensations, total_fixed_compensation = get_payslip_fixed_compensations(
+            self
+        )
 
         payslip_variable_deductions, total_variable_deductions = (
             get_payslip_variable_deductions(self)
         )
 
-        adjusted_salary_with_compensations = base_salary + total_compensation
+        adjusted_salary_with_compensations = base_salary + total_fixed_compensation
 
         adjusted_salary_with_compensations_and_total_variable_deductions = (
             adjusted_salary_with_compensations / 2
         ) - total_variable_deductions
 
-        # TODO: ASK FOR LOGIC
-
-        # adjusted_salary_with_compensations -= (
-        #     adjusted_salary_with_compensations
-        #     - adjusted_salary_with_compensations_and_total_variable_deductions
-        # )
+        # TODO: CONFIGURE LOGIC
 
         sss_employee_deduction = Sss(
             adjusted_salary_with_compensations
@@ -295,7 +312,7 @@ class Payslip(models.Model):
         salary_details.update(
             {
                 "salary": base_salary / 2,
-                "compensations": payslip_compensations,
+                "compensations": fixed_compensations,
                 "variable_deductions": payslip_variable_deductions,
                 "adjusted_salary_with_compensations": adjusted_salary_with_compensations
                 / 2,

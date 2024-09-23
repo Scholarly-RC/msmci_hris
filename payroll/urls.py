@@ -31,14 +31,24 @@ urlpatterns = [
         name="toggle_payslip_release_status",
     ),
     path(
-        "payslip-management/access/remove-other-payslip-deduction",
-        payroll_views.remove_other_payslip_deduction,
-        name="remove_other_payslip_deduction",
+        "payslip-management/access/remove-variable-payslip-compensation",
+        payroll_views.remove_variable_payslip_compensation,
+        name="remove_variable_payslip_compensation",
     ),
     path(
-        "payslip-management/access/add-other-payslip-deduction",
-        payroll_views.add_other_payslip_deduction,
-        name="add_other_payslip_deduction",
+        "payslip-management/access/add-variable-payslip-compensation",
+        payroll_views.add_variable_payslip_compensation,
+        name="add_variable_payslip_compensation",
+    ),
+    path(
+        "payslip-management/access/remove-variable-payslip-deduction",
+        payroll_views.remove_variable_payslip_deduction,
+        name="remove_variable_payslip_deduction",
+    ),
+    path(
+        "payslip-management/access/add-variable-payslip-deduction",
+        payroll_views.add_variable_payslip_deduction,
+        name="add_variable_payslip_deduction",
     ),
     path(
         "payslip-management/access",

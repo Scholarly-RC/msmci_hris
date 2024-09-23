@@ -13,19 +13,21 @@ from hris.utils import create_global_alert_instance
 from payroll.actions import (
     process_add_or_create_fixed_compensation,
     process_adding_job,
-    process_adding_other_payslip_deduction,
+    process_adding_variable_payslip_deduction,
     process_deleting_job,
     process_get_or_create_user_payslip,
     process_modifying_fixed_compensation,
     process_modifying_fixed_compensation_users,
     process_modifying_job,
     process_removing_fixed_compensation,
-    process_removing_other_payslip_deduction,
+    process_removing_variable_payslip_deduction,
     process_setting_deduction_config,
     process_setting_minimum_wage_amount,
     process_setting_mp2_amount,
     process_toggle_user_mp2_status,
     process_toggle_payslip_release_status,
+    process_adding_variable_payslip_compensation,
+    process_removing_variable_payslip_compensation,
 )
 from payroll.models import Job, Payslip
 from payroll.utils import (
@@ -44,8 +46,9 @@ from payroll.utils import (
 )
 from payroll.validations import (
     minimum_wage_update_validation,
-    other_payslip_deduction_validation,
+    variable_payslip_deduction_validation,
     payslip_data_validation,
+    variable_payslip_compensation_validation,
 )
 from performance.utils import get_user_with_hr_role
 
@@ -837,7 +840,7 @@ def access_payslip(request):
             return response
 
 
-def add_other_payslip_deduction(request):
+def add_variable_payslip_deduction(request):
     context = {}
     if request.htmx:
         response = HttpResponse()
@@ -846,7 +849,7 @@ def add_other_payslip_deduction(request):
                 data = request.GET
                 if "back" in data:
                     response = trigger_client_event(
-                        response, "closeAddOtherPayslipDeductionModal", after="swap"
+                        response, "closeAddVariablePayslipDeductionModal", after="swap"
                     )
                     response = trigger_client_event(
                         response, "openAccessPayslipModal", after="swap"
@@ -857,24 +860,24 @@ def add_other_payslip_deduction(request):
                 context.update({"payslip": data.get("payslip")})
                 response.content = render_block_to_string(
                     "payroll/payslip_management.html",
-                    "add_other_payslip_deduction_modal_container",
+                    "add_variable_payslip_deduction_modal_container",
                     context,
                 )
                 response = trigger_client_event(
-                    response, "openAddOtherPayslipDeductionModal", after="swap"
+                    response, "openAddVariablePayslipDeductionModal", after="swap"
                 )
                 response = trigger_client_event(
                     response, "closeAccessPayslipModal", after="swap"
                 )
                 response = retarget(
-                    response, "#add_other_payslip_deduction_modal_container"
+                    response, "#add_variable_payslip_deduction_modal_container"
                 )
                 response = reswap(response, "outerHTML")
                 return response
 
             if request.method == "POST":
                 data = request.POST
-                errors = other_payslip_deduction_validation(data)
+                errors = variable_payslip_deduction_validation(data)
                 if errors:
                     for error in errors:
                         response = create_global_alert_instance(
@@ -883,15 +886,17 @@ def add_other_payslip_deduction(request):
                         response = reswap(response, "none")
                         return response
 
-                process_adding_other_payslip_deduction(data)
+                process_adding_variable_payslip_deduction(data)
                 response = create_global_alert_instance(
-                    response, "A new deduction has been successfully added.", "SUCCESS"
+                    response,
+                    "A new variable deduction has been successfully added.",
+                    "SUCCESS",
                 )
                 response = trigger_client_event(
                     response, "openAccessPayslipModal", after="swap"
                 )
                 response = trigger_client_event(
-                    response, "closeAddOtherPayslipDeductionModal", after="swap"
+                    response, "closeAddVariablePayslipDeductionModal", after="swap"
                 )
                 response = trigger_client_event(
                     response, "updatePayslipData", after="swap"
@@ -900,28 +905,125 @@ def add_other_payslip_deduction(request):
         except Exception as error:
             response = create_global_alert_instance(
                 response,
-                f"An error has occured while adding a deduction. Details: {error}",
+                f"An error has occured while adding a variable deduction. Details: {error}",
                 "DANGER",
             )
             response = reswap(response, "none")
             return response
 
 
-def remove_other_payslip_deduction(request):
+def remove_variable_payslip_deduction(request):
     if request.htmx and request.method == "POST":
         response = HttpResponse()
         try:
             data = request.POST
-            process_removing_other_payslip_deduction(data)
+            process_removing_variable_payslip_deduction(data)
             response = create_global_alert_instance(
-                response, "Selected deduction successfully removed.", "SUCCESS"
+                response, "Selected variable deduction successfully removed.", "SUCCESS"
             )
             response = trigger_client_event(response, "updatePayslipData", after="swap")
             return response
         except Exception as error:
             response = create_global_alert_instance(
                 response,
-                f"An error has occured while removing the selected deduction. Details: {error}",
+                f"An error has occured while removing the selected variable deduction. Details: {error}",
+                "DANGER",
+            )
+            response = reswap(response, "none")
+            return response
+
+
+def add_variable_payslip_compensation(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        try:
+            if request.method == "GET":
+                data = request.GET
+                if "back" in data:
+                    response = trigger_client_event(
+                        response,
+                        "closeAddVariablePayslipCompensationModal",
+                        after="swap",
+                    )
+                    response = trigger_client_event(
+                        response, "openAccessPayslipModal", after="swap"
+                    )
+                    response = reswap(response, "none")
+                    return response
+
+                context.update({"payslip": data.get("payslip")})
+                response.content = render_block_to_string(
+                    "payroll/payslip_management.html",
+                    "add_variable_payslip_compensation_modal_container",
+                    context,
+                )
+                response = trigger_client_event(
+                    response, "openAddVariablePayslipCompensationModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response, "closeAccessPayslipModal", after="swap"
+                )
+                response = retarget(
+                    response, "#add_variable_payslip_compensation_modal_container"
+                )
+                response = reswap(response, "outerHTML")
+                return response
+
+            if request.method == "POST":
+                data = request.POST
+                errors = variable_payslip_compensation_validation(data)
+                if errors:
+                    for error in errors:
+                        response = create_global_alert_instance(
+                            response, errors[error], "WARNING"
+                        )
+                        response = reswap(response, "none")
+                        return response
+
+                process_adding_variable_payslip_compensation(data)
+                response = create_global_alert_instance(
+                    response,
+                    "A new variable compensation has been successfully added.",
+                    "SUCCESS",
+                )
+                response = trigger_client_event(
+                    response, "openAccessPayslipModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response, "closeAddVariablePayslipCompensationModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response, "updatePayslipData", after="swap"
+                )
+                return response
+        except Exception as error:
+            response = create_global_alert_instance(
+                response,
+                f"An error has occured while adding a variable compensation. Details: {error}",
+                "DANGER",
+            )
+            response = reswap(response, "none")
+            return response
+
+
+def remove_variable_payslip_compensation(request):
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        try:
+            data = request.POST
+            process_removing_variable_payslip_compensation(data)
+            response = create_global_alert_instance(
+                response,
+                "Selected variable compensation successfully removed.",
+                "SUCCESS",
+            )
+            response = trigger_client_event(response, "updatePayslipData", after="swap")
+            return response
+        except Exception as error:
+            response = create_global_alert_instance(
+                response,
+                f"An error has occured while removing the selected variable compensation. Details: {error}",
                 "DANGER",
             )
             response = reswap(response, "none")

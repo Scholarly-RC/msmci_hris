@@ -278,7 +278,7 @@ def get_users_with_payslip_data(users, month: int, year: int):
     return data
 
 
-def get_payslip_compensations(payslip):
+def get_payslip_fixed_compensations(payslip):
     FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
     month = payslip.month
     year = payslip.year
@@ -294,6 +294,14 @@ def get_payslip_compensations(payslip):
 
 
 def get_payslip_variable_deductions(payslip):
+    deductions = payslip.variable_deductions.all()
+
+    total_amount = deductions.aggregate(total=Sum("amount"))["total"] or 0
+
+    return deductions, total_amount
+
+
+def get_payslip_variable_compensations(payslip):
     deductions = payslip.variable_deductions.all()
 
     total_amount = deductions.aggregate(total=Sum("amount"))["total"] or 0

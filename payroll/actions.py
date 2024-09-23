@@ -230,11 +230,9 @@ def process_modifying_fixed_compensation_users(
 
 
 @transaction.atomic
-def process_adding_other_payslip_deduction(payload):
+def process_adding_variable_payslip_deduction(payload):
     try:
-        VariableDeductionConfiguration = apps.get_model(
-            "payroll", "VariableDeductionConfiguration"
-        )
+        VariableDeduction = apps.get_model("payroll", "VariableDeduction")
         PayslipModel = apps.get_model("payroll", "Payslip")
         selected_payslip_id = payload.get("payslip")
         selected_payslip = PayslipModel.objects.get(id=selected_payslip_id)
@@ -242,7 +240,7 @@ def process_adding_other_payslip_deduction(payload):
         deduction_name = payload.get("deduction_name").strip()
         deduction_amount = Decimal(payload.get("deduction_amount", 0))
 
-        new_deduction = VariableDeductionConfiguration.objects.create(
+        new_deduction = VariableDeduction.objects.create(
             name=deduction_name, payslip=selected_payslip, amount=deduction_amount
         )
 
@@ -252,14 +250,46 @@ def process_adding_other_payslip_deduction(payload):
 
 
 @transaction.atomic
-def process_removing_other_payslip_deduction(payload):
+def process_removing_variable_payslip_deduction(payload):
     try:
-        VariableDeductionConfiguration = apps.get_model(
-            "payroll", "VariableDeductionConfiguration"
-        )
+        VariableDeductionModel = apps.get_model("payroll", "VariableDeduction")
         deduction_id = payload.get("deduction")
 
-        VariableDeductionConfiguration.objects.get(id=deduction_id).delete()
+        VariableDeductionModel.objects.get(id=deduction_id).delete()
+
+        return
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_adding_variable_payslip_compensation(payload):
+    try:
+        VariableCompensationModel = apps.get_model("payroll", "VariableCompensation")
+        PayslipModel = apps.get_model("payroll", "Payslip")
+        selected_payslip_id = payload.get("payslip")
+        selected_payslip = PayslipModel.objects.get(id=selected_payslip_id)
+
+        variable_name = payload.get("compensation_name").strip()
+        variable_amount = Decimal(payload.get("compensation_amount", 0))
+
+        new_variable_compensation = VariableCompensationModel.objects.create(
+            name=variable_name, payslip=selected_payslip, amount=variable_amount
+        )
+
+        breakpoint()
+
+        return new_variable_compensation
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_removing_variable_payslip_compensation(payload):
+    try:
+        VariableCompensationModel = apps.get_model("payroll", "VariableCompensation")
+        compensation_id = payload.get("compensation")
+        VariableCompensationModel.objects.get(id=compensation_id).delete()
 
         return
     except Exception as error:
