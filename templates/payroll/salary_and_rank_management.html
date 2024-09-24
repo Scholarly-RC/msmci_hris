@@ -1,0 +1,1332 @@
+{% extends "layout.html" %}
+{% block content %}
+    {% include "navbar.html" %}
+    <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
+        <div class="w-full relative px-2 lg:px-10">
+            <div class="flex flex-col md:flex-row justify-between items-center mt-10 mb-2">
+                <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3">Salary & Rank Management</h1>
+                <div class="flex flex-col md:flex-row h-auto gap-1" role="group">
+                    <button type="button"
+                            hx-get="{% url "payroll:fixed_compensations_settings" %}"
+                            class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white">
+                        Fixed Compensations Settings
+                    </button>
+                    <button type="button"
+                            hx-get="{% url "payroll:deductions_settings" %}"
+                            class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white">
+                        Deductions Settings
+                    </button>
+                    <button type="button"
+                            hx-get="{% url "payroll:minimum_wage_settings" %}"
+                            class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white">
+                        Minimum Salary Settings
+                    </button>
+                </div>
+            </div>
+            {% block salary_and_rank_management_section %}
+                <div id="salary_and_rank_management_section"
+                     class="h-[48rem] flex flex-col gap-6 p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <div class="relative sm:rounded-lg">
+                        <div class="flex flex-col gap-2 sm:gap-0 sm:flex-row text-center sm:text-start items-center sm:items-end justify-between mb-4">
+                            <div class="flex flex-col">
+                                <h2 class="text-2xl font-extrabold dark:text-white">Job List</h2>
+                                <div>
+                                    <form class="max-w-sm">
+                                        <label for="departments"
+                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Filter by Department
+                                        </label>
+                                        <select id="departments"
+                                                name="selected_department"
+                                                hx-post="{% url "payroll:salary_and_rank_management" %}"
+                                                hx-trigger="change"
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                            <option selected value="0">All</option>
+                                            {% for department in departments %}
+                                                <option value="{{ department.id }}"
+                                                        {% if selected_department == department.id %}selected{% endif %}>
+                                                    {{ department.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="flex flex-column">
+                                <button hx-get="{% url "payroll:add_job" %}"
+                                        hx-swap="none"
+                                        type="button"
+                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                    Add
+                                </button>
+                            </div>
+                        </div>
+                        {% block job_list_table %}
+                            <div class="w-full h-[37rem] overflow-y-auto overflow-x-auto">
+                                <table id="job_list_table"
+                                       class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3">Name</th>
+                                            <th scope="col" class="px-6 py-3 text-center">Code</th>
+                                            <th scope="col" class="px-6 py-3 text-center">Starting Salary Grade</th>
+                                            <th scope="col" class="px-6 py-3 text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for job in jobs %}
+                                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                <th scope="row"
+                                                    class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                    {{ job.title }}
+                                                </th>
+                                                <td class="px-6 py-4 text-center">{{ job.code }}</td>
+                                                <td class="px-6 py-4 text-center">{{ job.salary_grade }}</td>
+                                                <td class="px-6 py-4 text-center">
+                                                    <div class="inline-flex rounded-md shadow-sm" role="group">
+                                                        <button hx-post="{% url "payroll:view_job" %}"
+                                                                hx-vals='{"job": {{ job.id }}}'
+                                                                type="button"
+                                                                class="px-4 py-1 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-s-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white">
+                                                            View
+                                                        </button>
+                                                        <button hx-post="{% url "payroll:modify_job" %}"
+                                                                hx-vals='{"job": {{ job.id }}}'
+                                                                type="button"
+                                                                class="px-4 py-1 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-e-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white">
+                                                            Modify
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div>
+                                <button></button>
+                            </div>
+                        {% endblock %}
+                    </div>
+                </div>
+            {% endblock %}
+            <!-- Job Modals -->
+            <div id="add_job_modal"
+                 tabindex="-1"
+                 aria-hidden="true"
+                 class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                {% block add_job_modal_container %}
+                    <div id="add_job_modal_container"
+                         class="relative p-4 w-full max-w-2xl max-h-full">
+                        <form hx-post="{% url "payroll:add_job" %}"
+                              class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Add Job</h3>
+                                <button hx-post="{% url "payroll:payroll_module_close_modals" %}"
+                                        hx-vals='{"event_name": "closeAddJobModal"}'
+                                        type="button"
+                                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                    <svg class="w-3 h-3"
+                                         aria-hidden="true"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         fill="none"
+                                         viewBox="0 0 14 14">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="p-4 md:p-5 space-y-4">
+                                <div class="max-w-md mx-auto">
+                                    <div class="relative z-0 w-full mb-5 group">
+                                        <input type="text"
+                                               name="job_title"
+                                               id="job_title"
+                                               class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                               placeholder=" "
+                                               required />
+                                        <label for="job_title"
+                                               class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                                            Job Title
+                                        </label>
+                                    </div>
+                                    <div class="relative z-0 w-full mb-5 group">
+                                        <input type="text"
+                                               name="job_code"
+                                               id="job_code"
+                                               class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                               placeholder=" "
+                                               required />
+                                        <label for="job_code"
+                                               class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                                            Job Code
+                                        </label>
+                                    </div>
+                                    <div class="relative z-0 w-full mb-5 group">
+                                        <label for="select_department_input"
+                                               class="block mb-2 text-sm font-base text-gray-900 dark:text-white">
+                                            Select a Department
+                                        </label>
+                                        <select id="select_department_input"
+                                                name="selected_department"
+                                                multiple
+                                                required
+                                                size="5"
+                                                class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer">
+                                            {% for department in departments %}<option value="{{ department.id }}">{{ department.name }}</option>{% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="grid md:grid-cols-2 md:gap-6">
+                                        <div class="relative z-0 w-full mb-5 group">
+                                            <div class="relative z-0 w-full mb-5 group">
+                                                <input type="number"
+                                                       name="salary_grade"
+                                                       id="salary_grade"
+                                                       class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                       min="2"
+                                                       max="10"
+                                                       value="2"
+                                                       required />
+                                                <label for="salary_grade"
+                                                       class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                                                    Salary Grade
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+                                <button type="submit"
+                                        type="button"
+                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                    Submit
+                                </button>
+                                <button hx-post="{% url "payroll:payroll_module_close_modals" %}"
+                                        hx-vals='{"event_name": "closeAddJobModal"}'
+                                        type="button"
+                                        class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                                    Close
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                {% endblock %}
+            </div>
+            <div id="view_job_modal"
+                 tabindex="-1"
+                 aria-hidden="true"
+                 class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                {% block view_job_modal_container %}
+                    <div id="view_job_modal_container"
+                         class="relative w-full max-w-7xl max-h-full">
+                        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 mx-4">
+                            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ job.title|title }}</h3>
+                                <button hx-post="{% url "payroll:payroll_module_close_modals" %}"
+                                        hx-vals='{"event_name": "closeViewJobModal"}'
+                                        type="button"
+                                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                    <svg class="w-3 h-3"
+                                         aria-hidden="true"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         fill="none"
+                                         viewBox="0 0 14 14">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="p-4 md:p-5 space-y-4">
+                                <div class="relative overflow-x-auto">
+                                    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                            <tr class="text-center">
+                                                <th scope="col" class="px-6 py-3">Salary Grade</th>
+                                                <th scope="col" class="px-6 py-3">Rank</th>
+                                                <th scope="col" class="px-6 py-3">Basic Salary</th>
+                                                {% for step_header in job.get_number_of_steps_for_header %}
+                                                    <th scope="col" class="px-6 py-3">{{ step_header }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for data in job.get_salary_data %}
+                                                {% for key, value in data.items %}
+                                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 text-center">
+                                                        <th scope="row"
+                                                            class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                            {{ value.salary_grade }}
+                                                        </th>
+                                                        <td class="px-6 py-4">{{ key }}</td>
+                                                        <td class="px-6 py-4">{{ value.basic_salary }}</td>
+                                                        {% for step in value.steps %}
+                                                            <td class="px-6 py-4">
+                                                                {% for key, value in step.items %}{{ value }}{% endfor %}
+                                                            </td>
+                                                        {% endfor %}
+                                                    </tr>
+                                                {% endfor %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+                                <button hx-post="{% url "payroll:payroll_module_close_modals" %}"
+                                        hx-vals='{"event_name": "closeViewJobModal"}'
+                                        type="button"
+                                        class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endblock %}
+            </div>
+            <div id="modify_job_modal"
+                 tabindex="-1"
+                 aria-hidden="true"
+                 class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                {% block modify_job_modal_container %}
+                    <div id="modify_job_modal_container"
+                         class="relative p-4 w-full max-w-2xl max-h-full">
+                        <form hx-patch="{% url "payroll:modify_job" %}"
+                              hx-vals='{"job": {{ job.id }}}'
+                              class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Modify Job - #{{ job.id }}</h3>
+                                <button hx-post="{% url "payroll:payroll_module_close_modals" %}"
+                                        hx-vals='{"event_name": "closeModifyJobModal"}'
+                                        type="button"
+                                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                    <svg class="w-3 h-3"
+                                         aria-hidden="true"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         fill="none"
+                                         viewBox="0 0 14 14">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="p-4 md:p-5 space-y-4">
+                                <div class="max-w-md mx-auto">
+                                    <div class="relative z-0 w-full mb-5 group">
+                                        <input type="text"
+                                               name="job_title"
+                                               id="job_title"
+                                               class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                               value="{{ job.title }}"
+                                               required />
+                                        <label for="job_title"
+                                               class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                                            Job Title
+                                        </label>
+                                    </div>
+                                    <div class="relative z-0 w-full mb-5 group">
+                                        <input type="text"
+                                               name="job_code"
+                                               id="job_code"
+                                               class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                               value="{{ job.code }}"
+                                               required />
+                                        <label for="job_code"
+                                               class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                                            Job Code
+                                        </label>
+                                    </div>
+                                    <div class="relative z-0 w-full mb-5 group">
+                                        <label for="select_department_input"
+                                               class="block mb-2 text-sm font-base text-gray-900 dark:text-white">
+                                            Select a Department
+                                        </label>
+                                        <select id="select_department_input"
+                                                name="selected_department"
+                                                multiple
+                                                required
+                                                size="5"
+                                                class="block py-2.5 px-0 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer">
+                                            {% for department in departments %}
+                                                <option value="{{ department.id }}"
+                                                        {% if department in job.department.all %}selected{% endif %}>
+                                                    {{ department.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="grid md:grid-cols-2 md:gap-6">
+                                        <div class="relative z-0 w-full mb-5 group">
+                                            <div class="relative z-0 w-full mb-5 group">
+                                                <input type="number"
+                                                       name="salary_grade"
+                                                       id="salary_grade"
+                                                       class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                       min="2"
+                                                       max="10"
+                                                       value="2"
+                                                       required />
+                                                <label for="salary_grade"
+                                                       class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                                                    Salary Grade
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+                                <div>
+                                    <button type="submit"
+                                            type="button"
+                                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                        Submit
+                                    </button>
+                                    <button hx-post="{% url "payroll:payroll_module_close_modals" %}"
+                                            hx-vals='{"event_name": "closeModifyJobModal"}'
+                                            type="button"
+                                            class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                                        Close
+                                    </button>
+                                </div>
+                                {% block delete_button_container %}
+                                    <div id="delete_button_container">
+                                        {% if show_delete_confirmation %}
+                                            <button type="button"
+                                                    hx-delete="{% url "payroll:delete_job" %}"
+                                                    hx-vals='{"job_to_delete": {{ job_to_delete }}}'
+                                                    class="py-2.5 px-5 focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
+                                                Confirm
+                                            </button>
+                                            <button type="button"
+                                                    hx-post="{% url "payroll:delete_job" %}"
+                                                    hx-vals='{"cancel_delete": "true", "job_to_delete": "{{ job_to_delete }}"}'
+                                                    class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+                                                Cancel
+                                            </button>
+                                        {% else %}
+                                            <button type="button"
+                                                    hx-post="{% url "payroll:delete_job" %}"
+                                                    hx-vals='{"job_to_delete": "{{ job.id }}"}'
+                                                    class="py-2.5 px-5 focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
+                                                Delete
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                {% endblock %}
+                            </div>
+                        </form>
+                    </div>
+                {% endblock %}
+            </div>
+            <!-- Minimum Wage Modal -->
+            <div id="minimum_wage_modal"
+                 tabindex="-1"
+                 aria-hidden="true"
+                 class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                {% block minimum_wage_modal_container %}
+                    <div id="minimum_wage_modal_container"
+                         class="relative w-full max-w-3xl max-h-full">
+                        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 mx-4">
+                            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Minimum Wage Settings</h3>
+                                <button hx-post="{% url "payroll:payroll_module_close_modals" %}"
+                                        hx-vals='{"event_name": "closeMinimumWageModal"}'
+                                        type="button"
+                                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                    <svg class="w-3 h-3"
+                                         aria-hidden="true"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         fill="none"
+                                         viewBox="0 0 14 14">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="p-4 md:p-5 space-y-4">
+                                <form class="max-w-md mx-auto">
+                                    <div class="relative z-0 w-full mb-5 group">
+                                        <input type="number"
+                                               name="minimum_wage_basic_salary"
+                                               id="minimum_wage_basic_salary"
+                                               class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                               value="{% if minimum_wage_value %}{{ minimum_wage_value }}{% else %}{{ minimum_wage.amount }}{% endif %}"
+                                               step=".01"
+                                               required />
+                                        <label for="minimum_wage_basic_salary"
+                                               class="peer-focus:font-medium absolute text-base text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                                            Basic Salary
+                                        </label>
+                                        {% if error %}
+                                            <p class="mt-2 text-sm text-red-600 dark:text-red-500">
+                                                <span class="font-medium">{{ error }}</span>
+                                            </p>
+                                        {% endif %}
+                                        {% if minimum_wage_update_success %}
+                                            <p class="mt-2 text-sm text-green-600 dark:text-green-500">
+                                                <span class="font-medium">{{ minimum_wage_update_success }}</span>
+                                            </p>
+                                        {% endif %}
+                                    </div>
+                                    {% if show_confirmation %}
+                                        <div class="flex">
+                                            <div class="flex items-center h-5">
+                                                <input id="confirmation_helper_checkbox"
+                                                       type="checkbox"
+                                                       name="confirmation_box"
+                                                       value="confirmed"
+                                                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
+                                                       required>
+                                            </div>
+                                            <div class="ms-2 text-sm">
+                                                <label for="confirmation_helper_checkbox"
+                                                       class="font-medium text-gray-900 dark:text-gray-300 cursor-pointer">
+                                                    Are you sure you want to change the current minimum wage?
+                                                </label>
+                                                <p id="confirmation_helper_checkbox_text"
+                                                   class="text-xs font-normal text-gray-500 dark:text-gray-400">
+                                                    Please note that this change will affect all new records created that are linked to the minimum wage setting.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {% if confirmation_error %}
+                                            <p class="mt-2 text-sm text-red-600 dark:text-red-500">
+                                                <span class="font-medium">{{ confirmation_error }}</span>
+                                            </p>
+                                        {% endif %}
+                                        <button type="submit"
+                                                hx-post="{% url "payroll:minimum_wage_settings" %}"
+                                                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 mt-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                            Submit
+                                        </button>
+                                    {% else %}
+                                        <button type="submit"
+                                                hx-post="{% url "payroll:minimum_wage_settings" %}"
+                                                hx-vals='{"for_confirmation": "True"}'
+                                                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                            Submit
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </div>
+                            <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600"></div>
+                        </div>
+                    </div>
+                {% endblock %}
+            </div>
+            <!-- Deduction Configuration Modal -->
+            <div id="deductions_settings_modal"
+                 tabindex="-1"
+                 aria-hidden="true"
+                 class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                {% block deductions_settings_modal_container %}
+                    <div id="deductions_settings_modal_container"
+                         class="relative w-full max-w-5xl max-h-full">
+                        <!-- Deduction Configuration Form -->
+                        <form class="relative bg-white rounded-lg shadow dark:bg-gray-700 mx-4"
+                              hx-post="{% url "payroll:deductions_settings" %}">
+                            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Deductions Settings</h3>
+                                <button hx-post="{% url "payroll:payroll_module_close_modals" %}"
+                                        hx-vals='{"event_name": "closeDeductionsSettingsModal"}'
+                                        type="button"
+                                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                    <svg class="w-3 h-3"
+                                         aria-hidden="true"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         fill="none"
+                                         viewBox="0 0 14 14">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="p-4 md:p-5 space-y-4">
+                                <div class="w-full">
+                                    <div class="flex flex-col gap-4 h-[35rem] overflow-y-auto">
+                                        <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                            <div>
+                                                <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">SSS</h5>
+                                            </div>
+                                            <div class="flex flex-row gap-4 w-full">
+                                                <div class="w-full">
+                                                    <label for="sss_minimum_compensation_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Minimum Compensation
+                                                    </label>
+                                                    <input type="number"
+                                                           id="sss_minimum_compensation_id"
+                                                           name="sss_minimum_compensation"
+                                                           step="0.01"
+                                                           min="0"
+                                                           value="{{ deduction_configuration.sss_config.data.min_compensation }}"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           placeholder="Enter Minimum Compensation..."
+                                                           required />
+                                                </div>
+                                                <div class="w-full">
+                                                    <label for="sss_maximum_compensation_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Maximum Compensation
+                                                    </label>
+                                                    <input type="number"
+                                                           id="sss_maximum_compensation_id"
+                                                           name="sss_maximum_compensation"
+                                                           step="0.01"
+                                                           min="0"
+                                                           value="{{ deduction_configuration.sss_config.data.max_compensation }}"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           placeholder="Enter Maximum Compensation..."
+                                                           required />
+                                                </div>
+                                            </div>
+                                            <div class="flex flex-row gap-4 w-full mt-2">
+                                                <div class="w-full">
+                                                    <label for="sss_minimum_contribution_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Minimum Contribution
+                                                    </label>
+                                                    <input type="number"
+                                                           id="sss_minimum_contribution_id"
+                                                           name="sss_minimum_contribution"
+                                                           step="0.01"
+                                                           min="0"
+                                                           value="{{ deduction_configuration.sss_config.data.min_contribution }}"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           placeholder="Enter Minimum Contribution..."
+                                                           required />
+                                                </div>
+                                                <div class="w-full">
+                                                    <label for="sss_maximum_contribution_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Maximum Contribution
+                                                    </label>
+                                                    <input type="number"
+                                                           id="sss_maximum_contribution_id"
+                                                           name="sss_maximum_contribution"
+                                                           step="0.01"
+                                                           min="0"
+                                                           value="{{ deduction_configuration.sss_config.data.max_contribution }}"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           placeholder="Enter Maximum Contribution..."
+                                                           required />
+                                                </div>
+                                            </div>
+                                            <div class="flex flex-row gap-4 w-full mt-2">
+                                                <div class="w-full">
+                                                    <label for="sss_contribution_difference_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Contribution Difference (%)
+                                                    </label>
+                                                    <input type="number"
+                                                           id="sss_contribution_difference_id"
+                                                           name="sss_contribution_difference"
+                                                           step="0.01"
+                                                           min="0"
+                                                           value="{{ deduction_configuration.sss_config.data.contribution_difference }}"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           placeholder="Enter Contribution Difference..."
+                                                           required />
+                                                </div>
+                                                <div class="w-full"></div>
+                                            </div>
+                                        </div>
+                                        <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                            <div>
+                                                <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Philhealth</h5>
+                                            </div>
+                                            <div class="flex flex-row gap-4 w-full">
+                                                <div class="w-full">
+                                                    <label for="philhealth_minimum_compensation_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Minimum Compensation
+                                                    </label>
+                                                    <input type="number"
+                                                           id="philhealth_minimum_compensation_id"
+                                                           name="philhealth_minimum_compensation"
+                                                           step="0.01"
+                                                           min="0"
+                                                           value="{{ deduction_configuration.philhealth_config.data.min_compensation }}"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           placeholder="Enter Minimum Compensation..."
+                                                           required />
+                                                </div>
+                                                <div class="w-full">
+                                                    <label for="philhealth_maximum_compensation_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Maximum Compensation
+                                                    </label>
+                                                    <input type="number"
+                                                           id="philhealth_maximum_compensation_id"
+                                                           name="philhealth_maximum_compensation"
+                                                           step="0.01"
+                                                           min="0"
+                                                           value="{{ deduction_configuration.philhealth_config.data.max_compensation }}"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           placeholder="Enter Maximum Compensation..."
+                                                           required />
+                                                </div>
+                                            </div>
+                                            <div class="flex flex-row gap-4 w-full mt-2">
+                                                <div class="w-full">
+                                                    <label for="philhealth_minimum_contribution_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Minimum Contribution
+                                                    </label>
+                                                    <input type="number"
+                                                           id="philhealth_minimum_contribution_id"
+                                                           name="philhealth_minimum_contribution"
+                                                           step="0.01"
+                                                           min="0"
+                                                           value="{{ deduction_configuration.philhealth_config.data.min_contribution }}"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           placeholder="Enter Minimum Contribution..."
+                                                           required />
+                                                </div>
+                                                <div class="w-full">
+                                                    <label for="philhealth_maximum_contribution_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Maximum Contribution
+                                                    </label>
+                                                    <input type="number"
+                                                           id="philhealth_maximum_contribution_id"
+                                                           name="philhealth_maximum_contribution"
+                                                           step="0.01"
+                                                           min="0"
+                                                           value="{{ deduction_configuration.philhealth_config.data.max_contribution }}"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           placeholder="Enter Maximum Contribution..."
+                                                           required />
+                                                </div>
+                                            </div>
+                                            <div class="flex flex-row gap-4 w-full mt-2">
+                                                <div class="w-full">
+                                                    <label for="philhealth_contribution_rate_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Contribution Rate (%)
+                                                    </label>
+                                                    <input type="number"
+                                                           id="philhealth_contribution_rate_id"
+                                                           name="philhealth_contribution_rate"
+                                                           step="0.01"
+                                                           min="0"
+                                                           value="{{ deduction_configuration.philhealth_config.data.rate }}"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           placeholder="Enter Contribution Difference..."
+                                                           required />
+                                                </div>
+                                                <div class="w-full"></div>
+                                            </div>
+                                        </div>
+                                        <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                            <div class="flex flex-row justify-between">
+                                                <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Pag-Ibig</h5>
+                                                <button type="button"
+                                                        hx-get="{% url "payroll:mp2_settings" %}"
+                                                        class="text-blue-700 hover:text-white border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800">
+                                                    MP2
+                                                </button>
+                                            </div>
+                                            <div class="flex flex-row gap-4 w-full">
+                                                <div class="w-full">
+                                                    <label for="pagibig_contribution_amount_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Contribution Amount
+                                                    </label>
+                                                    <input type="number"
+                                                           id="pagibig_contribution_amount_id"
+                                                           name="pagibig_contribution_amount"
+                                                           step="0.01"
+                                                           min="0"
+                                                           value="{{ deduction_configuration.pagibig_config.data.amount }}"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           placeholder="Enter Contribution Amount..."
+                                                           required />
+                                                </div>
+                                                <div class="w-full"></div>
+                                            </div>
+                                        </div>
+                                        <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                            <div>
+                                                <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Tax</h5>
+                                            </div>
+                                            <div class="flex flex-row gap-4 w-full">
+                                                <div class="w-full">
+                                                    <label for="tax_compensation_range_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Compensation Range
+                                                    </label>
+                                                    <input type="text"
+                                                           id="tax_compensation_range_id"
+                                                           name="tax_compensation_range"
+                                                           value="{{ deduction_configuration.tax_config.data.compensation_range }}"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           placeholder="Enter Compensation Range... (Separate with comma.)"
+                                                           required />
+                                                </div>
+                                            </div>
+                                            <div class="flex flex-row gap-4 w-full mt-2">
+                                                <div class="w-full">
+                                                    <label for="tax_parcentage_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Percentage
+                                                    </label>
+                                                    <input type="text"
+                                                           id="tax_parcentage_id"
+                                                           name="tax_parcentage"
+                                                           value="{{ deduction_configuration.tax_config.data.percentage }}"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           placeholder="Enter Percentage Range... (Separate with comma.)"
+                                                           required />
+                                                </div>
+                                            </div>
+                                            <div class="flex flex-row gap-4 w-full mt-2">
+                                                <div class="w-full">
+                                                    <label for="tax_base_tax_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Base Tax
+                                                    </label>
+                                                    <input type="text"
+                                                           id="tax_base_tax_id"
+                                                           name="tax_base_tax"
+                                                           value="{{ deduction_configuration.tax_config.data.base_tax }}"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           placeholder="Enter Base Tax... (Separate with comma.)"
+                                                           required />
+                                                </div>
+                                            </div>
+                                            <blockquote class="text-base italic font-semibold text-gray-900 dark:text-white">
+                                                <p>Note: Make sure every value is separated by comma.</p>
+                                            </blockquote>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col sm:flex-row items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600 justify-between">
+                                <button type="submit"
+                                        class="text-white mt-2 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-auto sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                    Submit
+                                </button>
+                                <blockquote class="text-base text-center font-semibold text-gray-900 dark:text-white">
+                                    <p>Last Modified: {{ deduction_configuration.updated }}</p>
+                                </blockquote>
+                            </div>
+                        </form>
+                    </div>
+                {% endblock %}
+            </div>
+            <!-- MP2 Settings Modal -->
+            <div id="mp2_settings_modal"
+                 tabindex="-1"
+                 aria-hidden="true"
+                 class="hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-auto max-h-full">
+                {% block mp2_settings_modal_container %}
+                    <div id="mp2_settings_modal_container"
+                         class="relative w-full max-w-5xl max-h-full">
+                        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 mx-4">
+                            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                                <div class="flex flex-row gap-4">
+                                    <button hx-get="{% url "payroll:mp2_settings" %}" hx-vals='{"back": "true"}'>
+                                        <svg class="w-6 h-6 text-gray-800 dark:text-white"
+                                             aria-hidden="true"
+                                             xmlns="http://www.w3.org/2000/svg"
+                                             width="24"
+                                             height="24"
+                                             fill="none"
+                                             viewBox="0 0 24 24">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12l4-4m-4 4 4 4" />
+                                        </svg>
+                                    </button>
+                                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">MP2 Settings</h3>
+                                </div>
+                                <button hx-post="{% url "payroll:payroll_module_close_modals" %}"
+                                        hx-vals='{"event_name": "closeMp2SettingsModal"}'
+                                        type="button"
+                                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                    <svg class="w-3 h-3"
+                                         aria-hidden="true"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         fill="none"
+                                         viewBox="0 0 14 14">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="p-4 md:p-5 space-y-4">
+                                <div class="w-full">
+                                    <div class="flex flex-col gap-4">
+                                        <div class="flex flex-col-reverse sm:flex-row justify-between pb-4 pt-2 bg-white dark:bg-gray-900 sticky top-0 z-10">
+                                            <div class="relative mt-1">
+                                                <div class="absolute inset-y-0 start-0 flex items-center ps-3 pb-1 pointer-events-none">
+                                                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400"
+                                                         aria-hidden="true"
+                                                         xmlns="http://www.w3.org/2000/svg"
+                                                         fill="none"
+                                                         viewBox="0 0 20 20">
+                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                                    </svg>
+                                                </div>
+                                                <input type="text"
+                                                       id="user_search"
+                                                       name="user_search"
+                                                       hx-trigger="input changed delay:200ms"
+                                                       hx-post="{% url "payroll:mp2_settings" %}"
+                                                       value="{{ user_search }}"
+                                                       class="w-full sm:w-96 block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                       placeholder="Search for User">
+                                            </div>
+                                            <div class="flex flex-row items-end justify-end">
+                                                <button type="button"
+                                                        hx-get="{% url "payroll:mp2_amount_settings" %}"
+                                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                    Amount Settings
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="w-full h-[35rem] overflow-y-auto overflow-x-auto">
+                                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-10">
+                                                <tr>
+                                                    <th scope="col" class="px-6 py-3">Name</th>
+                                                    <th scope="col" class="px-6 py-3">Department</th>
+                                                    <th scope="col" class="px-6 py-3">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for user in users %}
+                                                    {% block mp2_user_block %}
+                                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                            <th scope="row"
+                                                                class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                                {{ user.userdetails.get_user_fullname|title }}
+                                                            </th>
+                                                            <td class="px-6 py-4">{{ user.userdetails.department }}</td>
+                                                            <td class="px-6 py-4">
+                                                                <label class="inline-flex items-center cursor-pointer">
+                                                                    <input name=""
+                                                                           hx-post="{% url "payroll:toggle_user_mp2_status" %}"
+                                                                           hx-vals='{"selected_user": "{{ user.id }}"}'
+                                                                           hx-target="closest tr"
+                                                                           hx-trigger="input"
+                                                                           type="checkbox"
+                                                                           value=""
+                                                                           class="sr-only peer"
+                                                                           {% if user.mp2.all %}checked{% endif %}>
+                                                                    <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
+                                                                    </div>
+                                                                </label>
+                                                            </td>
+                                                        </tr>
+                                                    {% endblock %}
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600 justify-between">
+                            </div>
+                        </div>
+                    </div>
+                {% endblock %}
+            </div>
+            <!-- MP2 Amount Settings Modal -->
+            <div id="mp2_amount_settings_modal"
+                 tabindex="-1"
+                 aria-hidden="true"
+                 class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                {% block mp2_amount_settings_modal_container %}
+                    <div id="mp2_amount_settings_modal_container"
+                         class="relative w-full max-w-3xl max-h-full">
+                        <form hx-post="{% url "payroll:mp2_amount_settings" %}"
+                              class="relative bg-white rounded-lg shadow dark:bg-gray-700 mx-4">
+                            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                                <div class="flex flex-row gap-4">
+                                    <button hx-get="{% url "payroll:mp2_amount_settings" %}"
+                                            hx-vals='{"back": "true"}'>
+                                        <svg class="w-6 h-6 text-gray-800 dark:text-white"
+                                             aria-hidden="true"
+                                             xmlns="http://www.w3.org/2000/svg"
+                                             width="24"
+                                             height="24"
+                                             fill="none"
+                                             viewBox="0 0 24 24">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12l4-4m-4 4 4 4" />
+                                        </svg>
+                                    </button>
+                                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">MP2 Amount Settings</h3>
+                                </div>
+                                <button hx-post="{% url "payroll:payroll_module_close_modals" %}"
+                                        hx-vals='{"event_name": "closeMp2AmountSettingsModal"}'
+                                        type="button"
+                                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                    <svg class="w-3 h-3"
+                                         aria-hidden="true"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         fill="none"
+                                         viewBox="0 0 14 14">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="p-4 md:p-5 space-y-4">
+                                <div class="max-w-md mx-auto">
+                                    <label for="mp2_amount_id"
+                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        MP2 AMount
+                                    </label>
+                                    <input type="number"
+                                           step="0.01"
+                                           min="0"
+                                           id="mp2_amount_id"
+                                           name="mp2_amount"
+                                           value="{{ mp2.amount }}"
+                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                           placeholder="Enter MP2 Amount"
+                                           required />
+                                </div>
+                            </div>
+                            <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600 justify-between">
+                                <button type="submit"
+                                        class="text-white mt-2 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                    Submit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                {% endblock %}
+            </div>
+            <!-- Fixed Compensation Settings Modal -->
+            <div id="fixed_compensations_settings_modal"
+                 tabindex="-1"
+                 aria-hidden="true"
+                 class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                {% block fixed_compensations_settings_modal_container %}
+                    <div id="fixed_compensations_settings_modal_container"
+                         class="relative w-full max-w-8xl max-h-full">
+                        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 mx-4">
+                            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                                <div class="flex flex-row gap-4">
+                                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Fixed Compensation Settings</h3>
+                                </div>
+                                <button hx-post="{% url "payroll:payroll_module_close_modals" %}"
+                                        hx-vals='{"event_name": "closeFixedCompensationsSettingsModal"}'
+                                        type="button"
+                                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                    <svg class="w-3 h-3"
+                                         aria-hidden="true"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         fill="none"
+                                         viewBox="0 0 14 14">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="p-4 md:p-5 space-y-4 h-[45rem] overflow-y-auto">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 h-auto gap-0 sm:gap-4">
+                                    <div class="mb-2 sm:mb-0">
+                                        <div class="p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                            <form class="flex flex-col"
+                                                  hx-post="{% url 'payroll:add_fixed_compensation' %}">
+                                                <div class="w-full flex flex-row gap-2">
+                                                    <div class="w-full">
+                                                        <label for="selected_month_id"
+                                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                            Month
+                                                        </label>
+                                                        <select id="selected_month_id"
+                                                                name="selected_month"
+                                                                hx-post="{% url 'payroll:fixed_compensations_settings' %}"
+                                                                hx-trigger="change"
+                                                                class="block py-2.5 px-2.5 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer">
+                                                            {% for month in months %}
+                                                                <option value="{{ month.1 }}"
+                                                                        {% if selected_month == month.1 %}selected{% endif %}>
+                                                                    {{ month.0 }}
+                                                                </option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <div class="w-full">
+                                                        <label for="selected_year_id"
+                                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                            Year
+                                                        </label>
+                                                        <select id="selected_year_id"
+                                                                name="selected_year"
+                                                                hx-post="{% url 'payroll:fixed_compensations_settings' %}"
+                                                                hx-trigger="change"
+                                                                class="block py-2.5 px-2.5 w-full text-sm text-gray-500 bg-transparent border-0 border-b-2 border-gray-200 appearance-none dark:text-gray-400 dark:border-gray-700 focus:outline-none focus:ring-0 focus:border-gray-200 peer">
+                                                            {% for year in years %}
+                                                                <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>{{ year }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                            <form class="flex flex-col"
+                                                  hx-post="{% url 'payroll:add_fixed_compensation' %}">
+                                                <div class="w-full mt-4">
+                                                    <label for="fixed_compensation_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Fixed Compensation Name
+                                                    </label>
+                                                    <input type="text"
+                                                           id="fixed_compensation_id"
+                                                           name="fixed_compensation"
+                                                           value=""
+                                                           placeholder="Enter Specific Compensation Name..."
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           required />
+                                                </div>
+                                                <div class="flex flex-row items-center justify-center mt-4">
+                                                    <button type="submit"
+                                                            class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                        Add
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    {% block selected_compensation_section %}
+                                        <div id="selected_compensation_section" class="col-span-2">
+                                            <div class="h-[40rem] overflow-y-auto p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                                <div class="flex flex-col gap-4 h-full">
+                                                    {% for compensation in existent_compensation_types %}
+                                                        <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                                            {% block specific_fixed_compensation_section %}
+                                                                <form hx-post="{% url "payroll:modify_fixed_compensation" %}"
+                                                                      hx-vals='{"selected_compensation": {{ compensation.id }}}'>
+                                                                    <div class="flex flex-row justify-between">
+                                                                        <button type="button">
+                                                                            <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ compensation.name }}</h5>
+                                                                        </button>
+                                                                        <button hx-post="{% url "payroll:remove_fixed_compensation" %}"
+                                                                                hx-vals='{"selected_compensation": {{ compensation.id }}}'
+                                                                                hx-include="[name='selected_month'], [name='selected_year']"
+                                                                                type="button"
+                                                                                class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                                                            <svg class="w-3 h-3"
+                                                                                 aria-hidden="true"
+                                                                                 xmlns="http://www.w3.org/2000/svg"
+                                                                                 fill="none"
+                                                                                 viewBox="0 0 14 14">
+                                                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                                                            </svg>
+                                                                        </button>
+                                                                    </div>
+                                                                    <div>
+                                                                        <label for="{{ compensation.type }}_id"
+                                                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                                            Amount
+                                                                        </label>
+                                                                        <input type="number"
+                                                                               id="{{ compensation.type }}_id"
+                                                                               name="amount"
+                                                                               value="{{ compensation.amount }}"
+                                                                               step="0.01"
+                                                                               min="0"
+                                                                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                                               placeholder=""
+                                                                               required />
+                                                                    </div>
+                                                                    <div class="w-full flex flex-col gap-2 justify-center py-4">
+                                                                        <div class="mx-auto">
+                                                                            <button type="submit"
+                                                                                    class="w-auto px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                                                Save
+                                                                            </button>
+                                                                        </div>
+                                                                        <div class="mx-auto">
+                                                                            {% if users %}
+                                                                                <button type="button"
+                                                                                        hx-post="{% url "payroll:toggle_fixed_compensation_users_view" %}"
+                                                                                        hx-vals='{"selected_compensation": {{ compensation.id }}, "hide": "true"}'
+                                                                                        class="w-auto px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                                                    Hide Users
+                                                                                </button>
+                                                                            {% else %}
+                                                                                <button type="button"
+                                                                                        hx-post="{% url "payroll:toggle_fixed_compensation_users_view" %}"
+                                                                                        hx-vals='{"selected_compensation": {{ compensation.id }}}'
+                                                                                        class="w-auto px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                                                    View Users
+                                                                                </button>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    </div>
+                                                                    {% if users %}
+                                                                        <div class="h-[20rem] overflow-y-auto p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                                                            <form class="max-w-md mx-auto mb-2">
+                                                                                <div class="relative">
+                                                                                    <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                                                                                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400"
+                                                                                             aria-hidden="true"
+                                                                                             xmlns="http://www.w3.org/2000/svg"
+                                                                                             fill="none"
+                                                                                             viewBox="0 0 20 20">
+                                                                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                                                                        </svg>
+                                                                                    </div>
+                                                                                    <input type="search"
+                                                                                           name="user_search"
+                                                                                           hx-post="{% url "payroll:modify_fixed_compensation_users" %}"
+                                                                                           hx-trigger="input changed delay:200ms"
+                                                                                           hx-vals='{"for_search": "true"}'
+                                                                                           value="{{ user_search }}"
+                                                                                           class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                                                           placeholder="Search User..."
+                                                                                           required />
+                                                                                </div>
+                                                                            </form>
+                                                                            {% block user_list_section %}
+                                                                                <ul id="user_list_section"
+                                                                                    class="px-3 pb-3 text-sm text-gray-700 dark:text-gray-200 user-list-section">
+                                                                                    {% for user in users %}
+                                                                                        {% block specific_user_section %}
+                                                                                            <li>
+                                                                                                <div class="flex items-center ps-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+                                                                                                    <input id="user_checkbox_{{ user.id }}"
+                                                                                                           type="checkbox"
+                                                                                                           name="selected_user"
+                                                                                                           value="{{ user.id }}"
+                                                                                                           hx-post="{% url "payroll:modify_fixed_compensation_users" %}"
+                                                                                                           hx-trigger="input"
+                                                                                                           {% if user in compensation.users.all %} checked hx-vals='{"user_to_remove": {{ user.id }}}' {% else %} hx-vals='{"user_to_add": {{ user.id }}}' {% endif %}
+                                                                                                           class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
+                                                                                                    <label for="user_checkbox_{{ user.id }}"
+                                                                                                           class="w-full py-2 ms-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">
+                                                                                                        {{ user.userdetails.get_user_fullname }}
+                                                                                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ user.userdetails.department }}</p>
+                                                                                                    </label>
+                                                                                                </div>
+                                                                                            </li>
+                                                                                        {% endblock %}
+                                                                                    {% endfor %}
+                                                                                </ul>
+                                                                            {% endblock %}
+                                                                        </div>
+                                                                    {% endif %}
+                                                                </form>
+                                                            {% endblock %}
+                                                        </div>
+                                                    {% empty %}
+                                                        <div class="w-full h-full flex justify-center items-center">
+                                                            <h1 class="mb-4 text-xl text-center font-bold leading-none tracking-tight text-gray-900 md:text-4xl dark:text-white">
+                                                                Compensation List Empty
+                                                            </h1>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endblock %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block javascript %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // General function to initialize modals
+            const initializeModal = (id) => {
+                const modalElement = document.getElementById(id);
+                if (modalElement) {
+                    const options = {
+                        placement: 'center-center',
+                        backdrop: 'dynamic',
+                        backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
+                        closable: true,
+                    };
+
+                    const instanceOptions = {
+                        id: id,
+                        override: true
+                    };
+
+                    const modal = new Modal(modalElement, options, instanceOptions);
+                    modal.show();
+                }
+            };
+
+            // General function to close modals
+            const closeModal = (id) => {
+                const modalElement = document.getElementById(id);
+                if (modalElement) {
+                    const modal = new Modal(modalElement);
+                    modal.hide();
+                }
+            };
+
+            // Update job list
+            const updateJobList = () => {
+                const selectedDepartment = document.getElementById('departments').value;
+
+                htmx.ajax('POST', '{% url "payroll:update_job_list" %}', {
+                    values: {
+                        "selected_department": selectedDepartment,
+                    }
+                });
+            };
+
+            // Initialize specific modals
+            const initializeMinimumWageModal = () => initializeModal('minimum_wage_modal');
+            const closeMinimumWageModal = () => closeModal('minimum_wage_modal');
+
+            const initializeViewJobModal = () => initializeModal('view_job_modal');
+            const closeViewJobModal = () => closeModal('view_job_modal');
+
+            const initializeAddJobModal = () => initializeModal('add_job_modal');
+            const closeAddJobModal = () => closeModal('add_job_modal');
+
+            const initializeModifyJobModal = () => initializeModal('modify_job_modal');
+            const closeModifyJobModal = () => closeModal('modify_job_modal');
+
+            const initializeDeductionsSettingsModal = () => initializeModal('deductions_settings_modal');
+            const closeDeductionsSettingsModal = () => closeModal('deductions_settings_modal');
+
+            const initializeMp2SettingsModal = () => initializeModal('mp2_settings_modal');
+            const closeMp2SettingsModal = () => closeModal('mp2_settings_modal');
+
+            const initializeMp2AmountSettingsModal = () => initializeModal('mp2_amount_settings_modal');
+            const closeeMp2AmountSettingsModal = () => closeModal('mp2_amount_settings_modal');
+
+            const initializeFixedCompensationsSettingsModal = () => initializeModal('fixed_compensations_settings_modal');
+            const closeFixedCompensationsSettingsModal = () => closeModal('fixed_compensations_settings_modal');
+
+
+
+            // Event listeners for modals
+            document.addEventListener('openMinimumWageModal', initializeMinimumWageModal);
+            document.addEventListener('closeMinimumWageModal', closeMinimumWageModal);
+
+            document.addEventListener('openViewJobModal', initializeViewJobModal);
+            document.addEventListener('closeViewJobModal', closeViewJobModal);
+
+            document.addEventListener('openAddJobModal', initializeAddJobModal);
+            document.addEventListener('closeAddJobModal', closeAddJobModal);
+
+            document.addEventListener('openModifyJobModal', initializeModifyJobModal);
+            document.addEventListener('closeModifyJobModal', closeModifyJobModal);
+
+
+            document.addEventListener('updateJobList', () => {
+                updateJobList();
+            });
+
+            document.addEventListener('openDeductionsSettingsModal', initializeDeductionsSettingsModal);
+            document.addEventListener('closeDeductionsSettingsModal', closeDeductionsSettingsModal);
+
+            document.addEventListener('openMp2SettingsModal', initializeMp2SettingsModal);
+            document.addEventListener('closeMp2SettingsModal', closeMp2SettingsModal);
+
+            document.addEventListener('openMp2AmountSettingsModal', initializeMp2AmountSettingsModal);
+            document.addEventListener('closeMp2AmountSettingsModal', closeeMp2AmountSettingsModal);
+
+            document.addEventListener('openFixedCompensationsSettingsModal', initializeFixedCompensationsSettingsModal);
+            document.addEventListener('closeFixedCompensationsSettingsModal', closeFixedCompensationsSettingsModal);
+        });
+    </script>
+{% endblock %}

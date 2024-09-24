@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     "core",
     "attendance",
     "chat",
+    "leave",
     "performance",
+    "payroll",
     "prose",
     "django_q",
 ]
@@ -158,3 +160,9 @@ Q_CLUSTER = {
 }
 
 SOFFICE_PATH = os.getenv("SOFFICE_PATH")
+
+
+BASIC_SALARY_MULTIPLIER = 1.2
+BASIC_SALARY_STEP_MULTIPLIER = 1.03
+BASIC_SALARY_STEPS = 5
+MAX_JOB_RANK = 5

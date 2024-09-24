@@ -246,8 +246,7 @@
                             <button type="button"
                                     class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
                                     hx-post="{% url "performance:performance_module_close_modals" %}"
-                                    hx-vals='{"event_name": "closeDeleteConfirmationModal"}'
-                                    >
+                                    hx-vals='{"event_name": "closeDeleteConfirmationModal"}'>
                                 <svg class="w-3 h-3"
                                      aria-hidden="true"
                                      xmlns="http://www.w3.org/2000/svg"
@@ -272,9 +271,8 @@
                                         class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
                                     Delete
                                 </button>
-                                <button 
-                                    hx-post="{% url "performance:performance_module_close_modals" %}"
-                                    hx-vals='{"event_name": "closeDeleteConfirmationModal"}'
+                                <button hx-post="{% url "performance:performance_module_close_modals" %}"
+                                        hx-vals='{"event_name": "closeDeleteConfirmationModal"}'
                                         type="button"
                                         class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
                                     Cancel
@@ -296,8 +294,7 @@
                             <button type="button"
                                     class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
                                     hx-post="{% url "performance:performance_module_close_modals" %}"
-                                    hx-vals='{"event_name": "closePreviewFileModal"}'
-                                    >
+                                    hx-vals='{"event_name": "closePreviewFileModal"}'>
                                 <svg class="w-3 h-3"
                                      aria-hidden="true"
                                      xmlns="http://www.w3.org/2000/svg"
@@ -341,8 +338,7 @@
                             <button type="button"
                                     class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
                                     hx-post="{% url "performance:performance_module_close_modals" %}"
-                                    hx-vals='{"event_name": "closeShareAccessModal"}'
-                                    >
+                                    hx-vals='{"event_name": "closeShareAccessModal"}'>
                                 <svg class="w-3 h-3"
                                      aria-hidden="true"
                                      xmlns="http://www.w3.org/2000/svg"
@@ -447,9 +443,7 @@
                                                                        class="w-full ms-2 text-sm text-start font-medium text-gray-900 rounded dark:text-gray-300">
                                                                     {{ user.userdetails.get_user_fullname }}
                                                                     <br>
-                                                                    ({% if not user.userdetails.is_employee %}
-                                                                        {{ user.userdetails.get_user_full_user_role }} -
-                                                                    {% endif %}
+                                                                    ({% if not user.userdetails.is_employee %}{{ user.userdetails.get_user_full_user_role }} -{% endif %}
                                                                     {{ user.userdetails.department }})
                                                                 </label>
                                                                 <div class="flex flex-row gap-2">
@@ -517,205 +511,127 @@
 {% endblock %}
 {% block javascript %}
     <script>
-        document.addEventListener('updateFileListAfterUpdate', (event) => {
-            const selectedUser = document.getElementById('selected_user').value;
-            const resource_search = document.getElementById('resource_search').value;
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize HTMX AJAX event
+            document.addEventListener('updateFileListAfterUpdate', (event) => {
+                const selectedUser = document.getElementById('selected_user').value;
+                const resource_search = document.getElementById('resource_search').value;
 
-
-            htmx.ajax('POST', '{% url "performance:shared_resource_management_update_file_list_after_modifying_share_access" %}', {
-                values: {
-                    "selected_user_id": selectedUser,
-                    "resource_search": resource_search
-                }
-            })
-
-        });
-    </script>
-    <script>
-        const initializeShareAccessModal = () => {
-            const modalElement = document.getElementById('file_access_sharing_modal');
-            const options = {
-                placement: 'center-center',
-                backdrop: 'dynamic',
-                backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
-                closable: true,
-            };
-
-            const instanceOptions = {
-                id: 'file_access_sharing_modal',
-                override: true
-            };
-
-            if (modalElement) {
-                const modal = new Modal(modalElement, options, instanceOptions);
-                modal.show();
-            }
-        }
-
-        const closeShareAccessModal = () => {
-            const modalElement = document.getElementById('file_access_sharing_modal');
-
-            if (modalElement) {
-                const modal = new Modal(modalElement);
-                modal.hide();
-            }
-        }
-
-        document.addEventListener('initializeShareAccessModal', (event) => {
-            initializeShareAccessModal();
-        });
-
-        document.addEventListener('closeShareAccessModal', (event) => {
-            closeShareAccessModal();
-        });
-    </script>
-    <script>
-        const initializePdfViewer = async () => {
-            const pdfUrl = document.getElementById('resource_to_preview_url').value;
-
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-            try {
-                const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
-                const viewer = document.getElementById('pdf-container');
-
-                const fixedWidth = 800;
-                const fixedHeight = 1280;
-
-                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                    const page = await pdf.getPage(pageNum);
-
-                    const viewport = page.getViewport({
-                        scale: 1.0
-                    });
-                    const scale = Math.min(fixedWidth / viewport.width, fixedHeight / viewport.height);
-                    const scaledViewport = page.getViewport({
-                        scale
-                    });
-
-                    const canvas = document.createElement('canvas');
-                    canvas.className = 'pdf-page';
-                    viewer.appendChild(canvas);
-                    const context = canvas.getContext('2d');
-                    canvas.width = scaledViewport.width;
-                    canvas.height = scaledViewport.height;
-
-                    const renderContext = {
-                        canvasContext: context,
-                        viewport: scaledViewport
-                    };
-                    await page.render(renderContext).promise;
-                }
-            } catch (error) {
-                console.error('Error loading PDF:', error);
-            }
-        }
-    </script>
-    <script>
-        const initializePreviewResourceModal = () => {
-            const modalElement = document.getElementById('preview_file_modal');
-            const options = {
-                placement: 'center-center',
-                backdrop: 'dynamic',
-                backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
-                closable: true,
-            };
-
-            const instanceOptions = {
-                id: 'preview_file_modal',
-                override: true
-            };
-
-            if (modalElement) {
-                const modal = new Modal(modalElement, options, instanceOptions);
-                modal.show();
-            }
-        }
-
-        const closePreviewFileModal = () => {
-            const modalElement = document.getElementById('preview_file_modal');
-
-            if (modalElement) {
-                const modal = new Modal(modalElement);
-                modal.hide();
-            }
-        }
-
-        document.addEventListener('initializeDocumentPreview', (event) => {
-            initializePreviewResourceModal();
-            initializePdfViewer();
-        });
-
-        document.addEventListener('initializeMediaPreview', (event) => {
-            initializePreviewResourceModal();
-        });
-
-        document.addEventListener('closePreviewFileModal', (event) => {
-            closePreviewFileModal();
-        });
-    </script>
-    <script>
-        const initializeDeleteConfirmationModal = () => {
-            const modalElement = document.getElementById('delete_confirmation_modal');
-            const options = {
-                placement: 'center-center',
-                backdrop: 'dynamic',
-                backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
-                closable: true,
-            };
-
-            const instanceOptions = {
-                id: 'delete_confirmation_modal',
-                override: true
-            };
-
-            if (modalElement) {
-                const modal = new Modal(modalElement, options, instanceOptions);
-                modal.show();
-            }
-        }
-
-        const closeContentModal = () => {
-            const modalElement = document.getElementById('delete_confirmation_modal');
-
-            if (modalElement) {
-                const modal = new Modal(modalElement);
-                modal.hide();
-            }
-        }
-
-        document.addEventListener('initializeDeleteConfirmationModal', (event) => {
-            initializeDeleteConfirmationModal();
-        });
-
-        document.addEventListener('closeDeleteConfirmationModal', (event) => {
-            closeContentModal();
-        });
-    </script>
-    <script>
-        function initializeDropdowns() {
-            document.querySelectorAll('[data-dropdown-toggle]').forEach(trigger => {
-                const dropdownId = trigger.getAttribute('data-dropdown-toggle');
-                const $targetEl = document.getElementById(dropdownId);
-                const $triggerEl = trigger;
-
-                if ($targetEl && $triggerEl) {
-                    const options = {
-                        placement: 'bottom',
-                        triggerType: 'click',
-                        offsetSkidding: 0,
-                        offsetDistance: 10,
-                        delay: 300,
-                        ignoreClickOutsideClass: false,
-                    };
-
-                    const dropdown = new Dropdown($targetEl, $triggerEl, options);
-                    dropdown.hide();
-                }
+                htmx.ajax('POST', '{% url "performance:shared_resource_management_update_file_list_after_modifying_share_access" %}', {
+                    values: {
+                        "selected_user_id": selectedUser,
+                        "resource_search": resource_search
+                    }
+                });
             });
-        }
-        document.addEventListener('htmx:afterSwap', function() {
-            initializeDropdowns();
+
+            // Initialize Modals
+            const initializeModal = (id) => {
+                const modalElement = document.getElementById(id);
+                if (modalElement) {
+                    const options = {
+                        placement: 'center-center',
+                        backdrop: 'dynamic',
+                        backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
+                        closable: true,
+                    };
+
+                    const instanceOptions = {
+                        id: id,
+                        override: true
+                    };
+
+                    const modal = new Modal(modalElement, options, instanceOptions);
+                    modal.show();
+                }
+            };
+
+            const closeModal = (id) => {
+                const modalElement = document.getElementById(id);
+                if (modalElement) {
+                    const modal = new Modal(modalElement);
+                    modal.hide();
+                }
+            };
+
+            // Initialize PDF Viewer
+            const initializePdfViewer = async () => {
+                const pdfUrl = document.getElementById('resource_to_preview_url').value;
+
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+                try {
+                    const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+                    const viewer = document.getElementById('pdf-container');
+                    const fixedWidth = 800;
+                    const fixedHeight = 1280;
+
+                    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                        const page = await pdf.getPage(pageNum);
+                        const viewport = page.getViewport({
+                            scale: 1.0
+                        });
+                        const scale = Math.min(fixedWidth / viewport.width, fixedHeight / viewport.height);
+                        const scaledViewport = page.getViewport({
+                            scale
+                        });
+
+                        const canvas = document.createElement('canvas');
+                        canvas.className = 'pdf-page';
+                        viewer.appendChild(canvas);
+                        const context = canvas.getContext('2d');
+                        canvas.width = scaledViewport.width;
+                        canvas.height = scaledViewport.height;
+
+                        const renderContext = {
+                            canvasContext: context,
+                            viewport: scaledViewport
+                        };
+                        await page.render(renderContext).promise;
+                    }
+                } catch (error) {
+                    console.error('Error loading PDF:', error);
+                }
+            };
+
+            // Initialize Dropdowns
+            const initializeDropdowns = () => {
+                document.querySelectorAll('[data-dropdown-toggle]').forEach(trigger => {
+                    const dropdownId = trigger.getAttribute('data-dropdown-toggle');
+                    const $targetEl = document.getElementById(dropdownId);
+                    const $triggerEl = trigger;
+
+                    if ($targetEl && $triggerEl) {
+                        const options = {
+                            placement: 'bottom',
+                            triggerType: 'click',
+                            offsetSkidding: 0,
+                            offsetDistance: 10,
+                            delay: 300,
+                            ignoreClickOutsideClass: false,
+                        };
+
+                        const dropdown = new Dropdown($targetEl, $triggerEl, options);
+                        dropdown.hide();
+                    }
+                });
+            };
+
+
+            // Modal Event Listeners
+            document.addEventListener('initializeShareAccessModal', () => initializeModal("file_access_sharing_modal"));
+            document.addEventListener('closeShareAccessModal', () => closeModal('file_access_sharing_modal'));
+            document.addEventListener('initializeDocumentPreview', () => {
+                initializeModal("preview_file_modal");
+                initializePdfViewer();
+            });
+            document.addEventListener('initializeMediaPreview', () => initializeModal("preview_file_modal"));
+            document.addEventListener('closePreviewFileModal', () => closeModal("preview_file_modal"));
+            document.addEventListener('initializeDeleteConfirmationModal', () => initializeModal("delete_confirmation_modal"));
+            document.addEventListener('closeDeleteConfirmationModal', () => closeModal("delete_confirmation_modal"));
+
+            document.addEventListener('htmx:afterSwap', initializeDropdowns);
         });
     </script>
+    s
 {% endblock %}

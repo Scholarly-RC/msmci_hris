@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Payslip</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                padding: 20px;
+                border: 1px solid #ccc;
+            }
+
+            h2 {
+                text-align: center;
+                margin-bottom: 5px;
+            }
+
+            h4 {
+                text-align: center;
+                margin-top: 0;
+            }
+
+            .table-container {
+                overflow-x: auto;
+                margin-top: 20px;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            th,
+            td {
+                border: 1px solid #000;
+                padding: 10px;
+                text-align: left;
+            }
+
+            th {
+                background-color: #f2f2f2;
+            }
+
+            .amount {
+                text-align: right;
+            }
+
+            .total {
+                font-weight: bold;
+            }
+
+            .signature {
+                margin-top: 50px;
+                text-align: center;
+            }
+
+            .signature-line {
+                border-top: 1px solid #000;
+                width: 300px;
+                margin: 0 auto;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>MSMCI Payslip</h2>
+        <h4>M'Lang, North Cotabato, Philippines</h4>
+        <p>
+            <strong>Employee Name:</strong> {{ payslip.user.userdetails.get_user_fullname|title }}
+        </p>
+        <p>
+            <strong>Employee Rank:</strong> {{ payslip.user.userdetails.rank }}
+        </p>
+        <p>
+            <strong>Pay Period:</strong> {{ payslip.get_month_and_year }} - {{ payslip.period }} Period
+        </p>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Earnings Description</th>
+                        <th class="amount">Earnings Amount</th>
+                        <th>Deductions Description</th>
+                        <th class="amount">Deductions Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in payslip.get_data_for_template.row_data %}
+                        <tr>
+                            <td>{{ data.0 }}</td>
+                            <td class="amount">{{ data.1|floatformat:2 }}</td>
+                            <td>{{ data.2 }}</td>
+                            <td class="amount">{{ data.3|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr class="total">
+                        <td>Total Earnings</td>
+                        <td class="amount">{{ payslip.get_data_for_template.total_earnings|floatformat:2 }}</td>
+                        <td>Total Deductions</td>
+                        <td class="amount">{{ payslip.get_data_for_template.total_deductions|floatformat:2 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h3 style="text-align: right">Net Pay: {{ payslip.get_data_for_template.net_salary|floatformat:2 }}</h3>
+        <div class="signature">
+            <p>{{ hr.userdetails.get_user_fullname|upper }}</p>
+            <div class="signature-line"></div>
+            <p>Human Resource</p>
+        </div>
+    </body>
+</html>

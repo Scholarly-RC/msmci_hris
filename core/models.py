@@ -1,10 +1,13 @@
 import datetime
+from decimal import Decimal
 
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from core.utils import date_to_string, get_user_profile_picture_directory_path
+from payroll.deductions import PagIbig, Philhealth, Sss, Tax
+from payroll.utils import get_mp2_object, get_salary_from_rank
 
 
 class UserDetails(models.Model):
@@ -88,6 +91,7 @@ class UserDetails(models.Model):
     employee_number = models.CharField(
         _("User Employee Number"), max_length=500, null=True, blank=True
     )
+
     rank = models.CharField(_("User Rank"), max_length=500, null=True, blank=True)
 
     department = models.ForeignKey(

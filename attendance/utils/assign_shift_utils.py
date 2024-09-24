@@ -1,4 +1,8 @@
 def get_employee_assignments(current_daily_shift_record, shifts, employees):
+    """
+    Retrieves employee assignments for each shift and returns a list of assignments
+    along with a list of all assigned user IDs.
+    """
     employee_assignments = []
     list_of_assigned_user_ids = []
     for shift in shifts:

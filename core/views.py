@@ -2,21 +2,21 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db.utils import IntegrityError
 from django.db.models import Q
+from django.db.utils import IntegrityError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django_htmx.http import (
-    HttpResponseClientRedirect,
-    reswap,
-    retarget,
-    trigger_client_event,
-)
+from django_htmx.http import HttpResponseClientRedirect, reswap, retarget
 from openpyxl import load_workbook
 from render_block import render_block_to_string
 
-from core.models import BiometricDetail, Department, UserDetails
+from core.actions import (
+    process_change_profile_picture,
+    process_get_or_create_intial_user_one_to_one_fields,
+    process_update_user_and_user_details,
+)
+from core.models import Department
 from core.utils import (
     check_if_biometric_uid_exists,
     check_user_has_password,
@@ -24,13 +24,14 @@ from core.utils import (
     get_civil_status_list,
     get_education_list,
     get_education_list_with_degrees_earned,
-    get_or_create_intial_user_one_to_one_fields,
     get_religion_list,
-    password_validation,
-    profile_picture_validation,
-    update_user_and_user_details,
     get_role_list,
+    get_users_sorted_by_department,
+    profile_picture_validation,
 )
+from core.validations import password_validation
+from hris.utils import create_global_alert_instance
+from payroll.utils import get_rank_choices
 
 
 @login_required(login_url="/login")
@@ -167,7 +168,7 @@ def user_register(request):
         user.set_password(password)
         user.save()
 
-        user_details, _ = get_or_create_intial_user_one_to_one_fields(user)
+        user_details, _ = process_get_or_create_intial_user_one_to_one_fields(user)
         user_details[0].employee_number = employee_id
         user_details[0].save()
 
@@ -203,7 +204,6 @@ def user_profile(request):
         "religion_list": religion_list,
         "role_list": roles,
     }
-    get_or_create_intial_user_one_to_one_fields(user)
 
     if (
         not request.htmx
@@ -222,15 +222,15 @@ def user_profile(request):
             )
             response = retarget(response, "#degrees_earned_section")
         else:
-            updated_user = update_user_and_user_details(
+            updated_user = process_update_user_and_user_details(
                 user_instance=user, querydict=data
             )
 
             if user.userdetails.education in get_education_list_with_degrees_earned():
                 context.update({"show_degrees_earned_section": True})
 
-            context.update(
-                {"show_alert": True, "alert_message": "Profile successfully updated."}
+            response = create_global_alert_instance(
+                response, "Profile successfully updated.", "SUCCESS"
             )
             response.content = render_block_to_string(
                 "core/user_profile.html", "profile_information_section", context
@@ -245,63 +245,58 @@ def user_profile(request):
 
 @login_required(login_url="/login")
 def change_user_password(request):
-    context = {"show_alert": True}
+    context = {}
+    user = request.user
     if request.method == "POST":
-        current_password = request.POST["current_password"]
-        new_password = request.POST["new_password"]
-        confirm_password = request.POST["confirm_password"]
+        try:
+            current_password = request.POST["current_password"].strip()
+            new_password = request.POST["new_password"].strip()
+            confirm_password = request.POST["confirm_password"].strip()
 
-        response = HttpResponse()
-        response = retarget(response, "#password_information_section")
-        response = reswap(response, "outerHTML")
-
-        if new_password != confirm_password:
-            context.update(
-                {"error": True, "alert_message": "Passwords does not match."}
-            )
+            response = HttpResponse()
+            response = retarget(response, "#password_information_section")
+            response = reswap(response, "outerHTML")
             response.content = render_block_to_string(
                 "core/user_profile.html", "password_information_section", context
             )
-            return response
 
-        correct_password = request.user.check_password(current_password)
-
-        if correct_password:
-            if current_password == new_password:
-                context.update(
-                    {
-                        "error": True,
-                        "alert_message": "New password cannot be the same as your old password.",
-                    }
-                )
-                response.content = render_block_to_string(
-                    "core/user_profile.html", "password_information_section", context
+            if new_password != confirm_password:
+                response = create_global_alert_instance(
+                    response, "Passwords do not match.", "WARNING"
                 )
                 return response
+
+            correct_password = user.check_password(current_password)
+
+            if correct_password:
+                if current_password == new_password:
+                    response = create_global_alert_instance(
+                        response,
+                        "New password cannot be the same as your old password.",
+                        "WARNING",
+                    )
+                    return response
+                else:
+                    user.set_password(confirm_password)
+                    user.save()
+                    response = create_global_alert_instance(
+                        response,
+                        "Your passwords have been successfully changed. You will now be logged out of the site. Please refresh the page and log in again to continue.",
+                        "SUCCESS",
+                    )
+                    return response
             else:
-                context.update(
-                    {"error": False, "alert_message": "Passwords successfully changed."}
-                )
-                response.content = render_block_to_string(
-                    "core/user_profile.html", "password_information_section", context
+                response = create_global_alert_instance(
+                    response, "Current password is incorrect.", "WARNING"
                 )
                 return response
-        else:
-            context.update(
-                {
-                    "error": True,
-                    "alert_message": "The current password you entered is incorrect.",
-                }
-            )
-            response.content = render_block_to_string(
-                "core/user_profile.html", "password_information_section", context
-            )
-            return response
+        except Exception as error:
+            raise error
 
 
 @login_required(login_url="/login")
 def upload_user_profile_picture(request):
-    context = {"show_alert": True}
+    context = {}
     if request.FILES:
         profile_picture = request.FILES.get("profile_picture")
         error = profile_picture_validation(profile_picture)
@@ -311,28 +306,26 @@ def upload_user_profile_picture(request):
         response = reswap(response, "outerHTML")
 
         if error:
-            context.update({"error": True, "alert_message": error})
+            response = create_global_alert_instance(response, error, "WARNING")
             response.content = render_block_to_string(
                 "core/user_profile.html", "profile_picture_section", context
             )
 
         if error is None:
-            user = request.user
             user_details = request.user.userdetails
-            user_details.profile_picture = profile_picture
-            user_details.save()
+            user_details = process_change_profile_picture(profile_picture, user_details)
+            response = create_global_alert_instance(
+                response, "Profile picture successfully uploaded.", "SUCCESS"
+            )
+
             context.update(
                 {
-                    "error": False,
-                    "alert_message": "Profile picture successfully uploaded.",
                     "new_profile_picture": user_details.profile_picture.url,
                 }
             )
             response.content = render_block_to_string(
                 "core/user_profile.html", "profile_picture_section", context
             )
-            response = retarget(response, "#profile_picture_section")
-            response = reswap(response, "outerHTML")
 
     return response
 
@@ -340,7 +333,7 @@ def upload_user_profile_picture(request):
 ### USER MANAGEMENT ###
 @login_required(login_url="/login")
 def user_management(request):
-    users = User.objects.exclude(id=request.user.id).order_by("userdetails__department__name", "first_name")
+    users = get_users_sorted_by_department()
     context = {"users": users}
     if request.htmx and request.POST:
         data = request.POST
@@ -355,7 +348,9 @@ def user_management(request):
             context.update({"users": users})
         response = HttpResponse()
         response.content = render_block_to_string(
-            "core/user_management.html", "user_management_table_content_container", context
+            "core/user_management.html",
+            "user_management_table_content_container",
+            context,
         )
         response = reswap(response, "outerHTML")
         response = retarget(response, "#user_management_table_content_container")
@@ -385,7 +380,9 @@ def add_new_user(request):
                 },
             )
             if created:
-                user_details, _ = get_or_create_intial_user_one_to_one_fields(user)
+                user_details, _ = process_get_or_create_intial_user_one_to_one_fields(
+                    user
+                )
                 user_details[0].employee_number = employee_id
                 user_details[0].save()
                 response = HttpResponseClientRedirect(reverse("core:user_management"))
@@ -426,8 +423,8 @@ def toggle_user_status(request, pk):
 @login_required(login_url="/login")
 def modify_user_details(request, pk):
     user = User.objects.get(id=pk)
-    get_or_create_intial_user_one_to_one_fields(user)
     departments = Department.objects.filter(is_active=True).order_by("name")
+    user_department = user.userdetails.department
     civil_status_list = get_civil_status_list()
     education_list = get_education_list()
     religion_list = get_religion_list()
@@ -440,6 +437,10 @@ def modify_user_details(request, pk):
         "religion_list": religion_list,
         "role_list": roles,
     }
+
+    if user_department:
+        rank_list = get_rank_choices(user_department.id)
+        context.update({"rank_list": rank_list})
 
     if (
         not request.htmx
@@ -458,20 +459,17 @@ def modify_user_details(request, pk):
             )
             response = retarget(response, "#degrees_earned_section")
         else:
-            updated_user = update_user_and_user_details(
+            updated_user = process_update_user_and_user_details(
                 user_instance=user, querydict=data
             )
             if user.userdetails.education in get_education_list_with_degrees_earned():
                 context.update({"show_degrees_earned_section": True})
 
-            context.update(
-                {
-                    "show_alert": True,
-                    "error": False,
-                    "alert_message": "User successfully updated.",
-                    "selected_user": updated_user,
-                }
+            response = create_global_alert_instance(
+                response, "Selected user successfully updated.", "SUCCESS"
             )
+            context["selected_user"] = updated_user
+
             response.content = render_block_to_string(
                 "core/modify_user_profile.html", "profile_information_section", context
             )
@@ -484,31 +482,32 @@ def modify_user_details(request, pk):
 
 @login_required(login_url="/login")
 def modify_user_biometric_details(request, pk):
+    """
+    Additional Info: This view is used by both User Profile and Change User Profile.
+    """
     context = {}
     if request.htmx and request.POST:
         data = request.POST
         user = User.objects.get(id=pk)
         user_id_in_device = data.get("user_id_in_device", None)
-        context.update(
-            {
-                "show_alert": True,
-                "error": False,
-                "alert_message": "User biometric configuration successfully updated.",
-                "selected_user": user,
-            }
-        )
+        context["selected_user"] = user
+        response = HttpResponse()
         if not check_if_biometric_uid_exists(current_user=user, uid=user_id_in_device):
             biometric_details = user.biometricdetail
             biometric_details.user_id_in_device = data.get("user_id_in_device", None)
             biometric_details.save()
-        else:
-            context.update(
-                {
-                    "error": True,
-                    "alert_message": "Provided ID is already in use by another user.",
-                }
+
+            response = create_global_alert_instance(
+                response,
+                "User biometric configuration successfully updated.",
+                "SUCCESS",
             )
-        response = HttpResponse()
+        else:
+            response = create_global_alert_instance(
+                response,
+                "Provided Biometric UID is already in use by another user.",
+                "WARNING",
+            )
         response.content = render_block_to_string(
             "core/modify_user_profile.html", "biometric_configuration_section", context
         )
@@ -538,7 +537,7 @@ def bulk_add_new_users(request):
                 )
                 if created:
                     new_user_counter += 1
-                    get_or_create_intial_user_one_to_one_fields(user)
+                    process_get_or_create_intial_user_one_to_one_fields(user)
 
             if new_user_counter > 0:
                 messages.success(
