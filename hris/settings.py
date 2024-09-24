@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "core",
     "attendance",
     "chat",
+    "leave",
     "performance",
     "payroll",
     "prose",
