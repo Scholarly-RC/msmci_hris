@@ -1,8 +1,9 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from core.models import Department
+from leave.enums import LeaveRequestAction
 
 
 # Create your models here.
@@ -11,17 +12,39 @@ class LeaveApprover(models.Model):
         Department, on_delete=models.RESTRICT, related_name="leave_approvers"
     )
     department_approver = models.ForeignKey(
-        User, on_delete=models.RESTRICT, related_name="department_approvals"
+        User,
+        on_delete=models.RESTRICT,
+        related_name="department_approvals",
+        blank=True,
+        null=True,
+    )
+    director_approver = models.ForeignKey(
+        User,
+        on_delete=models.RESTRICT,
+        related_name="director_approvals",
+        blank=True,
+        null=True,
+    )
+    president_approver = models.ForeignKey(
+        User,
+        on_delete=models.RESTRICT,
+        related_name="president_approvals",
+        blank=True,
+        null=True,
     )
     hr_approver = models.ForeignKey(
-        User, on_delete=models.RESTRICT, related_name="hr_approvals"
+        User,
+        on_delete=models.RESTRICT,
+        related_name="hr_approvals",
+        blank=True,
+        null=True,
     )
 
     class Meta:
         verbose_name_plural = "Leave Approvers"
 
     def __str__(self):
-        return f"{self.department.name} - Dept: {self.department_approver.userdetails.get_user_fullname()}, HR: {self.hr_approver.userdetails.get_user_fullname()}"
+        return f"Leave Approvers for {self.department.name} - Dept: {self.department_approver.username}, Director: {self.director_approver.username}, President: {self.president_approver.username}, HR: {self.hr_approver.username}"
 
 
 class Leave(models.Model):
@@ -42,6 +65,15 @@ class Leave(models.Model):
         null=True,
         blank=True,
     )
+    info = models.TextField(_("Leave Info"), blank=True, null=True)
+
+    first_approver_data = models.JSONField(
+        _("First Leave Approver Data"), null=True, blank=True, default=dict
+    )
+
+    second_approver_data = models.JSONField(
+        _("Second Leave Approver Data"), null=True, blank=True, default=dict
+    )
 
     class Meta:
         verbose_name_plural = "Leaves"
@@ -51,13 +83,38 @@ class Leave(models.Model):
 
     def get_type_display(self):
         if self.type:
-            return self.LeaveType(self.type).title()
+            return self.LeaveType(self.type).name
+        return None
+
+    def get_status(self):
+        if (
+            self.first_approver_data["status"] == LeaveRequestAction.REJECTED.value
+            or self.second_approver_data["status"] == LeaveRequestAction.REJECTED.value
+        ):
+            return LeaveRequestAction.REJECTED.value
+
+        if (
+            self.first_approver_data["status"] == LeaveRequestAction.APPROVED.value
+            and self.second_approver_data["status"] == LeaveRequestAction.APPROVED.value
+        ):
+            return LeaveRequestAction.APPROVED.value
+
+        return LeaveRequestAction.PENDING.value
+
+    def get_user_status(self, user):
+        if user.id == self.first_approver_data["approver"]:
+            return self.first_approver_data["status"]
+
+        if user.id == self.second_approver_data["approver"]:
+            return self.second_approver_data["status"]
+
         return None
 
 
 class LeaveCredit(models.Model):
     user = models.OneToOneField(User, on_delete=models.RESTRICT, primary_key=True)
     credits = models.IntegerField(_("User Leave Credits"), null=True, blank=True)
+    used_credits = models.IntegerField(_("User Leave Credits"), null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Leave Credits"

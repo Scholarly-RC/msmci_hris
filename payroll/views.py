@@ -13,6 +13,7 @@ from hris.utils import create_global_alert_instance
 from payroll.actions import (
     process_add_or_create_fixed_compensation,
     process_adding_job,
+    process_adding_variable_payslip_compensation,
     process_adding_variable_payslip_deduction,
     process_deleting_job,
     process_get_or_create_user_payslip,
@@ -20,35 +21,34 @@ from payroll.actions import (
     process_modifying_fixed_compensation_users,
     process_modifying_job,
     process_removing_fixed_compensation,
+    process_removing_variable_payslip_compensation,
     process_removing_variable_payslip_deduction,
     process_setting_deduction_config,
     process_setting_minimum_wage_amount,
     process_setting_mp2_amount,
-    process_toggle_user_mp2_status,
     process_toggle_payslip_release_status,
-    process_adding_variable_payslip_compensation,
-    process_removing_variable_payslip_compensation,
+    process_toggle_user_mp2_status,
 )
 from payroll.models import Job, Payslip
 from payroll.utils import (
-    get_existing_compensation,
     get_compensation_year_list,
     get_current_month_and_year,
     get_deduction_configuration_object,
     get_department_list,
+    get_existing_compensation,
+    get_fix_compensation_and_users,
     get_job_list,
     get_minimum_wage_object,
     get_mp2_object,
     get_payslip_year_list,
-    get_fix_compensation_and_users,
     get_user_payslips,
     get_users_with_payslip_data,
 )
 from payroll.validations import (
     minimum_wage_update_validation,
-    variable_payslip_deduction_validation,
     payslip_data_validation,
     variable_payslip_compensation_validation,
+    variable_payslip_deduction_validation,
 )
 from performance.utils import get_user_with_hr_role
 

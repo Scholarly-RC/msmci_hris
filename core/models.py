@@ -28,6 +28,8 @@ class UserDetails(models.Model):
     class Role(models.TextChoices):
         BOARD_OF_DIRECTOR = "BOD", _("Board of Director")
         HR = "HR", _("Human Resource")
+        PRESIDENT = "PRES", _("President")
+        DIRECTOR = "DIR", _("Director")
         DEPARTMENT_HEAD = "DH", _("Department Head")
         EMPLOYEE = "EMP", _("Employee")
 
@@ -100,7 +102,7 @@ class UserDetails(models.Model):
 
     role = models.CharField(
         _("User Role"),
-        max_length=3,
+        max_length=4,
         choices=Role.choices,
         default=None,
         null=True,

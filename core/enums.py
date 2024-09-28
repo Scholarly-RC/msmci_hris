@@ -8,5 +8,3 @@ class ActivityLogTypes(Enum):
     PERFORMANCE_AND_LEARNING = "PERFORMANCE AND LEARNING"
     PAYROLL = "PAYROLL"
     LEAVE = "LEAVE"
-    
-    
