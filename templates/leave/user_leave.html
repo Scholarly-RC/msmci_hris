@@ -19,13 +19,13 @@
                                 </button>
                                 <div class="flex flex-col gap-4">
                                     <div class="flex flex-col items-center justify-center">
-                                        <dt class="mb-2 text-3xl font-extrabold">73M+</dt>
+                                        <dt class="mb-2 text-3xl font-extrabold">{{ total_leave_credits }}</dt>
                                         <dd class="text-gray-500 dark:text-gray-400">
                                             Total Leave Credits
                                         </dd>
                                     </div>
                                     <div class="flex flex-col items-center justify-center">
-                                        <dt class="mb-2 text-3xl font-extrabold">73M+</dt>
+                                        <dt class="mb-2 text-3xl font-extrabold">{{ remaining_leave_credits }}</dt>
                                         <dd class="text-gray-500 dark:text-gray-400">
                                             Remaining Leave Credits
                                         </dd>
@@ -59,7 +59,21 @@
                                                         <blockquote class="mb-2 text-xl italic font-semibold text-gray-900 dark:text-white">
                                                             <p>INFO: "{{ leave.info }}"</p>
                                                         </blockquote>
-                                                        <p class="mb-2 font-bold text-gray-700 dark:text-gray-400">Status: {{ leave.get_status }}</p>
+                                                    </div>
+                                                    <div>
+                                                        {% if leave.get_status == "APPROVED" %}
+                                                            <div class="text-green-700 cursor-default hover:text-white border border-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-green-500 dark:text-green-500 dark:hover:text-white dark:hover:bg-green-600 dark:focus:ring-green-800">
+                                                                {{ leave.get_status }}
+                                                            </div>
+                                                        {% elif leave.get_status == "REJECTED" %}
+                                                            <div class="text-red-700 cursor-default hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900">
+                                                                {{ leave.get_status }}
+                                                            </div>
+                                                        {% elif leave.get_status == "PENDING" %}
+                                                            <div class="text-yellow-400 cursor-default hover:text-white border border-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-yellow-300 dark:text-yellow-300 dark:hover:text-white dark:hover:bg-yellow-400 dark:focus:ring-yellow-900">
+                                                                {{ leave.get_status }}
+                                                            </div>
+                                                        {% endif %}
                                                     </div>
                                                 </div>
                                             {% endfor %}
@@ -110,7 +124,12 @@
                                                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                     required>
                                                 <option selected value="">Choose a Type</option>
-                                                {% for type in leave_types %}<option value="{{ type.0 }}">{{ type.1 }}</option>{% endfor %}
+                                                {% for type in leave_types %}
+                                                    <option value="{{ type.0 }}"
+                                                            {% if not has_remaining_leave_credits and type.0 == "PA" %}disabled{% endif %}>
+                                                        {{ type.1 }}
+                                                    </option>
+                                                {% endfor %}
                                             </select>
                                         </div>
                                         <div class="mb-5">

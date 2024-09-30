@@ -25,9 +25,19 @@ urlpatterns = [
         name="review_leave_request",
     ),
     path(
+        "management/leave-credit-settings/reset-used-credits",
+        leave_views.reset_used_leave_credits,
+        name="reset_used_leave_credits",
+    ),
+    path(
         "management/leave-credit-settings/edit",
         leave_views.edit_leave_credit_settings,
         name="edit_leave_credit_settings",
+    ),
+    path(
+        "management/leave-credit-settings/update-list",
+        leave_views.update_leave_credit_settings_list,
+        name="update_leave_credit_settings_list",
     ),
     path(
         "management/leave-credit-settings",

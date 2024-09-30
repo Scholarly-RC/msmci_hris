@@ -111,7 +111,9 @@ def get_user_leave(user: User):
     return group_leave_by_month_and_year(leave)
 
 
-def get_leave_to_review(user):
+def get_leave_to_review(
+    user, specific_user_id: int = "", month: int = "", year: int = ""
+):
     LeaveModel = apps.get_model("leave", "Leave")
 
     leave = LeaveModel.objects.filter(
@@ -119,10 +121,14 @@ def get_leave_to_review(user):
         | Q(second_approver_data__approver=user.id)
     )
 
-    if user.userdetails.is_hr():
-        leave = leave.filter(
-            Q(first_approver_data__status=LeaveRequestAction.APPROVED.value)
-        )
+    if specific_user_id and specific_user_id != "0":
+        leave = leave.filter(Q(user__id=specific_user_id))
+
+    if month and month != "0":
+        leave = leave.filter(Q(date__month=month))
+
+    if year and year != "0":
+        leave = leave.filter(Q(date__year=year))
 
     grouped_leave = group_leave_by_month_and_year(leave)
 
@@ -134,3 +140,15 @@ def get_leave_to_review(user):
         leave_data["leave"] = new_leave_list
 
     return grouped_leave
+
+
+def get_leave_year_list() -> list:
+    LeaveModel = apps.get_model("leave", "Leave")
+
+    leave_years = (
+        LeaveModel.objects.values_list("date__year", flat=True)
+        .order_by("date__year")
+        .distinct()
+    )
+
+    return list(leave_years)

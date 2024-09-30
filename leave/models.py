@@ -110,6 +110,12 @@ class Leave(models.Model):
 
         return None
 
+    def get_first_approver(self):
+        return User.objects.get(id=self.first_approver_data["approver"])
+
+    def get_second_approver(self):
+        return User.objects.get(id=self.second_approver_data["approver"])
+
 
 class LeaveCredit(models.Model):
     user = models.OneToOneField(User, on_delete=models.RESTRICT, primary_key=True)
@@ -121,3 +127,14 @@ class LeaveCredit(models.Model):
 
     def __str__(self):
         return f"{self.user.userdetails.get_user_fullname()}'s Leave Credits: {self.credits}"
+
+    def get_remaining_leave_credits(self):
+        if not self.credits:
+            return None
+        if not self.used_credits:
+            return self.credits
+        return self.credits - self.used_credits
+
+    def reset_used_credits(self):
+        self.used_credits = 0
+        self.save()

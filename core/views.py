@@ -16,7 +16,8 @@ from core.actions import (
     process_get_or_create_intial_user_one_to_one_fields,
     process_update_user_and_user_details,
 )
-from core.models import Department
+from core.models import Department, Notification
+from core.notification import mark_notification_read, user_has_unread_notification
 from core.utils import (
     check_if_biometric_uid_exists,
     check_user_has_password,
@@ -548,3 +549,54 @@ def bulk_add_new_users(request):
             return response
         except Exception as e:
             raise e
+
+
+### Notification Views ###
+def notification_button_indicator(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        user = request.user
+        response = HttpResponse()
+        has_unread_notification = user_has_unread_notification(user)
+        context["has_unread_notification"] = has_unread_notification
+        response.content = render_block_to_string(
+            "navbar.html", "userNotificationButtonIndicator", context
+        )
+        response = retarget(response, "#userNotificationButtonIndicator")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def retrieve_notifications(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        user = request.user
+        notifications = user.notifications.order_by("-date")
+        context["notifications"] = notifications
+        response.content = render_block_to_string(
+            "core/components/notifications.html", "userNotificationList", context
+        )
+        response = retarget(response, "#userNotificationList")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def open_notification(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        try:
+            data = request.POST
+            notification_id = data.get("notification")
+            notification = Notification.objects.get(id=notification_id)
+            mark_notification_read(notification)
+            response = HttpResponseClientRedirect(notification.url)
+            return response
+        except Exception as error:
+            response = create_global_alert_instance(
+                response,
+                f"Something went wrong when accessing selected notification. Details: {error}.",
+            )
+            response = reswap(response, "none")
+            return response

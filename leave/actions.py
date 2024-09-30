@@ -132,3 +132,28 @@ def process_delete_submit_leave_request(leave):
         leave.delete()
     except Exception as error:
         raise error
+
+
+@transaction.atomic
+def process_add_user_used_leave_credits(user):
+    try:
+        if not user.leavecredit.used_credits:
+            user.leavecredit.used_credits = 1
+        else:
+            user.leavecredit.used_credits += 1
+        user.leavecredit.save()
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_reset_user_leave_credits(user_id):
+    try:
+        LeaveCreditModel = apps.get_model("leave", "LeaveCredit")
+
+        leave_credit = LeaveCreditModel.objects.get(user__id=user_id)
+
+        leave_credit.reset_used_credits()
+        return leave_credit, leave_credit.user
+    except Exception as error:
+        raise error
