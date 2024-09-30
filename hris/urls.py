@@ -9,6 +9,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("attendance/", include("attendance.urls", namespace="attendance")),
     path("chat/", include("chat.urls", namespace="chat")),
+    path("leave/", include("leave.urls", namespace="leave")),
     path(
         "payroll/",
         include("payroll.urls", namespace="payroll"),

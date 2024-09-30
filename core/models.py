@@ -1,13 +1,10 @@
 import datetime
-from decimal import Decimal
 
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from core.utils import date_to_string, get_user_profile_picture_directory_path
-from payroll.deductions import PagIbig, Philhealth, Sss, Tax
-from payroll.utils import get_mp2_object, get_salary_from_rank
 
 
 class UserDetails(models.Model):
@@ -28,6 +25,8 @@ class UserDetails(models.Model):
     class Role(models.TextChoices):
         BOARD_OF_DIRECTOR = "BOD", _("Board of Director")
         HR = "HR", _("Human Resource")
+        PRESIDENT = "PRES", _("President")
+        DIRECTOR = "DIR", _("Director")
         DEPARTMENT_HEAD = "DH", _("Department Head")
         EMPLOYEE = "EMP", _("Employee")
 
@@ -100,7 +99,7 @@ class UserDetails(models.Model):
 
     role = models.CharField(
         _("User Role"),
-        max_length=3,
+        max_length=4,
         choices=Role.choices,
         default=None,
         null=True,
@@ -218,3 +217,29 @@ class Department(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Notification(models.Model):
+    content = models.TextField(_("Notification Content"), null=True, blank=True)
+    date = models.DateTimeField(_("Notification Date Time"), null=True, blank=True)
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.RESTRICT,
+        related_name="sent_notifications",
+        blank=True,
+        null=True,
+    )
+    recipient = models.ForeignKey(
+        User, on_delete=models.RESTRICT, related_name="notifications"
+    )
+    url = models.URLField(_("Notification Redirect URL"), null=True, blank=True)
+    read = models.BooleanField(_("Is Notification Read"), default=False)
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Notifications"
+
+    def __str__(self):
+        return f"Notification for {self.recipient.userdetails.get_user_fullname()} on {date_to_string(self.date)}."

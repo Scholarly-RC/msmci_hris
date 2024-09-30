@@ -130,17 +130,21 @@
             {% endblock javascript %}
             <script>
                 document.body.addEventListener("initializeGlobalAlert", (event) => {
-                    const { message, type, duration } = event.detail;
-                
+                    const {
+                        message,
+                        type,
+                        duration
+                    } = event.detail;
+
                     const safeDetail = {
                         message,
                         type,
                         duration,
                     };
-                                
+
                     htmx.ajax("GET", '{% url "show_alert" %}', {
                         values: {
-                            details: JSON.stringify(safeDetail), 
+                            details: JSON.stringify(safeDetail),
                         },
                     });
                 });
@@ -178,6 +182,35 @@
                         dropdown.classList.toggle("hidden");
                     }
                 });
+            </script>
+            <script>
+                const $targetEl = document.getElementById('userNotification');
+                const $triggerEl = document.getElementById('userNotificationButton');
+
+                const retrieveNotification = () => {
+                    htmx.ajax('POST', '{% url "core:retrieve_notifications" %}');
+                };
+
+
+                const options = {
+                    placement: 'bottom',
+                    triggerType: 'click',
+                    offsetSkidding: 0,
+                    offsetDistance: 10,
+                    delay: 300,
+                    ignoreClickOutsideClass: false,
+                    onShow: () => {
+                        console.log('dropdown has been shown');
+                        retrieveNotification();
+                    },
+                };
+
+                const instanceOptions = {
+                    id: 'userNotification',
+                    override: true
+                };
+
+                const dropdown = new Dropdown($targetEl, $triggerEl, options, instanceOptions);
             </script>
         </body>
     </html>

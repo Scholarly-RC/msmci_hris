@@ -47,4 +47,19 @@ urlpatterns = [
         name="bulk_add_new_users",
     ),
     path("user-management", core_views.user_management, name="user_management"),
+    path(
+        "notifications/retrieve",
+        core_views.retrieve_notifications,
+        name="retrieve_notifications",
+    ),
+    path(
+        "notifications/open",
+        core_views.open_notification,
+        name="open_notification",
+    ),
+    path(
+        "notifications/button-indicator",
+        core_views.notification_button_indicator,
+        name="notification_button_indicator",
+    ),
 ]
