@@ -316,3 +316,61 @@ def process_toggle_payslip_release_status(payload):
         return payslip
     except Exception as error:
         raise error
+
+
+@transaction.atomic
+def process_creating_thirteenth_month_pay(payload):
+    try:
+        ThirteenthMonthPayModel = apps.get_model("payroll", "ThirteenthMonthPay")
+        UserModel = apps.get_model("auth", "User")
+        user_id = payload.get("user")
+        selected_month = payload.get("selected_month")
+        selected_year = payload.get("selected_year")
+        amount = payload.get("amount")
+        user = UserModel.objects.get(id=user_id)
+        thirteenth_month_pay, _ = ThirteenthMonthPayModel.objects.get_or_create(
+            user=user,
+            month=selected_month,
+            year=selected_year,
+            defaults={"amount": amount},
+        )
+
+        return thirteenth_month_pay
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_updating_thirteenth_month_pay(payload):
+    try:
+        ThirteenthMonthPayModel = apps.get_model("payroll", "ThirteenthMonthPay")
+        thirteenth_month_pay_id = payload.get("thirteenth_month_pay")
+        thirteenth_month_pay = ThirteenthMonthPayModel.objects.get(
+            id=thirteenth_month_pay_id
+        )
+        amount = Decimal(payload.get("amount", 0))
+        thirteenth_month_pay.amount = amount
+        thirteenth_month_pay.save()
+
+        return thirteenth_month_pay
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_toggling_thirteenth_month_pay_release(payload):
+    try:
+        ThirteenthMonthPayModel = apps.get_model("payroll", "ThirteenthMonthPay")
+        thirteenth_month_pay_id = payload.get("thirteenth_month_pay")
+        thirteenth_month_pay = ThirteenthMonthPayModel.objects.get(
+            id=thirteenth_month_pay_id
+        )
+        thirteenth_month_pay.released = not thirteenth_month_pay.released
+        thirteenth_month_pay.release_date = (
+            make_aware(datetime.now()) if thirteenth_month_pay.released else None
+        )
+        thirteenth_month_pay.save()
+
+        return thirteenth_month_pay
+    except Exception as error:
+        raise error

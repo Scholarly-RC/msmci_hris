@@ -381,3 +381,35 @@ class Payslip(models.Model):
             "total_deductions": data.get("total_deductions"),
             "net_salary": data.get("net_salary"),
         }
+
+
+class ThirteenthMonthPay(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.RESTRICT, related_name="thirteenth_month_pays"
+    )
+    amount = models.DecimalField(
+        _("13th Month Pay Amount"),
+        blank=True,
+        null=True,
+        max_digits=9,
+        decimal_places=2,
+    )
+    month = models.IntegerField(_("13th Month Pay Month"), null=True, blank=True)
+    year = models.IntegerField(_("13th Month Pay Year"), null=True, blank=True)
+
+    released = models.BooleanField(_("Is 13th Month Pay Released"), default=False)
+    release_date = models.DateTimeField(
+        _("13th Month Pay Release Date"), null=True, blank=True
+    )
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Thirteenth Month Pays"
+
+    def __str__(self):
+        return f"{self.user.username} - {self.amount} ({self.month}/{self.year}) - Released: {self.released}"
+
+    def get_month_year_display(self):
+        return f"{Months(self.month).name} {self.year}"

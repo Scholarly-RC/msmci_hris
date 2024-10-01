@@ -86,3 +86,34 @@ def variable_payslip_compensation_validation(payload):
         )
 
     return context
+
+
+def creating_thirteenth_month_pay_validation(payload):
+    context = {}
+
+    UserModel = apps.get_model("auth", "User")
+    ThirteenthMonthPayModel = apps.get_model("payroll", "ThirteenthMonthPay")
+
+    user_id = payload.get("user")
+    selected_month = payload.get("selected_month")
+    selected_year = payload.get("selected_year")
+
+    user = UserModel.objects.get(id=user_id)
+
+    thirteenth_month_pay = ThirteenthMonthPayModel.objects.filter(
+        user=user, month=selected_month, year=selected_year
+    )
+
+    if thirteenth_month_pay.exists():
+        context["thirteenth_month_pay_already_exists"] = (
+            "The thirteenth month pay record already exists."
+        )
+
+    thirteenth_month_pay_amount = Decimal(payload.get("amount", 0))
+
+    if not thirteenth_month_pay_amount:
+        context["zero_thirteenth_month_pay_amount"] = (
+            "The thirteenth month pay amount must be greater than zero."
+        )
+
+    return context

@@ -238,6 +238,18 @@ def get_compensation_year_list() -> list:
     return list(compensation_years)
 
 
+def get_13th_month_pay_year_list() -> list:
+    FixedCompensationModel = apps.get_model("payroll", "ThirteenthMonthPay")
+
+    compensation_years = (
+        FixedCompensationModel.objects.values_list("year", flat=True)
+        .order_by("year")
+        .distinct()
+    )
+
+    return list(compensation_years)
+
+
 def get_existing_compensation(month: int, year: int) -> list:
     FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
     existing_compensations = FixedCompensationModel.objects.filter(
@@ -339,3 +351,12 @@ def get_salary_from_rank(rank_code):
                 for step_data in data[job_rank].get("steps"):
                     if step_code in step_data:
                         return step_data[step_code]
+
+
+def get_user_13th_month_pay_list(user_id, year=""):
+    UserModel = apps.get_model("auth", "User")
+    user = UserModel.objects.get(id=user_id)
+    thirteenth_month_pay_list = user.thirteenth_month_pays.order_by("-year", "-month")
+    if year and year != "0":
+        thirteenth_month_pay_list = thirteenth_month_pay_list.filter(year=year)
+    return user, thirteenth_month_pay_list

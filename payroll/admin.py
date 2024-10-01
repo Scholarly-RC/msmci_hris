@@ -7,6 +7,7 @@ from payroll.models import (
     MinimumWage,
     Mp2,
     Payslip,
+    ThirteenthMonthPay,
     VariableCompensation,
     VariableDeduction,
 )
@@ -18,5 +19,6 @@ admin.site.register(MandatoryDeductionConfiguration)
 admin.site.register(MinimumWage)
 admin.site.register(Mp2)
 admin.site.register(Payslip)
+admin.site.register(ThirteenthMonthPay)
 admin.site.register(VariableCompensation)
 admin.site.register(VariableDeduction)
