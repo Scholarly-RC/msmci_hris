@@ -238,6 +238,18 @@ def get_compensation_year_list() -> list:
     return list(compensation_years)
 
 
+def get_13th_month_pay_year_list() -> list:
+    FixedCompensationModel = apps.get_model("payroll", "ThirteenthMonthPay")
+
+    compensation_years = (
+        FixedCompensationModel.objects.values_list("year", flat=True)
+        .order_by("-year")
+        .distinct()
+    )
+
+    return list(compensation_years)
+
+
 def get_existing_compensation(month: int, year: int) -> list:
     FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
     existing_compensations = FixedCompensationModel.objects.filter(
@@ -253,14 +265,14 @@ def get_fix_compensation_and_users(compensation_id: int):
     return compensation, compensation.users.all()
 
 
-def get_user_payslips(user, month: int, year: int, finalized: bool = False):
+def get_user_payslips(user, month: int, year: int, released: bool = False):
     PayslipModel = apps.get_model("payroll", "Payslip")
     payslips = PayslipModel.objects.filter(user=user, month=month, year=year)
 
-    if not finalized:
+    if not released:
         return payslips
 
-    return payslips.filter(finalized=True)
+    return payslips.filter(released=True)
 
 
 def get_users_with_payslip_data(users, month: int, year: int):
@@ -339,3 +351,14 @@ def get_salary_from_rank(rank_code):
                 for step_data in data[job_rank].get("steps"):
                     if step_code in step_data:
                         return step_data[step_code]
+
+
+def get_user_13th_month_pay_list(user_id, year="", released=""):
+    UserModel = apps.get_model("auth", "User")
+    user = UserModel.objects.get(id=user_id)
+    thirteenth_month_pay_list = user.thirteenth_month_pays.order_by("-year", "-month")
+    if year and year != "0":
+        thirteenth_month_pay_list = thirteenth_month_pay_list.filter(year=year)
+    if released:
+        thirteenth_month_pay_list = thirteenth_month_pay_list.filter(released=True)
+    return user, thirteenth_month_pay_list

@@ -15,6 +15,7 @@ from payroll.actions import (
     process_adding_job,
     process_adding_variable_payslip_compensation,
     process_adding_variable_payslip_deduction,
+    process_creating_thirteenth_month_pay,
     process_deleting_job,
     process_get_or_create_user_payslip,
     process_modifying_fixed_compensation,
@@ -28,9 +29,13 @@ from payroll.actions import (
     process_setting_mp2_amount,
     process_toggle_payslip_release_status,
     process_toggle_user_mp2_status,
+    process_toggling_thirteenth_month_pay_release,
+    process_updating_thirteenth_month_pay,
+    process_delete_thirteenth_month_pay,
 )
-from payroll.models import Job, Payslip
+from payroll.models import Job, Payslip, ThirteenthMonthPay
 from payroll.utils import (
+    get_13th_month_pay_year_list,
     get_compensation_year_list,
     get_current_month_and_year,
     get_deduction_configuration_object,
@@ -41,10 +46,12 @@ from payroll.utils import (
     get_minimum_wage_object,
     get_mp2_object,
     get_payslip_year_list,
+    get_user_13th_month_pay_list,
     get_user_payslips,
     get_users_with_payslip_data,
 )
 from payroll.validations import (
+    creating_thirteenth_month_pay_validation,
     minimum_wage_update_validation,
     payslip_data_validation,
     variable_payslip_compensation_validation,
@@ -1045,7 +1052,7 @@ def toggle_payslip_release_status(request):
             )
             response = create_global_alert_instance(
                 response,
-                f"The status of the selected payslip has been successfully set to {'released' if payslip.released else 'draft'}.",
+                f"The status of the selected payslip has been successfully set to {'RELEASED' if payslip.released else 'DRAFT'}.",
                 "SUCCESS",
             )
             response = retarget(response, "#modify_payslip_section")
@@ -1078,6 +1085,321 @@ def update_payslip_data(request):
         return response
 
 
+def thirteenth_month_pay(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        user_search = request.POST.get("user_search", "")
+        users = get_users_sorted_by_department(user_search)
+        context["users"] = users
+        if request.method == "GET":
+            response.content = render_block_to_string(
+                "payroll/payslip_management.html",
+                "thirteenth_month_pay_container",
+                context,
+            )
+            response = trigger_client_event(
+                response, "openThirteenthMonthPayModal", after="swap"
+            )
+            response = retarget(response, "#thirteenth_month_pay_container")
+            response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "POST":
+            response.content = render_block_to_string(
+                "payroll/payslip_management.html",
+                "user_list_table_container",
+                context,
+            )
+            response = trigger_client_event(
+                response, "openThirteenthMonthPayModal", after="swap"
+            )
+            response = retarget(response, "#user_list_table_container")
+            response = reswap(response, "outerHTML")
+            return response
+
+
+def user_thirteenth_month_pay(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if "back" in request.GET:
+            response = trigger_client_event(
+                response, "openThirteenthMonthPayModal", after="swap"
+            )
+            response = trigger_client_event(
+                response, "closeUserThirteenthMonthPayModal", after="swap"
+            )
+            response = reswap(response, "none")
+            return response
+
+        current_month, current_year = get_current_month_and_year()
+        selected_month = current_month
+        selected_year = request.POST.get("selected_year")
+        months = get_list_of_months()
+        years = get_13th_month_pay_year_list()
+        user_id = request.POST.get("user") or request.GET.get("user")
+        user, thirteenth_month_pay_list = get_user_13th_month_pay_list(
+            user_id, selected_year
+        )
+        context.update(
+            {
+                "user": user,
+                "thirteenth_month_pay_list": thirteenth_month_pay_list,
+                "months": months,
+                "years": years,
+                "current_year": current_year,
+                "selected_month": selected_month,
+                "selected_year": selected_year,
+            }
+        )
+        if request.method == "GET":
+            response.content = render_block_to_string(
+                "payroll/payslip_management.html",
+                "user_thirteenth_month_pay_container",
+                context,
+            )
+            response = trigger_client_event(
+                response, "openUserThirteenthMonthPayModal", after="swap"
+            )
+            response = trigger_client_event(
+                response, "closeThirteenthMonthPayModal", after="swap"
+            )
+            response = retarget(response, "#user_thirteenth_month_pay_container")
+            response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "POST":
+            data = request.POST
+            if "filter_list_by_year" in data:
+                response.content = render_block_to_string(
+                    "payroll/payslip_management.html",
+                    "user_thirteenth_month_pay_list",
+                    context,
+                )
+                response = retarget(response, "#user_thirteenth_month_pay_list")
+                response = reswap(response, "outerHTML")
+                return response
+
+
+def create_thirteenth_month_pay(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "POST":
+            try:
+                data = request.POST
+                errors = creating_thirteenth_month_pay_validation(data)
+                if errors:
+                    for error in errors:
+                        response = create_global_alert_instance(
+                            response, errors[error], "WARNING"
+                        )
+                        response = reswap(response, "none")
+                        return response
+
+                current_month, current_year = get_current_month_and_year()
+                selected_month = current_month
+                months = get_list_of_months()
+                thirteenth_month_pay = process_creating_thirteenth_month_pay(data)
+                years = get_13th_month_pay_year_list()
+                user, thirteenth_month_pay_list = get_user_13th_month_pay_list(
+                    request.POST.get("user")
+                )
+                context.update(
+                    {
+                        "user": user,
+                        "thirteenth_month_pay_list": thirteenth_month_pay_list,
+                        "months": months,
+                        "years": years,
+                        "current_year": current_year,
+                        "selected_month": selected_month,
+                    }
+                )
+
+                response.content = render_block_to_string(
+                    "payroll/payslip_management.html",
+                    "user_thirteenth_month_pay_container",
+                    context,
+                )
+                response = create_global_alert_instance(
+                    response,
+                    f"Thirteenth Month Pay for user {thirteenth_month_pay.user} has been successfully added.",
+                    "SUCCESS",
+                )
+                response = retarget(response, "#user_thirteenth_month_pay_container")
+                response = reswap(response, "outerHTML")
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while processing the Thirteenth Month Pay for the selected user. Please try again or contact support if the issue persists. Error details: {error}.",
+                    "DANGER",
+                )
+                response = reswap(response, "none")
+                return response
+
+
+def update_user_thirteenth_month_pay_list(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        data = request.POST
+        selected_thirteenth_month_pay_user_id = data.get(
+            "selected_thirteenth_month_pay_user"
+        )
+        user, thirteenth_month_pay_list = get_user_13th_month_pay_list(
+            selected_thirteenth_month_pay_user_id
+        )
+        context["thirteenth_month_pay_list"] = thirteenth_month_pay_list
+        response.content = render_block_to_string(
+            "payroll/payslip_management.html",
+            "user_thirteenth_month_pay_list",
+            context,
+        )
+        response = retarget(response, "#user_thirteenth_month_pay_list")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def view_specific_thirteenth_month_pay(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "GET":
+            data = request.GET
+            if "back" in data:
+                response = trigger_client_event(
+                    response, "openUserThirteenthMonthPayModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response, "closeSpecificThirteenthMonthPayModal", after="swap"
+                )
+                response = reswap(response, "none")
+                return response
+
+            thirteenth_month_pay_id = data.get("thirteenth_month_pay")
+            thirteenth_month_pay = ThirteenthMonthPay.objects.get(
+                id=thirteenth_month_pay_id
+            )
+            context["thirteenth_month_pay"] = thirteenth_month_pay
+            response.content = render_block_to_string(
+                "payroll/payslip_management.html",
+                "specific_thirteenth_month_pay_container",
+                context,
+            )
+            response = trigger_client_event(
+                response, "openSpecificThirteenthMonthPayModal", after="swap"
+            )
+            response = trigger_client_event(
+                response, "closeUserThirteenthMonthPayModal", after="swap"
+            )
+            response = retarget(response, "#specific_thirteenth_month_pay_container")
+            response = reswap(response, "outerHTML")
+            return response
+
+
+def update_specific_thirteenth_month_pay(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "POST":
+            try:
+                data = request.POST
+                thirteenth_month_pay = process_updating_thirteenth_month_pay(data)
+                response = create_global_alert_instance(
+                    response,
+                    f"The Thirteenth Month Pay for user {thirteenth_month_pay.user} has been successfully updated.",
+                    "SUCCESS",
+                )
+                response = reswap(response, "none")
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while updating the Thirteenth Month Pay amount. Details: {error}.",
+                    "DANGER",
+                )
+                response = reswap(response, "none")
+                return response
+
+
+def toggle_specific_thirteenth_month_pay_release(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "POST":
+            try:
+                data = request.POST
+                thirteenth_month_pay = process_toggling_thirteenth_month_pay_release(
+                    data
+                )
+                response = create_global_alert_instance(
+                    response,
+                    f"The Thirteenth Month Pay status has been successfully updated to {'RELEASED' if thirteenth_month_pay.released else 'DRAFT'}.",
+                    "SUCCESS",
+                )
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while updating the Thirteenth Month Pay status. Details: {error}.",
+                    "DANGER",
+                )
+                response = reswap(response, "none")
+                return response
+
+
+def delete_specific_thirteenth_month_pay_release(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "DELETE":
+            try:
+                data = QueryDict(request.body)
+                process_delete_thirteenth_month_pay(data)
+                response = create_global_alert_instance(
+                    response,
+                    f"The selected Thirteenth Month Pay record has been successfully deleted.",
+                    "SUCCESS",
+                )
+                response = trigger_client_event(
+                    response, "openUserThirteenthMonthPayModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response, "closeSpecificThirteenthMonthPayModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response, "updateUserThirteenthMonthPayList", after="swap"
+                )
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while deleting the selected Thirteenth Month Pay record. Details: {error}.",
+                    "DANGER",
+                )
+                response = reswap(response, "none")
+                return response
+
+        if request.method == "POST":
+            data = request.POST
+            if "cancel" not in data:
+                context["confirm_delete"] = True
+            thirteenth_month_pay = data.get("thirteenth_month_pay")
+            context["thirteenth_month_pay"] = thirteenth_month_pay
+            response.content = render_block_to_string(
+                "payroll/payslip_management.html",
+                "specific_thirteenth_month_pay_delete_button_section",
+                context,
+            )
+            response = retarget(
+                response, "#specific_thirteenth_month_pay_delete_button_section"
+            )
+            response = reswap(response, "outerHTML")
+            return response
+
+
 def payroll_management(request):
     context = {}
     user = request.user
@@ -1086,8 +1408,8 @@ def payroll_management(request):
     selected_year = request.POST.get("selected_year") or current_year
     months = get_list_of_months()
     years = get_payslip_year_list()
-    # TODO: Filter by finalized
-    payslips = get_user_payslips(user, selected_month, selected_year)
+    payslips = get_user_payslips(user, selected_month, selected_year, released=True)
+    _, thirteenth_month_pay_list = get_user_13th_month_pay_list(user.id, released=True)
     context.update(
         {
             "months": months,
@@ -1095,6 +1417,7 @@ def payroll_management(request):
             "selected_month": int(selected_month),
             "selected_year": int(selected_year),
             "payslips": payslips,
+            "thirteenth_month_pay_list":thirteenth_month_pay_list
         }
     )
     if request.htmx and request.method == "POST":

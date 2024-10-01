@@ -21,6 +21,46 @@ urlpatterns = [
         name="payroll_management",
     ),
     path(
+        "payslip-management/thirteenth-month-pay/delete",
+        payroll_views.delete_specific_thirteenth_month_pay_release,
+        name="delete_specific_thirteenth_month_pay_release",
+    ),
+    path(
+        "payslip-management/thirteenth-month-pay/update/toggle",
+        payroll_views.toggle_specific_thirteenth_month_pay_release,
+        name="toggle_specific_thirteenth_month_pay_release",
+    ),
+    path(
+        "payslip-management/thirteenth-month-pay/update",
+        payroll_views.update_specific_thirteenth_month_pay,
+        name="update_specific_thirteenth_month_pay",
+    ),
+    path(
+        "payslip-management/thirteenth-month-pay/view/update-list",
+        payroll_views.update_user_thirteenth_month_pay_list,
+        name="update_user_thirteenth_month_pay_list",
+    ),
+    path(
+        "payslip-management/thirteenth-month-pay/view",
+        payroll_views.view_specific_thirteenth_month_pay,
+        name="view_specific_thirteenth_month_pay",
+    ),
+    path(
+        "payslip-management/thirteenth-month-pay/create",
+        payroll_views.create_thirteenth_month_pay,
+        name="create_thirteenth_month_pay",
+    ),
+    path(
+        "payslip-management/thirteenth-month-pay/user",
+        payroll_views.user_thirteenth_month_pay,
+        name="user_thirteenth_month_pay",
+    ),
+    path(
+        "payslip-management/thirteenth-month-pay",
+        payroll_views.thirteenth_month_pay,
+        name="thirteenth_month_pay",
+    ),
+    path(
         "payslip-management/update-payslip-data",
         payroll_views.update_payslip_data,
         name="update_payslip_data",

@@ -3,8 +3,13 @@
     {% include "navbar.html" %}
     <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
         <div class="w-full relative px-2 lg:px-10">
-            <div class="flex flex-row justify-between mt-10">
+            <div class="flex flex-col md:flex-row justify-between items-center mt-10 mb-2">
                 <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3">Payslip Management</h1>
+                <button type="button"
+                        hx-get="{% url "payroll:thirteenth_month_pay" %}"
+                        class="mt-3 text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-full text-sm px-5 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                    13th Month Pay
+                </button>
             </div>
             {% block payslip_management_section %}
                 <div id="payslip_management_section"
@@ -135,7 +140,7 @@
                                                     <div>
                                                         <button type="button"
                                                                 hx-get="{% url "payroll:access_payslip" %}"
-                                                                hx-vals='{"selected_month": {{ selected_month }}, "selected_year": {{ selected_year }}, "selected_user": {{ data.user.id }}, "period": "1ST"}}'
+                                                                hx-vals='{"selected_month": {{ selected_month }}, "selected_year": {{ selected_year }}, "selected_user": {{ data.user.id }}, "period": "1ST"}'
                                                                 class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-2 py-1 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                                             1st Period
                                                         </button>
@@ -568,6 +573,336 @@
                 </div>
             {% endblock %}
         </div>
+        <!-- 13th Month Pay Modal -->
+        <div id="thirteenth_month_pay_modal"
+             tabindex="-1"
+             aria-hidden="true"
+             class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+            {% block thirteenth_month_pay_container %}
+                <div id="thirteenth_month_pay_container"
+                     class="relative p-4 w-full max-w-3xl max-h-full">
+                    <form class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                        <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">13th Month Pay</h3>
+                            <button type="button"
+                                    hx-post="{% url "leave:leave_module_close_modals" %}"
+                                    hx-vals='{"event_name": "closeThirteenthMonthPayModal"}'
+                                    class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                <svg class="w-3 h-3"
+                                     aria-hidden="true"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     fill="none"
+                                     viewBox="0 0 14 14">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                </svg>
+                                <span class="sr-only">Close modal</span>
+                            </button>
+                        </div>
+                        <div class="p-4 md:p-5 space-y-4">
+                            <div class="mb-1">
+                                <input type="search"
+                                       id="user_search_id"
+                                       name="user_search"
+                                       hx-post="{% url "payroll:thirteenth_month_pay" %}"
+                                       hx-trigger="input changed delay:200ms"
+                                       class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                       placeholder="Search User..."
+                                       required />
+                            </div>
+                            {% block user_list_table_container %}
+                                <div id="user_list_table_container"
+                                     class="relative overflow-x-auto shadow-md sm:rounded-lg h-[40rem] overflow-y-auto">
+                                    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3">User</th>
+                                                <th scope="col" class="px-6 py-3 text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for user in users %}
+                                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                    <th scope="row"
+                                                        class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">
+                                                        <div>
+                                                            <div class="font-bold text-xl">{{ user.userdetails.get_user_fullname|title }}</div>
+                                                            <div class="text-lg font-normal text-gray-500">{{ user.userdetails.department }}</div>
+                                                        </div>
+                                                    </th>
+                                                    <td class="px-6 py-4 text-center w-[5rem]">
+                                                        <button type="button"
+                                                                hx-get="{% url "payroll:user_thirteenth_month_pay" %}"
+                                                                hx-vals='{"user": {{ user.id }}}'
+                                                                class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                            View
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endblock %}
+                        </div>
+                    </form>
+                </div>
+            {% endblock %}
+        </div>
+        <!-- User 13th Month Pay Modal -->
+        <div id="user_thirteenth_month_pay_modal"
+             tabindex="-1"
+             aria-hidden="true"
+             class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+            {% block user_thirteenth_month_pay_container %}
+                <div id="user_thirteenth_month_pay_container"
+                     class="relative p-4 w-full max-w-6xl max-h-full">
+                    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                        <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                            <div class="flex flex-row gap-4">
+                                <button hx-get="{% url "payroll:user_thirteenth_month_pay" %}"
+                                        hx-vals='{"back": "true"}'>
+                                    <svg class="w-6 h-6 text-gray-800 dark:text-white"
+                                         aria-hidden="true"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         width="24"
+                                         height="24"
+                                         fill="none"
+                                         viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12l4-4m-4 4 4 4" />
+                                    </svg>
+                                </button>
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                                    {{ user.userdetails.get_user_fullname|title }} 13th Month Pay
+                                </h3>
+                            </div>
+                            <button type="button"
+                                    hx-post="{% url "leave:leave_module_close_modals" %}"
+                                    hx-vals='{"event_name": "closeUserThirteenthMonthPayModal"}'
+                                    class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                <svg class="w-3 h-3"
+                                     aria-hidden="true"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     fill="none"
+                                     viewBox="0 0 14 14">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                </svg>
+                                <span class="sr-only">Close modal</span>
+                            </button>
+                        </div>
+                        <div class="p-4 md:p-5 space-y-4">
+                            <div class="flex flex-row gap-2">
+                                <div class="w-1/2 p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                    <form class="max-w-sm mx-auto"
+                                          hx-post="{% url "payroll:create_thirteenth_month_pay" %}"
+                                          hx-vals='{"user": {{ user.id }}}'>
+                                        <div class="mb-2">
+                                            <label for="selected_month_id"
+                                                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                Month
+                                            </label>
+                                            <select id="selected_month_id"
+                                                    name="selected_month"
+                                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                                {% for month in months %}
+                                                    <option value="{{ month.1 }}"
+                                                            {% if selected_month == month.1 %}selected{% endif %}>
+                                                        {{ month.0 }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label for="selected_year_id"
+                                                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                Year:
+                                            </label>
+                                            <input type="number"
+                                                   id="selected_year_id"
+                                                   name="selected_year"
+                                                   value="{{ current_year }}"
+                                                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                   placeholder="Enter Year"
+                                                   required />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label for="amount_id"
+                                                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                Amount:
+                                            </label>
+                                            <input type="number"
+                                                   id="amount_id"
+                                                   name="amount"
+                                                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                   placeholder="Enter Amount"
+                                                   required />
+                                        </div>
+                                        <div class="flex justify-center mt-2">
+                                            <button type="submit"
+                                                    class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                Submit
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="w-full h-[35rem] overflow-y-auto p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                    {% if thirteenth_month_pay_list %}
+                                    <div class="max-w-sm">
+                                        <label for="selected_year_id"
+                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Filter by Year
+                                        </label>
+                                        <select id="selected_year_id"
+                                                name="selected_year"
+                                                hx-post="{% url "payroll:user_thirteenth_month_pay" %}"
+                                                hx-trigger="change"
+                                                hx-vals='{"filter_list_by_year": "true", "user": {{ user.id }}}'
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                            <option selected value="0">All</option>
+                                            {% for year in years %}
+                                                <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>{{ year }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    {% endif %}
+                                    {% block user_thirteenth_month_pay_list %}
+                                        <ul id="user_thirteenth_month_pay_list" class="my-4 space-y-3">
+                                            <li>
+                                                {% for thirteenth_month_pay in thirteenth_month_pay_list %}
+                                                    <div class="flex items-center p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white">
+                                                        <span class="flex-1 ms-3 whitespace-nowrap">{{ thirteenth_month_pay.get_month_year_display }}</span>
+                                                        <button type="button"
+                                                                hx-get="{% url "payroll:view_specific_thirteenth_month_pay" %}"
+                                                                hx-vals='{"thirteenth_month_pay": {{ thirteenth_month_pay.id }}}'
+                                                                class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                            View
+                                                        </button>
+                                                    </div>
+                                                {% endfor %}
+                                            </li>
+                                        </ul>
+                                    {% endblock %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
+        </div>
+        <!-- Specific 13th Month Pay Modal -->
+        <div id="specific_thirteenth_month_pay_modal"
+             tabindex="-1"
+             aria-hidden="true"
+             class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+            {% block specific_thirteenth_month_pay_container %}
+                <div id="specific_thirteenth_month_pay_container"
+                     class="relative p-4 w-full max-w-4xl max-h-full">
+                    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                        <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                            <div class="flex flex-row gap-4">
+                                <button hx-get="{% url "payroll:view_specific_thirteenth_month_pay" %}"
+                                        hx-vals='{"back": "true"}'>
+                                    <svg class="w-6 h-6 text-gray-800 dark:text-white"
+                                         aria-hidden="true"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         width="24"
+                                         height="24"
+                                         fill="none"
+                                         viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12l4-4m-4 4 4 4" />
+                                    </svg>
+                                </button>
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                                    {{ thirteenth_month_pay.user.userdetails.get_user_fullname|title }} {{ thirteenth_month_pay.get_month_year_display }} 13th Month Pay
+                                </h3>
+                                <input id="selected_thirteenth_month_pay_user"
+                                       type="hidden"
+                                       value="{{ thirteenth_month_pay.user.id }}">
+                            </div>
+                            <button type="button"
+                                    hx-post="{% url "leave:leave_module_close_modals" %}"
+                                    hx-vals='{"event_name": "closeSpecificThirteenthMonthPayModal"}'
+                                    class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                <svg class="w-3 h-3"
+                                     aria-hidden="true"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     fill="none"
+                                     viewBox="0 0 14 14">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                </svg>
+                                <span class="sr-only">Close modal</span>
+                            </button>
+                        </div>
+                        <div class="p-4 md:p-5 space-y-4">
+                            <form hx-post="{% url "payroll:update_specific_thirteenth_month_pay" %}"
+                                  hx-vals='{"thirteenth_month_pay": {{ thirteenth_month_pay.id }}}'
+                                  class="max-w-sm mx-auto flex flex-col gap-4">
+                                <div>
+                                    <label for="amount_id"
+                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        Amount:
+                                    </label>
+                                    <input type="number"
+                                           id="amount_id"
+                                           name="amount"
+                                           value="{{ thirteenth_month_pay.amount }}"
+                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                           placeholder="Enter Amount"
+                                           required />
+                                </div>
+                                <div class="w-full flex justify-center">
+                                    <button type="submit"
+                                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                        Save
+                                    </button>
+                                </div>
+                            </form>
+                            <form class="w-full flex justify-center">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <span class="me-3 text-sm font-medium text-gray-900 dark:text-gray-300">Draft</span>
+                                    <input type="checkbox"
+                                           value=""
+                                           hx-post="{% url "payroll:toggle_specific_thirteenth_month_pay_release" %}"
+                                           hx-vals='{"thirteenth_month_pay": {{ thirteenth_month_pay.id }}}'
+                                           {% if thirteenth_month_pay.released %}checked{% endif %}
+                                           class="sr-only peer">
+                                    <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600">
+                                    </div>
+                                    <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Released</span>
+                                </label>
+                            </form>
+                            {% block specific_thirteenth_month_pay_delete_button_section %}
+                                <div id="specific_thirteenth_month_pay_delete_button_section"
+                                     class="w-full flex justify-center">
+                                    {% if confirm_delete %}
+                                        <div class="flex flex-row">
+                                            <button type="button"
+                                                    hx-delete="{% url "payroll:delete_specific_thirteenth_month_pay_release" %}"
+                                                    hx-vals='{"thirteenth_month_pay": {{ thirteenth_month_pay }}}'
+                                                    class="text-blue-700 hover:text-white border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-1.5 text-center me-2 mb-2 dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800">
+                                                Confirm
+                                            </button>
+                                            <button type="button"
+                                                    hx-post="{% url "payroll:delete_specific_thirteenth_month_pay_release" %}"
+                                                    hx-vals='{"cancel": "True"}'
+                                                    class="text-yellow-400 hover:text-white border border-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-sm px-3 py-1.5 text-center me-2 mb-2 dark:border-yellow-300 dark:text-yellow-300 dark:hover:text-white dark:hover:bg-yellow-400 dark:focus:ring-yellow-900">
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    {% else %}
+                                        <button type="button"
+                                                hx-post="{% url "payroll:delete_specific_thirteenth_month_pay_release" %}"
+                                                hx-vals='{"thirteenth_month_pay": {{ thirteenth_month_pay.id }}}'
+                                                class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
+                                            Delete
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            {% endblock %}
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
+        </div>
     </div>
 {% endblock %}
 {% block javascript %}
@@ -612,6 +947,15 @@
                 });
             };
 
+            const updateUserThirteenthMonthPayList = () => {
+                const selectedThirteenthMonthPayUser = document.getElementById('selected_thirteenth_month_pay_user').value;
+                htmx.ajax('POST', '{% url "payroll:update_user_thirteenth_month_pay_list" %}', {
+                    values: {
+                        "selected_thirteenth_month_pay_user": selectedThirteenthMonthPayUser,
+                    }
+                });
+            };
+
 
             // Initialize specific modals
             const initializeAccessPayslipModal = () => initializeModal('access_payslip_modal');
@@ -620,6 +964,13 @@
             const closeAddVariablePayslipDeductionModal = () => closeModal('add_variable_payslip_deduction_modal');
             const initializeAddVariablePayslipCompensationModal = () => initializeModal('add_variable_payslip_compensation_modal');
             const closeAddVariablePayslipCompensationModal = () => closeModal('add_variable_payslip_compensation_modal');
+            const initializeThirteenthMonthPayModal = () => initializeModal('thirteenth_month_pay_modal');
+            const closeThirteenthMonthPayModal = () => closeModal('thirteenth_month_pay_modal');
+            const initializeUserThirteenthMonthPayModal = () => initializeModal('user_thirteenth_month_pay_modal');
+            const closeUserThirteenthMonthPayModal = () => closeModal('user_thirteenth_month_pay_modal');
+            const initializeSpecificThirteenthMonthPayModal = () => initializeModal('specific_thirteenth_month_pay_modal');
+            const closeSpecificThirteenthMonthPayModal = () => closeModal('specific_thirteenth_month_pay_modal');
+
 
 
             // Event listeners for modals
@@ -629,9 +980,18 @@
             document.addEventListener('closeAddVariablePayslipDeductionModal', closeAddVariablePayslipDeductionModal);
             document.addEventListener('openAddVariablePayslipCompensationModal', initializeAddVariablePayslipCompensationModal);
             document.addEventListener('closeAddVariablePayslipCompensationModal', closeAddVariablePayslipCompensationModal);
+            document.addEventListener('openThirteenthMonthPayModal', initializeThirteenthMonthPayModal);
+            document.addEventListener('closeThirteenthMonthPayModal', closeThirteenthMonthPayModal);
+            document.addEventListener('openUserThirteenthMonthPayModal', initializeUserThirteenthMonthPayModal);
+            document.addEventListener('closeUserThirteenthMonthPayModal', closeUserThirteenthMonthPayModal);
+            document.addEventListener('openSpecificThirteenthMonthPayModal', initializeSpecificThirteenthMonthPayModal);
+            document.addEventListener('closeSpecificThirteenthMonthPayModal', closeSpecificThirteenthMonthPayModal);
 
             document.addEventListener('updatePayslipData', () => {
                 updatePayslipData();
+            });
+            document.addEventListener('updateUserThirteenthMonthPayList', () => {
+                updateUserThirteenthMonthPayList();
             });
         });
     </script>
