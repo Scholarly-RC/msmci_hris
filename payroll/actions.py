@@ -374,3 +374,17 @@ def process_toggling_thirteenth_month_pay_release(payload):
         return thirteenth_month_pay
     except Exception as error:
         raise error
+
+
+@transaction.atomic
+def process_delete_thirteenth_month_pay(payload):
+    try:
+        ThirteenthMonthPayModel = apps.get_model("payroll", "ThirteenthMonthPay")
+        thirteenth_month_pay_id = payload.get("thirteenth_month_pay")
+        thirteenth_month_pay = ThirteenthMonthPayModel.objects.get(
+            id=thirteenth_month_pay_id
+        )
+
+        thirteenth_month_pay.delete()
+    except Exception as error:
+        raise error

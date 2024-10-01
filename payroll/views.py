@@ -31,6 +31,7 @@ from payroll.actions import (
     process_toggle_user_mp2_status,
     process_toggling_thirteenth_month_pay_release,
     process_updating_thirteenth_month_pay,
+    process_delete_thirteenth_month_pay,
 )
 from payroll.models import Job, Payslip, ThirteenthMonthPay
 from payroll.utils import (
@@ -1239,12 +1240,44 @@ def create_thirteenth_month_pay(request):
                 return response
 
 
+def update_user_thirteenth_month_pay_list(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        data = request.POST
+        selected_thirteenth_month_pay_user_id = data.get(
+            "selected_thirteenth_month_pay_user"
+        )
+        user, thirteenth_month_pay_list = get_user_13th_month_pay_list(
+            selected_thirteenth_month_pay_user_id
+        )
+        context["thirteenth_month_pay_list"] = thirteenth_month_pay_list
+        response.content = render_block_to_string(
+            "payroll/payslip_management.html",
+            "user_thirteenth_month_pay_list",
+            context,
+        )
+        response = retarget(response, "#user_thirteenth_month_pay_list")
+        response = reswap(response, "outerHTML")
+        return response
+
+
 def view_specific_thirteenth_month_pay(request):
     context = {}
     if request.htmx:
         response = HttpResponse()
         if request.method == "GET":
             data = request.GET
+            if "back" in data:
+                response = trigger_client_event(
+                    response, "openUserThirteenthMonthPayModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response, "closeSpecificThirteenthMonthPayModal", after="swap"
+                )
+                response = reswap(response, "none")
+                return response
+
             thirteenth_month_pay_id = data.get("thirteenth_month_pay")
             thirteenth_month_pay = ThirteenthMonthPay.objects.get(
                 id=thirteenth_month_pay_id
@@ -1315,6 +1348,56 @@ def toggle_specific_thirteenth_month_pay_release(request):
                 )
                 response = reswap(response, "none")
                 return response
+
+
+def delete_specific_thirteenth_month_pay_release(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "DELETE":
+            try:
+                data = QueryDict(request.body)
+                process_delete_thirteenth_month_pay(data)
+                response = create_global_alert_instance(
+                    response,
+                    f"The selected Thirteenth Month Pay record has been successfully deleted.",
+                    "SUCCESS",
+                )
+                response = trigger_client_event(
+                    response, "openUserThirteenthMonthPayModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response, "closeSpecificThirteenthMonthPayModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response, "updateUserThirteenthMonthPayList", after="swap"
+                )
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while deleting the selected Thirteenth Month Pay record. Details: {error}.",
+                    "DANGER",
+                )
+                response = reswap(response, "none")
+                return response
+
+        if request.method == "POST":
+            data = request.POST
+            if "cancel" not in data:
+                context["confirm_delete"] = True
+            thirteenth_month_pay = data.get("thirteenth_month_pay")
+            context["thirteenth_month_pay"] = thirteenth_month_pay
+            response.content = render_block_to_string(
+                "payroll/payslip_management.html",
+                "specific_thirteenth_month_pay_delete_button_section",
+                context,
+            )
+            response = retarget(
+                response, "#specific_thirteenth_month_pay_delete_button_section"
+            )
+            response = reswap(response, "outerHTML")
+            return response
 
 
 def payroll_management(request):

@@ -21,6 +21,11 @@ urlpatterns = [
         name="payroll_management",
     ),
     path(
+        "payslip-management/thirteenth-month-pay/delete",
+        payroll_views.delete_specific_thirteenth_month_pay_release,
+        name="delete_specific_thirteenth_month_pay_release",
+    ),
+    path(
         "payslip-management/thirteenth-month-pay/update/toggle",
         payroll_views.toggle_specific_thirteenth_month_pay_release,
         name="toggle_specific_thirteenth_month_pay_release",
@@ -29,6 +34,11 @@ urlpatterns = [
         "payslip-management/thirteenth-month-pay/update",
         payroll_views.update_specific_thirteenth_month_pay,
         name="update_specific_thirteenth_month_pay",
+    ),
+    path(
+        "payslip-management/thirteenth-month-pay/view/update-list",
+        payroll_views.update_user_thirteenth_month_pay_list,
+        name="update_user_thirteenth_month_pay_list",
     ),
     path(
         "payslip-management/thirteenth-month-pay/view",
