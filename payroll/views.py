@@ -1,7 +1,9 @@
+from datetime import datetime
 from django.db.models import Q
 from django.http import HttpResponse
 from django.http.request import QueryDict
 from django.shortcuts import render
+from django.utils.timezone import make_aware
 from django.urls import reverse
 from django_htmx.http import push_url, reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
@@ -58,6 +60,8 @@ from payroll.validations import (
     variable_payslip_deduction_validation,
 )
 from performance.utils import get_user_with_hr_role
+
+from core.notification import create_notification
 
 ### Salary and Rank Management Views
 
@@ -1041,9 +1045,19 @@ def toggle_payslip_release_status(request):
     context = {}
     if request.htmx and request.method == "POST":
         response = HttpResponse()
+        user = request.user
         try:
             data = request.POST
             payslip = process_toggle_payslip_release_status(data)
+            if payslip.released:
+                create_notification(
+                    content=f"Your payslip for <b>{payslip.get_month_year_and_period_display()}</b> is now available.",
+                    date=make_aware(datetime.now()),
+                    sender_id=user.id,
+                    recipient_id=payslip.user.id,
+                    url=reverse("payroll:payroll_management"),
+                )
+
             context["payslip"] = payslip
             response.content = render_block_to_string(
                 "payroll/payslip_management.html",
@@ -1328,12 +1342,22 @@ def toggle_specific_thirteenth_month_pay_release(request):
     context = {}
     if request.htmx:
         response = HttpResponse()
+        user = request.user
         if request.method == "POST":
             try:
                 data = request.POST
                 thirteenth_month_pay = process_toggling_thirteenth_month_pay_release(
                     data
                 )
+                if thirteenth_month_pay.released:
+                    create_notification(
+                        content=f"Your 13th Month Pay payslip for <b>{thirteenth_month_pay.get_month_year_display()}</b> is now available.",
+                        date=make_aware(datetime.now()),
+                        sender_id=user.id,
+                        recipient_id=thirteenth_month_pay.user.id,
+                        url=reverse("payroll:payroll_management"),
+                    )
+
                 response = create_global_alert_instance(
                     response,
                     f"The Thirteenth Month Pay status has been successfully updated to {'RELEASED' if thirteenth_month_pay.released else 'DRAFT'}.",
@@ -1417,7 +1441,7 @@ def payroll_management(request):
             "selected_month": int(selected_month),
             "selected_year": int(selected_year),
             "payslips": payslips,
-            "thirteenth_month_pay_list":thirteenth_month_pay_list
+            "thirteenth_month_pay_list": thirteenth_month_pay_list,
         }
     )
     if request.htmx and request.method == "POST":

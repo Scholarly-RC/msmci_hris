@@ -247,6 +247,9 @@ class Payslip(models.Model):
 
     def get_month_and_year(self):
         return f"{Months(self.month).name} - {self.year}"
+    
+    def get_month_year_and_period_display(self):
+        return f"{self.get_month_and_year()} - {self.Period(self.period).name} PERIOD"
 
     def update_salary(self):
         self.salary = get_salary_from_rank(self.rank)
@@ -412,4 +415,4 @@ class ThirteenthMonthPay(models.Model):
         return f"{self.user.username} - {self.amount} ({self.month}/{self.year}) - Released: {self.released}"
 
     def get_month_year_display(self):
-        return f"{Months(self.month).name} {self.year}"
+        return f"{Months(self.month).name} - {self.year}"
