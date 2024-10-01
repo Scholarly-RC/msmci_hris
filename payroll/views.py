@@ -1052,7 +1052,7 @@ def toggle_payslip_release_status(request):
             )
             response = create_global_alert_instance(
                 response,
-                f"The status of the selected payslip has been successfully set to {'released' if payslip.released else 'draft'}.",
+                f"The status of the selected payslip has been successfully set to {'RELEASED' if payslip.released else 'DRAFT'}.",
                 "SUCCESS",
             )
             response = retarget(response, "#modify_payslip_section")
@@ -1201,8 +1201,8 @@ def create_thirteenth_month_pay(request):
                 current_month, current_year = get_current_month_and_year()
                 selected_month = current_month
                 months = get_list_of_months()
-                years = get_13th_month_pay_year_list()
                 thirteenth_month_pay = process_creating_thirteenth_month_pay(data)
+                years = get_13th_month_pay_year_list()
                 user, thirteenth_month_pay_list = get_user_13th_month_pay_list(
                     request.POST.get("user")
                 )
@@ -1408,8 +1408,8 @@ def payroll_management(request):
     selected_year = request.POST.get("selected_year") or current_year
     months = get_list_of_months()
     years = get_payslip_year_list()
-    # TODO: Filter by finalized
-    payslips = get_user_payslips(user, selected_month, selected_year)
+    payslips = get_user_payslips(user, selected_month, selected_year, released=True)
+    _, thirteenth_month_pay_list = get_user_13th_month_pay_list(user.id, released=True)
     context.update(
         {
             "months": months,
@@ -1417,6 +1417,7 @@ def payroll_management(request):
             "selected_month": int(selected_month),
             "selected_year": int(selected_year),
             "payslips": payslips,
+            "thirteenth_month_pay_list":thirteenth_month_pay_list
         }
     )
     if request.htmx and request.method == "POST":

@@ -140,7 +140,7 @@
                                                     <div>
                                                         <button type="button"
                                                                 hx-get="{% url "payroll:access_payslip" %}"
-                                                                hx-vals='{"selected_month": {{ selected_month }}, "selected_year": {{ selected_year }}, "selected_user": {{ data.user.id }}, "period": "1ST"}}'
+                                                                hx-vals='{"selected_month": {{ selected_month }}, "selected_year": {{ selected_year }}, "selected_user": {{ data.user.id }}, "period": "1ST"}'
                                                                 class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-2 py-1 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                                             1st Period
                                                         </button>
@@ -745,6 +745,7 @@
                                     </form>
                                 </div>
                                 <div class="w-full h-[35rem] overflow-y-auto p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                    {% if thirteenth_month_pay_list %}
                                     <div class="max-w-sm">
                                         <label for="selected_year_id"
                                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -762,6 +763,7 @@
                                             {% endfor %}
                                         </select>
                                     </div>
+                                    {% endif %}
                                     {% block user_thirteenth_month_pay_list %}
                                         <ul id="user_thirteenth_month_pay_list" class="my-4 space-y-3">
                                             <li>
