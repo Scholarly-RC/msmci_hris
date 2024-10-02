@@ -117,3 +117,18 @@ def creating_thirteenth_month_pay_validation(payload):
         )
 
     return context
+
+
+def thirteenth_month_pay_variable_deduction_validation(payload):
+    context = {}
+
+    deduction_name = payload.get("deduction_name").strip()
+    deduction_amount = Decimal(payload.get("deduction_amount", 0))
+
+    if not deduction_name:
+        context["empty_deduction_name_error"] = "Deduction name required."
+
+    if not deduction_amount:
+        context["zero_deduction_amount_error"] = "Deduction amount should be above 0."
+
+    return context

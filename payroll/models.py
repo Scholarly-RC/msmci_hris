@@ -247,7 +247,7 @@ class Payslip(models.Model):
 
     def get_month_and_year(self):
         return f"{Months(self.month).name} - {self.year}"
-    
+
     def get_month_year_and_period_display(self):
         return f"{self.get_month_and_year()} - {self.Period(self.period).name} PERIOD"
 
@@ -416,3 +416,25 @@ class ThirteenthMonthPay(models.Model):
 
     def get_month_year_display(self):
         return f"{Months(self.month).name} - {self.year}"
+
+
+class ThirteenthMonthPayVariableDeduction(models.Model):
+    name = models.CharField(_("Deduction Name"), max_length=500)
+    thirteenth_month_pay = models.ForeignKey(
+        ThirteenthMonthPay,
+        on_delete=models.RESTRICT,
+        related_name="variable_deductions",
+    )
+
+    amount = models.DecimalField(
+        _("Deduction Amount"), blank=True, null=True, max_digits=9, decimal_places=2
+    )
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Thirteenth Month Pay Variable Deductions"
+
+    def __str__(self):
+        return f"{self.name} - {Months(self.thirteenth_month_pay.month).name} - {self.thirteenth_month_pay.year}"

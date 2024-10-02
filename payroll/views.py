@@ -1,28 +1,33 @@
 from datetime import datetime
+
 from django.db.models import Q
 from django.http import HttpResponse
 from django.http.request import QueryDict
 from django.shortcuts import render
-from django.utils.timezone import make_aware
 from django.urls import reverse
+from django.utils.timezone import make_aware
 from django_htmx.http import push_url, reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
 
 from attendance.enums import Months
 from attendance.utils.date_utils import get_list_of_months, get_months_dict
+from core.notification import create_notification
 from core.utils import get_users_sorted_by_department
 from hris.utils import create_global_alert_instance
 from payroll.actions import (
     process_add_or_create_fixed_compensation,
+    process_add_thirteenth_month_pay_variable_deduction,
     process_adding_job,
     process_adding_variable_payslip_compensation,
     process_adding_variable_payslip_deduction,
     process_creating_thirteenth_month_pay,
+    process_delete_thirteenth_month_pay,
     process_deleting_job,
     process_get_or_create_user_payslip,
     process_modifying_fixed_compensation,
     process_modifying_fixed_compensation_users,
     process_modifying_job,
+    process_remove_thirteenth_month_pay_variable_deduction,
     process_removing_fixed_compensation,
     process_removing_variable_payslip_compensation,
     process_removing_variable_payslip_deduction,
@@ -33,7 +38,6 @@ from payroll.actions import (
     process_toggle_user_mp2_status,
     process_toggling_thirteenth_month_pay_release,
     process_updating_thirteenth_month_pay,
-    process_delete_thirteenth_month_pay,
 )
 from payroll.models import Job, Payslip, ThirteenthMonthPay
 from payroll.utils import (
@@ -56,12 +60,11 @@ from payroll.validations import (
     creating_thirteenth_month_pay_validation,
     minimum_wage_update_validation,
     payslip_data_validation,
+    thirteenth_month_pay_variable_deduction_validation,
     variable_payslip_compensation_validation,
     variable_payslip_deduction_validation,
 )
 from performance.utils import get_user_with_hr_role
-
-from core.notification import create_notification
 
 ### Salary and Rank Management Views
 
@@ -1296,7 +1299,16 @@ def view_specific_thirteenth_month_pay(request):
             thirteenth_month_pay = ThirteenthMonthPay.objects.get(
                 id=thirteenth_month_pay_id
             )
-            context["thirteenth_month_pay"] = thirteenth_month_pay
+
+            thirteenth_month_pay_deductions = (
+                thirteenth_month_pay.variable_deductions.all()
+            )
+            context.update(
+                {
+                    "thirteenth_month_pay": thirteenth_month_pay,
+                    "thirteenth_month_pay_deductions": thirteenth_month_pay_deductions,
+                }
+            )
             response.content = render_block_to_string(
                 "payroll/payslip_management.html",
                 "specific_thirteenth_month_pay_container",
@@ -1357,12 +1369,29 @@ def toggle_specific_thirteenth_month_pay_release(request):
                         recipient_id=thirteenth_month_pay.user.id,
                         url=reverse("payroll:payroll_management"),
                     )
-
+                thirteenth_month_pay_deductions = (
+                    thirteenth_month_pay.variable_deductions.all()
+                )
+                context.update(
+                    {
+                        "thirteenth_month_pay": thirteenth_month_pay,
+                        "thirteenth_month_pay_deductions": thirteenth_month_pay_deductions,
+                    }
+                )
+                response.content = render_block_to_string(
+                    "payroll/payslip_management.html",
+                    "specific_thirteenth_month_pay_container",
+                    context,
+                )
                 response = create_global_alert_instance(
                     response,
                     f"The Thirteenth Month Pay status has been successfully updated to {'RELEASED' if thirteenth_month_pay.released else 'DRAFT'}.",
                     "SUCCESS",
                 )
+                response = retarget(
+                    response, "#specific_thirteenth_month_pay_container"
+                )
+                response = reswap(response, "outerHTML")
                 return response
             except Exception as error:
                 response = create_global_alert_instance(
@@ -1421,6 +1450,143 @@ def delete_specific_thirteenth_month_pay_release(request):
                 response, "#specific_thirteenth_month_pay_delete_button_section"
             )
             response = reswap(response, "outerHTML")
+            return response
+
+
+def add_thirteenth_month_pay_variable_deduction(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "GET":
+            data = request.GET
+            if "back" in data:
+                response = trigger_client_event(
+                    response, "openSpecificThirteenthMonthPayModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response,
+                    "closeThirteenthMonthPayVariableDeductionModal",
+                    after="swap",
+                )
+                response = reswap(response, "none")
+            else:
+                thirteenth_month_pay_id = data.get("thirteenth_month_pay")
+                context["thirteenth_month_pay"] = thirteenth_month_pay_id
+                response.content = render_block_to_string(
+                    "payroll/payslip_management.html",
+                    "add_thirteenth_month_pay_variable_deduction_container",
+                    context,
+                )
+                response = trigger_client_event(
+                    response,
+                    "openThirteenthMonthPayVariableDeductionModal",
+                    after="swap",
+                )
+                response = trigger_client_event(
+                    response, "closeSpecificThirteenthMonthPayModal", after="swap"
+                )
+                response = retarget(
+                    response, "#add_thirteenth_month_pay_variable_deduction_container"
+                )
+                response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "POST":
+            try:
+                data = request.POST
+                errors = thirteenth_month_pay_variable_deduction_validation(data)
+                if errors:
+                    for error in errors:
+                        response = create_global_alert_instance(
+                            response, errors[error], "WARNING"
+                        )
+                        response = reswap(response, "none")
+                        return response
+
+                thirteenth_month_pay = (
+                    process_add_thirteenth_month_pay_variable_deduction(data)
+                )
+                thirteenth_month_pay_deductions = (
+                    thirteenth_month_pay.variable_deductions.all()
+                )
+                context.update(
+                    {
+                        "thirteenth_month_pay": thirteenth_month_pay,
+                        "thirteenth_month_pay_deductions": thirteenth_month_pay_deductions,
+                    }
+                )
+                response.content = render_block_to_string(
+                    "payroll/payslip_management.html",
+                    "specific_thirteenth_month_pay_container",
+                    context,
+                )
+                response = create_global_alert_instance(
+                    response,
+                    "Deduction for the selected 13th Month Pay has been successfully added.",
+                    "SUCCESS",
+                )
+
+                response = trigger_client_event(
+                    response, "openSpecificThirteenthMonthPayModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response,
+                    "closeThirteenthMonthPayVariableDeductionModal",
+                    after="swap",
+                )
+                response = retarget(
+                    response, "#specific_thirteenth_month_pay_container"
+                )
+                response = reswap(response, "outerHTML")
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while adding a variable deduction to the selected Thirteenth Month Pay. Details: {error}.",
+                    "DANGER",
+                )
+            response = reswap(response, "none")
+            return response
+
+
+def remove_thirteenth_month_pay_variable_deduction(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        try:
+            data = request.POST
+            thirteenth_month_pay = (
+                process_remove_thirteenth_month_pay_variable_deduction(data)
+            )
+            thirteenth_month_pay_deductions = (
+                thirteenth_month_pay.variable_deductions.all()
+            )
+            context.update(
+                {
+                    "thirteenth_month_pay": thirteenth_month_pay,
+                    "thirteenth_month_pay_deductions": thirteenth_month_pay_deductions,
+                }
+            )
+            response.content = render_block_to_string(
+                "payroll/payslip_management.html",
+                "specific_thirteenth_month_pay_container",
+                context,
+            )
+            response = create_global_alert_instance(
+                response,
+                "Deduction for the selected 13th Month Pay has been successfully removed.",
+                "SUCCESS",
+            )
+            response = retarget(response, "#specific_thirteenth_month_pay_container")
+            response = reswap(response, "outerHTML")
+            return response
+        except Exception as error:
+            response = create_global_alert_instance(
+                response,
+                f"An error occurred while removing the variable deduction from the selected Thirteenth Month Pay. Details: {error}.",
+                "DANGER",
+            )
+            response = reswap(response, "none")
             return response
 
 

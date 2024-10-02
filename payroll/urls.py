@@ -21,6 +21,16 @@ urlpatterns = [
         name="payroll_management",
     ),
     path(
+        "payslip-management/thirteenth-month-pay/variable-deduction/remove",
+        payroll_views.remove_thirteenth_month_pay_variable_deduction,
+        name="remove_thirteenth_month_pay_variable_deduction",
+    ),
+    path(
+        "payslip-management/thirteenth-month-pay/variable-deduction/add",
+        payroll_views.add_thirteenth_month_pay_variable_deduction,
+        name="add_thirteenth_month_pay_variable_deduction",
+    ),
+    path(
         "payslip-management/thirteenth-month-pay/delete",
         payroll_views.delete_specific_thirteenth_month_pay_release,
         name="delete_specific_thirteenth_month_pay_release",

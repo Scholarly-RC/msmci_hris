@@ -277,8 +277,6 @@ def process_adding_variable_payslip_compensation(payload):
             name=variable_name, payslip=selected_payslip, amount=variable_amount
         )
 
-        breakpoint()
-
         return new_variable_compensation
     except Exception as error:
         raise error
@@ -386,5 +384,55 @@ def process_delete_thirteenth_month_pay(payload):
         )
 
         thirteenth_month_pay.delete()
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_add_thirteenth_month_pay_variable_deduction(payload):
+    try:
+        ThirteenthMonthPayVariableDeductionModel = apps.get_model(
+            "payroll", "ThirteenthMonthPayVariableDeduction"
+        )
+        ThirteenthMonthPayModel = apps.get_model("payroll", "ThirteenthMonthPay")
+        thirteenth_month_pay_id = payload.get("thirteenth_month_pay")
+        deduction_name = payload.get("deduction_name")
+        deduction_amount = payload.get("deduction_amount")
+        thirteenth_month_pay = ThirteenthMonthPayModel.objects.get(
+            id=thirteenth_month_pay_id
+        )
+        thirteenth_month_pay_variable_deduction = (
+            ThirteenthMonthPayVariableDeductionModel.objects.create(
+                thirteenth_month_pay=thirteenth_month_pay,
+                name=deduction_name,
+                amount=deduction_amount,
+            )
+        )
+
+        return thirteenth_month_pay
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_remove_thirteenth_month_pay_variable_deduction(payload):
+    try:
+        ThirteenthMonthPayVariableDeductionModel = apps.get_model(
+            "payroll", "ThirteenthMonthPayVariableDeduction"
+        )
+        thirteenth_month_pay_deduction_id = payload.get(
+            "thirteenth_month_pay_deduction"
+        )
+        thirteenth_month_pay_variable_deduction = (
+            ThirteenthMonthPayVariableDeductionModel.objects.get(
+                id=thirteenth_month_pay_deduction_id
+            )
+        )
+        thirteenth_month_pay = (
+            thirteenth_month_pay_variable_deduction.thirteenth_month_pay
+        )
+        thirteenth_month_pay_variable_deduction.delete()
+
+        return thirteenth_month_pay
     except Exception as error:
         raise error
