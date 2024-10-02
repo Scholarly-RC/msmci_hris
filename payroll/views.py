@@ -1654,6 +1654,38 @@ def access_user_payslip(request, payslip_id):
     return render(request, "payroll/components/payslip_view.html", context)
 
 
+def view_user_thirteenth_month_pay_payslip(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "GET":
+            data = request.GET
+            selected_payslip_id = data.get("thirteenth_month_pay")
+            response = trigger_client_event(
+                response,
+                "viewUserPayslip",
+                {
+                    "payslip_url_view": reverse(
+                        "payroll:access_user_thirteenth_month_pay_payslip",
+                        kwargs={"thirteenth_month_pay_id": selected_payslip_id},
+                    )
+                },
+                after="swap",
+            )
+            response = reswap(response, "none")
+            return response
+
+
+def access_user_thirteenth_month_pay_payslip(request, thirteenth_month_pay_id):
+    context = {}
+    payslip = ThirteenthMonthPay.objects.get(id=thirteenth_month_pay_id)
+    hr = get_user_with_hr_role().first()
+    context.update({"payslip": payslip, "hr": hr})
+    return render(
+        request, "payroll/components/thirteenth_month_pay_payslip_view.html", context
+    )
+
+
 # App Shared View
 
 

@@ -63,24 +63,24 @@
                                     </thead>
                                     <tbody>
                                         {% for thirteenth_month_pay in thirteenth_month_pay_list %}
-                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                            <th scope="row"
-                                                class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                {{ thirteenth_month_pay.get_month_year_display }}
-                                            </th>
-                                            <td class="px-6 py-4 text-center">13th Month</td>
-                                            <td class="px-6 py-4 text-center">{{ thirteenth_month_pay.release_date }}</td>
-                                            <td class="px-6 py-4">
-                                                <div class="flex justify-center">
-                                                    <button type="button"
-                                                            hx-get="{% url "payroll:view_user_payslip" %}"
-                                                            hx-vals='{"payslip": {{ payslip.id }}}'
-                                                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-                                                        View
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                <th scope="row"
+                                                    class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                    {{ thirteenth_month_pay.get_month_year_display }}
+                                                </th>
+                                                <td class="px-6 py-4 text-center">13th Month</td>
+                                                <td class="px-6 py-4 text-center">{{ thirteenth_month_pay.release_date }}</td>
+                                                <td class="px-6 py-4">
+                                                    <div class="flex justify-center">
+                                                        <button type="button"
+                                                                hx-get="{% url "payroll:view_user_thirteenth_month_pay_payslip" %}"
+                                                                hx-vals='{"thirteenth_month_pay": {{ thirteenth_month_pay.id }}}'
+                                                                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                                            View
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                         {% endfor %}
                                         {% for payslip in payslips %}
                                             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
