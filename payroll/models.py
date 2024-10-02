@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
 
 from attendance.enums import Months
@@ -248,6 +249,9 @@ class Payslip(models.Model):
     def get_month_and_year(self):
         return f"{Months(self.month).name} - {self.year}"
 
+    def get_month_year_and_period_display(self):
+        return f"{self.get_month_and_year()} - {self.Period(self.period).name} PERIOD"
+
     def update_salary(self):
         self.salary = get_salary_from_rank(self.rank)
         self.save()
@@ -412,4 +416,79 @@ class ThirteenthMonthPay(models.Model):
         return f"{self.user.username} - {self.amount} ({self.month}/{self.year}) - Released: {self.released}"
 
     def get_month_year_display(self):
-        return f"{Months(self.month).name} {self.year}"
+        return f"{Months(self.month).name} - {self.year}"
+
+    def get_total_variable_deductions(self):
+        total = self.variable_deductions.aggregate(total_amount=Sum("amount"))
+        return total["total_amount"] or 0
+
+    def get_data_for_template(self):
+        def _combine_lists(list1, list2):
+            combined_list = []
+
+            len_first = len(list1)
+            len_second = len(list2)
+            max_len = max(len_first, len_second)
+
+            for i in range(max_len):
+                current_entry = []
+
+                # First list entries
+                if i < len_first:
+                    for key, value in list1[i].items():
+                        current_entry.append(key)
+                        current_entry.append(value)
+                else:
+                    current_entry.extend(["", ""])
+
+                # Second list entries
+                if i < len_second:
+                    for key, value in list2[i].items():
+                        current_entry.append(key)
+                        current_entry.append(value)
+                else:
+                    current_entry.extend(["", ""])
+
+                combined_list.append(current_entry)
+
+            return combined_list
+
+        earnings = [{"Base Pay": self.amount}]
+
+        deductions = [
+            {deduction.name: deduction.amount}
+            for deduction in self.variable_deductions.all()
+        ]
+
+        data_for_payslip_table = _combine_lists(earnings, deductions)
+
+        total_deductions = self.get_total_variable_deductions()
+
+        return {
+            "row_data": data_for_payslip_table,
+            "total_earnings": self.amount,
+            "total_deductions": total_deductions,
+            "net_salary": self.amount - total_deductions,
+        }
+
+
+class ThirteenthMonthPayVariableDeduction(models.Model):
+    name = models.CharField(_("Deduction Name"), max_length=500)
+    thirteenth_month_pay = models.ForeignKey(
+        ThirteenthMonthPay,
+        on_delete=models.RESTRICT,
+        related_name="variable_deductions",
+    )
+
+    amount = models.DecimalField(
+        _("Deduction Amount"), blank=True, null=True, max_digits=9, decimal_places=2
+    )
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Thirteenth Month Pay Variable Deductions"
+
+    def __str__(self):
+        return f"{self.name} - {Months(self.thirteenth_month_pay.month).name} - {self.thirteenth_month_pay.year}"

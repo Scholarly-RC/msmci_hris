@@ -6,6 +6,16 @@ from payroll import views as payroll_views
 
 urlpatterns = [
     path(
+        "payroll-management/user-thirteenth-month-pay-payslip/<str:thirteenth_month_pay_id>/access",
+        payroll_views.access_user_thirteenth_month_pay_payslip,
+        name="access_user_thirteenth_month_pay_payslip",
+    ),
+    path(
+        "payroll-management/user-thirteenth-month-pay-payslip/view",
+        payroll_views.view_user_thirteenth_month_pay_payslip,
+        name="view_user_thirteenth_month_pay_payslip",
+    ),
+    path(
         "payroll-management/user-payslip/<str:payslip_id>/access",
         payroll_views.access_user_payslip,
         name="access_user_payslip",
@@ -19,6 +29,16 @@ urlpatterns = [
         "payroll-management",
         payroll_views.payroll_management,
         name="payroll_management",
+    ),
+    path(
+        "payslip-management/thirteenth-month-pay/variable-deduction/remove",
+        payroll_views.remove_thirteenth_month_pay_variable_deduction,
+        name="remove_thirteenth_month_pay_variable_deduction",
+    ),
+    path(
+        "payslip-management/thirteenth-month-pay/variable-deduction/add",
+        payroll_views.add_thirteenth_month_pay_variable_deduction,
+        name="add_thirteenth_month_pay_variable_deduction",
     ),
     path(
         "payslip-management/thirteenth-month-pay/delete",
