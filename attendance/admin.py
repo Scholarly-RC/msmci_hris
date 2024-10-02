@@ -5,6 +5,7 @@ from attendance.models import (
     DailyShiftRecord,
     DailyShiftSchedule,
     Holiday,
+    OverTime,
     Shift,
 )
 
@@ -12,4 +13,5 @@ admin.site.register(AttendanceRecord)
 admin.site.register(DailyShiftRecord)
 admin.site.register(DailyShiftSchedule)
 admin.site.register(Holiday)
+admin.site.register(OverTime)
 admin.site.register(Shift)

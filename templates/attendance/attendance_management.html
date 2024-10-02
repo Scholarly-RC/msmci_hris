@@ -3,7 +3,16 @@
     {% include "navbar.html" %}
     <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
         <div class="w-full relative px-2 lg:px-10">
-            <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3 mt-10">Attendance Management</h1>
+            <div class="flex flex-row justify-between">
+                <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3 mt-10">Attendance Management</h1>
+                <div class="mt-12">
+                    <button type="button"
+                            hx-get="{% url "attendance:request_overtime" %}"
+                            class="inline-flex items-center justify-center w-auto max-w-sm px-3 py-2 text-sm font-medium text-center text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-primary-300 sm:w-auto dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-700">
+                        Request Overtime
+                    </button>
+                </div>
+            </div>
             {% block attendance_management_section %}
                 <div id="attendance_management_section"
                      class="flex flex-col gap-6 p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
@@ -46,7 +55,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center w-full justify-start sm:justify-end   ">
+                        <div class="flex items-center w-full justify-start sm:justify-end gap-2">
                             <button type="button"
                                     hx-post="{% url "attendance:sync_user_attendance" %}"
                                     hx-swap="none"
@@ -141,9 +150,296 @@
                 </div>
             {% endblock %}
         </div>
+        <!-- Request Overtime Modal -->
+        <div id="request_overtime_modal"
+             tabindex="-1"
+             aria-hidden="true"
+             class="hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-auto max-h-full">
+            {% block request_overtime_container %}
+                <div id="request_overtime_container"
+                     class="relative w-full max-w-4xl max-h-full">
+                    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 mx-4">
+                        <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Request Overtime Settings</h3>
+                            <button hx-post="{% url "attendance:attendance_module_close_modals" %}"
+                                    hx-vals='{"event_name": "closeRequestOvertimeModal"}'
+                                    type="button"
+                                    class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                <svg class="w-3 h-3"
+                                     aria-hidden="true"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     fill="none"
+                                     viewBox="0 0 14 14">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="p-4 md:p-5">
+                            <div class="flex flex-col gap-2">
+                                <div>
+                                    <div class="max-w-md mx-auto p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                        <form class="flex flex-col gap-2"
+                                              hx-post="{% url "attendance:submit_overtime_request" %}">
+                                            <div>
+                                                <label for="overtime_date_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    Date
+                                                </label>
+                                                <div>
+                                                    <input type="date"
+                                                           id="overtime_date_id"
+                                                           name="overtime_date"
+                                                           class="w-full max-w-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           required />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label for="selected_approver_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    Select an option
+                                                </label>
+                                                <select id="selected_approver_id"
+                                                        name="selected_approver"
+                                                        class="w-full max-w-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                        required>
+                                                    <option selected value="">Choose an Approver</option>
+                                                    {% for approver in approvers %}
+                                                        <option value="{{ approver.id }}">{{ approver.userdetails.get_user_fullname|title }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="flex justify-center">
+                                                <button type="submit"
+                                                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                    Request
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                {% if overtime_requests %}
+                                    <div class="h-[25rem] relative overflow-y-auto overflow-x-auto border shadow-md sm:rounded-lg">
+                                        <div class="p-4 bg-white dark:bg-gray-900 sticky top-0">
+                                            <div class="max-w-sm">
+                                                <label for="selected_year_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    Filter By Year:
+                                                </label>
+                                                <select id="selected_year_id"
+                                                        name="selected_year"
+                                                        hx-get="{% url "attendance:request_overtime" %}"
+                                                        hx-vals='{"year_filter": "True"}'
+                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                                    <option selected value="0">All</option>
+                                                    {% for year in overtime_years %}<option value="{{ year }}">{{ year }}</option>{% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        {% block user_overtime_requests_table %}
+                                            <table id="user_overtime_requests_table"
+                                                   class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-24">
+                                                    <tr>
+                                                        <th scope="col" class="px-6 py-3">Date</th>
+                                                        <th scope="col" class="px-6 py-3">Approver</th>
+                                                        <th scope="col" class="px-6 py-3">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for overtime_request in overtime_requests %}
+                                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                            <th scope="row"
+                                                                class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                                {{ overtime_request.get_display_date }}
+                                                            </th>
+                                                            <td class="px-6 py-4">{{ overtime_request.get_approver_display }}</td>
+                                                            <td class="px-6 py-4">{{ overtime_request.get_status_display }}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        {% endblock %}
+                                    </div>
+                                {% endif %}
+                                {% if not user.userdetails.role == "EMP" %}
+                                    <div class="flex justify-center mt-5">
+                                        <button type="button"
+                                                hx-get="{% url "attendance:view_overtime_request_to_approve" %}"
+                                                class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                            View Requests To Approve
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
+        </div>
+        <!-- Overtime Request To Approve Modal -->
+        <div id="overtime_request_to_approve_modal"
+             tabindex="-1"
+             aria-hidden="true"
+             class="hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-auto max-h-full">
+            {% block overtime_request_to_approve_container %}
+                <div id="overtime_request_to_approve_container"
+                     class="relative w-full max-w-6xl max-h-full">
+                    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 mx-4">
+                        <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                            <div class="flex flex-row gap-4">
+                                <button hx-get="{% url "attendance:view_overtime_request_to_approve" %}"
+                                        hx-vals='{"back": "true"}'>
+                                    <svg class="w-6 h-6 text-gray-800 dark:text-white"
+                                         aria-hidden="true"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         width="24"
+                                         height="24"
+                                         fill="none"
+                                         viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12l4-4m-4 4 4 4" />
+                                    </svg>
+                                </button>
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Overtime Requests To Approve</h3>
+                            </div>
+                            <button hx-post="{% url "attendance:attendance_module_close_modals" %}"
+                                    hx-vals='{"event_name": "closeOvertimeRequestsToApproveModal"}'
+                                    type="button"
+                                    class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                <svg class="w-3 h-3"
+                                     aria-hidden="true"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     fill="none"
+                                     viewBox="0 0 14 14">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="p-4 md:p-5">
+                            <div class="h-[35rem] overflow-y-auto relative overflow-x-auto border shadow-md sm:rounded-lg">
+                                <div class="p-4 bg-white dark:bg-gray-900 sticky top-0">
+                                    <div class="max-w-sm">
+                                        <label for="selected_year_id"
+                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Filter By Year:
+                                        </label>
+                                        <select id="selected_year_id"
+                                                name="selected_year"
+                                                hx-get="{% url "attendance:view_overtime_request_to_approve" %}"
+                                                hx-vals='{"year_filter": "True"}'
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                            <option selected value="0">All</option>
+                                            {% for year in overtime_years %}<option value="{{ year }}">{{ year }}</option>{% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                {% block overtime_requests_to_approve_table %}
+                                    <table id="overtime_requests_to_approve_table"
+                                           class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-24">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3">Name</th>
+                                                <th scope="col" class="px-6 py-3">Date</th>
+                                                <th scope="col" class="px-6 py-3">Status</th>
+                                                <th scope="col" class="px-6 py-3">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for request in requests_to_approve %}
+                                                {% block specific_overtime_request_to_approve %}
+                                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                        <th scope="row"
+                                                            class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                            {{ request.get_requestor_display }}
+                                                        </th>
+                                                        <td class="px-6 py-4">{{ request.get_display_date }}</td>
+                                                        <td class="px-6 py-4">{{ request.get_status_display }}</td>
+                                                        <td class="px-6 py-4">
+                                                            {% if request.status == "PEND" %}
+                                                                <button type="button"
+                                                                        hx-post="{% url "attendance:respond_to_overtime_request" %}"
+                                                                        hx-vals='{"overtime_request": {{ request.id }}, "response": "APPROVE"}'
+                                                                        class="px-3 py-2 text-xs font-medium text-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                                                                    Approve
+                                                                </button>
+                                                                <button type="button"
+                                                                        hx-post="{% url "attendance:respond_to_overtime_request" %}"
+                                                                        hx-vals='{"overtime_request": {{ request.id }}, "response": "REJECT"}'
+                                                                        class="px-3 py-2 text-xs font-medium text-center text-white bg-red-700 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
+                                                                    Reject
+                                                                </button>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                {% endblock %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% endblock %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
+        </div>
     </div>
 {% endblock %}
 {% block javascript %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // General function to initialize modals
+            const initializeModal = (id) => {
+                const modalElement = document.getElementById(id);
+                if (modalElement) {
+                    const options = {
+                        placement: 'center-center',
+                        backdrop: 'static',
+                        backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
+                        closable: true,
+                    };
+
+                    const instanceOptions = {
+                        id: id,
+                        override: true
+                    };
+
+                    const modal = new Modal(modalElement, options, instanceOptions);
+                    modal.show();
+                }
+            };
+
+            // General function to close modals
+            const closeModal = (id) => {
+                const modalElement = document.getElementById(id);
+                if (modalElement) {
+                    const modal = new Modal(modalElement);
+                    modal.hide();
+                }
+            };
+
+            const updateCalendar = () => {
+
+            };
+
+            // Initialize specific modals
+            const initializeRequestOvertimeModal = () => initializeModal('request_overtime_modal');
+            const closeRequestOvertimeModal = () => closeModal('request_overtime_modal');
+            const initializeOvertimeRequestsToApproveModal = () => initializeModal('overtime_request_to_approve_modal');
+            const closeOvertimeRequestsToApproveModal = () => closeModal('overtime_request_to_approve_modal');
+
+
+
+            // Event listeners for modals
+            document.addEventListener('openRequestOvertimeModal', initializeRequestOvertimeModal);
+            document.addEventListener('closeRequestOvertimeModal', closeRequestOvertimeModal);
+            document.addEventListener('openOvertimeRequestsToApproveModal', initializeOvertimeRequestsToApproveModal);
+            document.addEventListener('closeOvertimeRequestsToApproveModal', closeOvertimeRequestsToApproveModal);
+
+
+            document.addEventListener('updateCalendar', () => {
+                updateCalendar();
+            });
+        });
+    </script>
     <script>
         // Function to attach event handlers htmx afterSwap
         function attachEventHandlers() {

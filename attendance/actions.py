@@ -10,6 +10,7 @@ from attendance.utils.date_utils import (
     get_date_object_from_date_str,
     get_time_object,
 )
+from hris.exceptions import InvalidApproverPermission, InvalidApproverResponse
 
 
 @transaction.atomic
@@ -183,5 +184,57 @@ def process_delete_holiday(payload):
         holiday_id = payload.get("holiday")
         holiday = HolidayModel.objects.get(id=holiday_id)
         holiday.delete()
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_create_overtime_request(user, payload):
+    try:
+        UserModel = apps.get_model("auth", "User")
+        OvertimeModel = apps.get_model("attendance", "OverTime")
+        pending_status = OvertimeModel.Status.PENDING.value
+        selected_approver_id = payload.get("selected_approver")
+        selected_approver = UserModel.objects.get(id=selected_approver_id)
+        date_str = payload.get("overtime_date")
+        overtime_date = get_date_object_from_date_str(date_str)
+
+        overtime = OvertimeModel.objects.create(
+            user=user,
+            approver=selected_approver,
+            date=overtime_date,
+            status=pending_status,
+        )
+        return overtime
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_respond_to_overtime_request(user, payload):
+    try:
+        OvertimeModel = apps.get_model("attendance", "OverTime")
+        overtime_status = OvertimeModel.Status
+        overtime_request_id = payload.get("overtime_request")
+        response = payload.get("response")
+        overtime_request = OvertimeModel.objects.get(id=overtime_request_id)
+
+        if overtime_request.approver != user:
+            raise InvalidApproverPermission(
+                "You do not have permission to respond to this overtime request."
+            )
+
+        if response == "APPROVE":
+            overtime_request.status = overtime_status.APPROVED.value
+        elif response == "REJECT":
+            overtime_request.status = overtime_status.REJECTED.value
+        else:
+            raise InvalidApproverResponse(
+                "Only 'Approve' or 'Reject' responses are allowed."
+            )
+
+        overtime_request.save()
+
+        return overtime_request
     except Exception as error:
         raise error

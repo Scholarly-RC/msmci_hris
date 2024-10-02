@@ -15,8 +15,10 @@ from attendance.actions import (
     manually_set_user_clocked_time,
     process_add_holiday,
     process_bulk_daily_shift_schedule,
+    process_create_overtime_request,
     process_daily_shift_schedule,
     process_delete_holiday,
+    process_respond_to_overtime_request,
 )
 from attendance.biometric_device import get_biometric_data
 from attendance.models import AttendanceRecord, DailyShiftRecord, Holiday, Shift
@@ -34,6 +36,12 @@ from attendance.utils.date_utils import (
     get_readable_date,
 )
 from attendance.utils.holiday_utils import get_holidays, get_holidays_year_list
+from attendance.utils.overtime_utils import (
+    get_overtime_requests_year_list,
+    get_user_overtime_approver,
+    get_user_overtime_requests,
+    get_user_overtime_requests_to_approve,
+)
 from attendance.validations import add_holiday_validation
 from core.models import BiometricDetail, Department
 from hris.utils import create_global_alert_instance
@@ -176,6 +184,175 @@ def sync_user_attendance(request, year="", month=""):
                 "DANGER",
             )
         return response
+
+
+def request_overtime(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        user = request.user
+        if request.method == "GET":
+            data = request.GET
+            approvers = get_user_overtime_approver(user)
+            overtime_requests = get_user_overtime_requests(user)
+            overtime_years = get_overtime_requests_year_list(overtime_requests)
+
+            if "year_filter" in data:
+                year = data.get("selected_year")
+                if year and year != "0":
+                    overtime_requests = overtime_requests.filter(date__year=year)
+
+                context["overtime_requests"] = overtime_requests
+
+                response.content = render_block_to_string(
+                    "attendance/attendance_management.html",
+                    "user_overtime_requests_table",
+                    context,
+                )
+                response = retarget(response, "#user_overtime_requests_table")
+                response = reswap(response, "outerHTML")
+                return response
+
+            context.update(
+                {
+                    "user": user,
+                    "approvers": approvers,
+                    "overtime_requests": overtime_requests,
+                    "overtime_years": overtime_years,
+                }
+            )
+            response.content = render_block_to_string(
+                "attendance/attendance_management.html",
+                "request_overtime_container",
+                context,
+            )
+            response = trigger_client_event(
+                response, "openRequestOvertimeModal", after="swap"
+            )
+            response = retarget(response, "#request_overtime_container")
+            response = reswap(response, "outerHTML")
+            return response
+
+
+def submit_overtime_request(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        user = request.user
+        if request.method == "POST":
+            data = request.POST
+            process_create_overtime_request(user, data)
+            approvers = get_user_overtime_approver(user)
+            overtime_requests = get_user_overtime_requests(user)
+            overtime_years = get_overtime_requests_year_list(overtime_requests)
+
+            context.update(
+                {
+                    "user": user,
+                    "approvers": approvers,
+                    "overtime_requests": overtime_requests,
+                    "overtime_years": overtime_years,
+                }
+            )  # TODO: Add Notification
+            response.content = render_block_to_string(
+                "attendance/attendance_management.html",
+                "request_overtime_container",
+                context,
+            )
+            response = create_global_alert_instance(
+                response, "Overtime successfully submitted for review.", "SUCCESS"
+            )
+            response = retarget(response, "#request_overtime_container")
+            response = reswap(response, "outerHTML")
+            return response
+
+
+def view_overtime_request_to_approve(request):
+    context = {}
+    if request.htmx and request.method == "GET":
+        response = HttpResponse()
+        data = request.GET
+        user = request.user
+        if "back" in data:
+            response = trigger_client_event(
+                response, "openRequestOvertimeModal", after="swap"
+            )
+            response = trigger_client_event(
+                response, "closeOvertimeRequestsToApproveModal", after="swap"
+            )
+            response = reswap(response, "none")
+            return response
+
+        requests_to_approve = get_user_overtime_requests_to_approve(user)
+        overtime_years = get_overtime_requests_year_list(requests_to_approve)
+
+        if "year_filter" in data:
+            year = data.get("selected_year")
+            if year and year != "0":
+                requests_to_approve = requests_to_approve.filter(date__year=year)
+
+            context["requests_to_approve"] = requests_to_approve
+            response.content = render_block_to_string(
+                "attendance/attendance_management.html",
+                "overtime_requests_to_approve_table",
+                context,
+            )
+            response = retarget(response, "#overtime_requests_to_approve_table")
+            response = reswap(response, "outerHTML")
+            return response
+
+        context.update(
+            {
+                "requests_to_approve": requests_to_approve,
+                "overtime_years": overtime_years,
+            }
+        )
+        response.content = render_block_to_string(
+            "attendance/attendance_management.html",
+            "overtime_request_to_approve_container",
+            context,
+        )
+        response = trigger_client_event(
+            response, "openOvertimeRequestsToApproveModal", after="swap"
+        )
+        response = trigger_client_event(
+            response, "closeRequestOvertimeModal", after="swap"
+        )
+        response = retarget(response, "#overtime_request_to_approve_container")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+def respond_to_overtime_request(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        try:
+            user = request.user
+            data = request.POST
+            overtime_request = process_respond_to_overtime_request(user, data)
+            context["request"] = overtime_request
+            response.content = render_block_to_string(
+                "attendance/attendance_management.html",
+                "specific_overtime_request_to_approve",
+                context,
+            )
+            response = create_global_alert_instance(
+                response,
+                f"You have successfully {overtime_request.get_status_display()} the selected overtime request.",
+                "SUCCESS",
+            )
+            response = retarget(response, "closest tr")
+            response = reswap(response, "outerHTML")
+            return response
+        except Exception as error:
+            response = create_global_alert_instance(
+                response,
+                f"An error occurred while processing your response to the overtime request. Details: {error}.",
+                "DANGER",
+            )
+            response = reswap(response, "none")
+            return response
 
 
 def user_attendance_management(request, user_id="", year="", month=""):

@@ -75,6 +75,26 @@ urlpatterns = [
         name="sync_user_attendance",
     ),
     path(
+        "request-overtime/respond",
+        attendance_views.respond_to_overtime_request,
+        name="respond_to_overtime_request",
+    ),
+    path(
+        "request-overtime/view/request-to-approve",
+        attendance_views.view_overtime_request_to_approve,
+        name="view_overtime_request_to_approve",
+    ),
+    path(
+        "request-overtime/submit",
+        attendance_views.submit_overtime_request,
+        name="submit_overtime_request",
+    ),
+    path(
+        "request-overtime",
+        attendance_views.request_overtime,
+        name="request_overtime",
+    ),
+    path(
         "<str:year>/<str:month>",
         attendance_views.attendance_management,
         name="attendance_management_filtered",
