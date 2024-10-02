@@ -16,6 +16,17 @@ urlpatterns = [
         attendance_views.get_attendance_request,
         name="get_attendance_request",
     ),
+    ### HOLIDAY URLS SETTINGS ###
+    path(
+        "holiday-settings/remove",
+        attendance_views.remove_holiday,
+        name="remove_holiday",
+    ),
+    path(
+        "holiday-settings",
+        attendance_views.holiday_settings,
+        name="holiday_settings",
+    ),
     ### SHIFT MANGEMENT URLS ###
     path(
         "shift-management/asign/user/<str:department>/<str:year>/<str:month>/<str:day>",
@@ -31,6 +42,11 @@ urlpatterns = [
         "shift-management/<str:department>/<str:year>/<str:month>",
         attendance_views.shift_management,
         name="shift_management_filtered",
+    ),
+    path(
+        "shift-management/update-calendar",
+        attendance_views.update_shift_calendar,
+        name="update_shift_calendar",
     ),
     path(
         "shift-management",
@@ -62,6 +78,11 @@ urlpatterns = [
         "<str:year>/<str:month>",
         attendance_views.attendance_management,
         name="attendance_management_filtered",
+    ),
+    path(
+        "close-modals",
+        attendance_views.attendance_module_close_modals,
+        name="attendance_module_close_modals",
     ),
     path(
         "",

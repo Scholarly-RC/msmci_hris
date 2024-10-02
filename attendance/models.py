@@ -140,12 +140,16 @@ class Holiday(models.Model):
         verbose_name_plural = "Holidays"
 
     def __str__(self):
-        holiday_str = f"{self.name} - {get_months_dict().get(self.month)} {self.day}"
-        if not self.is_regular:
-            holiday_str += f", {self.year}"
+        holiday_str = f"{self.name} - " + self.get_display_date()
         return holiday_str
 
     def get_holiday_date(self):
         return get_date_object(
             self.year or datetime.datetime.now().year, self.month, self.day
         )
+
+    def get_display_date(self):
+        display_date = f"{get_months_dict().get(self.month)} {self.day}"
+        if not self.is_regular:
+            display_date += f", {self.year}"
+        return display_date

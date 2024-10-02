@@ -5,7 +5,11 @@ from django.db import transaction
 
 from attendance.utils.assign_shift_utils import get_employee_assignments
 from attendance.utils.biometric_utils import process_biometric_data_from_device
-from attendance.utils.date_utils import get_date_object, get_time_object
+from attendance.utils.date_utils import (
+    get_date_object,
+    get_date_object_from_date_str,
+    get_time_object,
+)
 
 
 @transaction.atomic
@@ -148,3 +152,36 @@ def manually_set_user_clocked_time(user, selected_date, clock_in_time, clock_out
         clock_out_datetime = datetime.datetime.combine(selected_date, clock_out_time)
         current_modified_clock_out_record.timestamp = clock_out_datetime
         current_modified_clock_out_record.save()
+
+
+@transaction.atomic
+def process_add_holiday(payload):
+    try:
+        HolidayModel = apps.get_model("attendance", "Holiday")
+        name = payload.get("holiday_name")
+        date_str = payload.get("holiday_date")
+        date = get_date_object_from_date_str(date_str)
+        is_regular = "is_holiday_regular" in payload
+
+        holiday = HolidayModel.objects.create(
+            name=name,
+            year=date.year,
+            month=date.month,
+            day=date.day,
+            is_regular=is_regular,
+        )
+
+        return holiday
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_delete_holiday(payload):
+    try:
+        HolidayModel = apps.get_model("attendance", "Holiday")
+        holiday_id = payload.get("holiday")
+        holiday = HolidayModel.objects.get(id=holiday_id)
+        holiday.delete()
+    except Exception as error:
+        raise error

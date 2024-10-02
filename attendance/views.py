@@ -4,19 +4,22 @@ import datetime
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponse
+from django.http.request import QueryDict
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-from django_htmx.http import push_url, reswap, retarget
+from django_htmx.http import push_url, reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
 
 from attendance.actions import (
     manually_set_user_clocked_time,
+    process_add_holiday,
     process_bulk_daily_shift_schedule,
     process_daily_shift_schedule,
+    process_delete_holiday,
 )
 from attendance.biometric_device import get_biometric_data
-from attendance.models import AttendanceRecord, DailyShiftRecord, Shift
+from attendance.models import AttendanceRecord, DailyShiftRecord, Holiday, Shift
 from attendance.utils.assign_shift_utils import get_employee_assignments
 from attendance.utils.attendance_utils import (
     get_employees_list_per_department,
@@ -30,6 +33,8 @@ from attendance.utils.date_utils import (
     get_number_of_days_in_a_month,
     get_readable_date,
 )
+from attendance.utils.holiday_utils import get_holidays, get_holidays_year_list
+from attendance.validations import add_holiday_validation
 from core.models import BiometricDetail, Department
 from hris.utils import create_global_alert_instance
 
@@ -371,6 +376,36 @@ def shift_management(request, department="", year="", month=""):
     return render(request, "attendance/shift_management.html", context)
 
 
+def update_shift_calendar(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        data = request.POST
+        shift_month = int(data.get("shift_month"))
+        shift_year = int(data.get("shift_year"))
+        shift_department_id = int(data.get("shift_department"))
+        selected_department = Department.objects.get(id=shift_department_id)
+
+        list_of_days = calendar.monthcalendar(shift_year, shift_month)
+        holidays = get_holiday_for_specific_month_and_year(shift_month, shift_year)
+
+        context.update(
+            {
+                "list_of_days": list_of_days,
+                "holidays": holidays,
+                "selected_month": shift_month,
+                "selected_year": shift_year,
+                "selected_department": selected_department,
+            }
+        )
+        response.content = render_block_to_string(
+            "attendance/shift_management.html", "shift_calendar", context
+        )
+        response = retarget(response, "#shift_calendar")
+        response = reswap(response, "outerHTML")
+        return response
+
+
 def assign_shift(request, department="", year="", month="", day=""):
     shift_year = year
     shift_month = month
@@ -536,6 +571,142 @@ def assign_user_to_shift(request, department="", year="", month="", day=""):
         return response
 
 
+def holiday_settings(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "GET":
+            data = request.GET
+            selected_year = data.get("selected_year", "0")
+            regular_holidays, special_holidays = get_holidays(year=selected_year)
+            holiday_years = get_holidays_year_list()
+            context.update(
+                {
+                    "regular_holidays": regular_holidays,
+                    "special_holidays": special_holidays,
+                    "holiday_years": holiday_years,
+                    "selected_year": int(selected_year),
+                }
+            )
+            if "year_filter" in data:
+                response.content = render_block_to_string(
+                    "attendance/shift_management.html",
+                    "holiday_list_section",
+                    context,
+                )
+                response = retarget(response, "#holiday_list_section")
+            else:
+                response.content = render_block_to_string(
+                    "attendance/shift_management.html",
+                    "holiday_settings_container",
+                    context,
+                )
+                response = trigger_client_event(
+                    response, "openHolidaySettingsModal", after="swap"
+                )
+                response = retarget(response, "#holiday_settings_container")
+            response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "POST":
+            try:
+                data = request.POST
+                errors = add_holiday_validation(data)
+                if errors:
+                    for error in errors:
+                        response = create_global_alert_instance(
+                            response, errors[error], "WARNING"
+                        )
+                        response = reswap(response, "none")
+                        return response
+
+                process_add_holiday(data)
+                regular_holidays, special_holidays = get_holidays()
+                holiday_years = get_holidays_year_list()
+                context.update(
+                    {
+                        "regular_holidays": regular_holidays,
+                        "special_holidays": special_holidays,
+                        "holiday_years": holiday_years,
+                    }
+                )
+                response.content = render_block_to_string(
+                    "attendance/shift_management.html",
+                    "holiday_settings_container",
+                    context,
+                )
+                response = create_global_alert_instance(
+                    response, "Holiday added successfully!", "SUCCESS"
+                )
+                response = trigger_client_event(
+                    response, "updateCalendar", after="swap"
+                )
+                response = retarget(response, "#holiday_settings_container")
+                response = reswap(response, "outerHTML")
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while adding the holiday. Please try again. Details: {error}",
+                    "DANGER",
+                )
+                response = reswap(response, "none")
+                return response
+
+
+def remove_holiday(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "DELETE":
+            try:
+                data = QueryDict(request.body)
+                process_delete_holiday(data)
+                response = create_global_alert_instance(
+                    response, "Holiday has been successfully deleted.", "SUCCESS"
+                )
+                response = trigger_client_event(
+                    response, "updateCalendar", after="swap"
+                )
+                response = retarget(response, "closest tr")
+                response = reswap(response, "delete")
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"Something went wrong while deleting the selected holiday. Details: {error}",
+                    "DANGER",
+                )
+                response = reswap(response, "none")
+                return response
+
+        if request.method == "POST":
+            data = request.POST
+            holiday_id = data.get("holiday")
+            holiday = Holiday.objects.get(id=holiday_id)
+            holiday_type = data.get("type")
+            if "cancel" not in data:
+                context["confirm_remove"] = True
+
+            context["holiday"] = holiday
+
+            if holiday_type == "special":
+                response.content = render_block_to_string(
+                    "attendance/shift_management.html",
+                    "specific_special_holiday_row",
+                    context,
+                )
+            elif holiday_type == "regular":
+                response.content = render_block_to_string(
+                    "attendance/shift_management.html",
+                    "specific_regular_holiday_row",
+                    context,
+                )
+            response = retarget(response, "closest tr")
+            response = reswap(response, "outerHTML")
+            return response
+
+
 ### Biometric ###
 @csrf_exempt
 def get_attendance_request(request):
@@ -548,3 +719,15 @@ def attendance_cdata(request):
         get_biometric_data()
 
     return HttpResponse("OK")
+
+
+# App Shared View
+
+
+def attendance_module_close_modals(request):
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        event_name = data.get("event_name")
+        response = HttpResponse()
+        response = trigger_client_event(response, event_name, after="swap")
+        return response

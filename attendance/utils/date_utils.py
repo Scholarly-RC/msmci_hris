@@ -39,6 +39,14 @@ def get_date_object(year: int, month: int, day: int) -> datetime.date:
     return datetime.date(year, month, day)
 
 
+def get_date_object_from_date_str(date_str: str):
+    """
+    Returns a datetime.date object for the specified date string.
+    """
+    date_object = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+    return date_object
+
+
 def get_time_object(time_str: str):
     """
     Converts a time string in "HH:MM" format to a datetime.time object.
