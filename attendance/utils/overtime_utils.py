@@ -2,6 +2,8 @@ from django.apps import apps
 from django.db.models import Q
 from django.http import QueryDict
 
+from attendance.utils.date_utils import get_date_object
+
 
 def get_user_overtime_approver(user):
     UserModel = apps.get_model("auth", "User")
@@ -104,3 +106,15 @@ def get_overtime_request_status_list():
 def get_overtime_request_approvers():
     UserModel = apps.get_model("auth", "User")
     return UserModel.objects.exclude(approved_overtimes__isnull=True)
+
+
+def check_user_has_approved_overtime_on_specific_date(
+    user, day: int, month: int, year: int
+) -> bool:
+    OvertimeModel = apps.get_model("attendance", "Overtime")
+    approved_status = OvertimeModel.Status.APPROVED.value
+
+    selected_date = get_date_object(year=year, month=month, day=day)
+    return user.overtime_requests.filter(
+        date=selected_date, status=approved_status
+    ).exists()

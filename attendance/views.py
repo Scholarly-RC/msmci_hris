@@ -33,7 +33,6 @@ from attendance.models import (
 from attendance.utils.assign_shift_utils import get_employee_assignments
 from attendance.utils.attendance_utils import (
     get_employees_list_per_department,
-    get_holiday_for_specific_month_and_year,
     get_user_clocked_time,
     get_user_daily_shift_record_shifts,
 )
@@ -43,8 +42,14 @@ from attendance.utils.date_utils import (
     get_number_of_days_in_a_month,
     get_readable_date,
 )
-from attendance.utils.holiday_utils import get_holidays, get_holidays_year_list
+from attendance.utils.holiday_utils import (
+    get_holiday_for_specific_day,
+    get_holiday_for_specific_month_and_year,
+    get_holidays,
+    get_holidays_year_list,
+)
 from attendance.utils.overtime_utils import (
+    check_user_has_approved_overtime_on_specific_date,
     get_all_overtime_request,
     get_overtime_request_approvers,
     get_overtime_request_status_list,
@@ -90,11 +95,18 @@ def attendance_management(request, year="", month=""):
             day=day,
             shift=current_shift,
         )
+
         monthly_record_data.append(
             {
                 "day": day,
                 "daily_user_shift": daily_user_shift,
                 "clocked_time": clocked_time,
+                "holidays": get_holiday_for_specific_day(
+                    day=day, month=selected_month, year=selected_year
+                ),
+                "approved_overtime": check_user_has_approved_overtime_on_specific_date(
+                    user=current_user, day=day, month=selected_month, year=selected_year
+                ),
             }
         )
     context.update({"monthly_record_data": monthly_record_data})
@@ -102,7 +114,7 @@ def attendance_management(request, year="", month=""):
         response = HttpResponse()
         response.content = render_block_to_string(
             "attendance/attendance_management.html",
-            "attendance_management_section",
+            "user_attendance_table",
             context,
         )
         response = push_url(
@@ -115,7 +127,7 @@ def attendance_management(request, year="", month=""):
                 },
             ),
         )
-        response = retarget(response, "#attendance_management_section")
+        response = retarget(response, "#user_attendance_table")
         response = reswap(response, "outerHTML")
         return response
 
@@ -157,6 +169,9 @@ def sync_user_attendance(request, year="", month=""):
                 "day": day,
                 "daily_user_shift": daily_user_shift,
                 "clocked_time": clocked_time,
+                "holidays": get_holiday_for_specific_day(
+                    day=day, month=selected_month, year=selected_year
+                ),
             }
         )
     context.update({"monthly_record_data": monthly_record_data})
@@ -167,10 +182,10 @@ def sync_user_attendance(request, year="", month=""):
         response = HttpResponse()
         response.content = render_block_to_string(
             "attendance/attendance_management.html",
-            "attendance_management_section",
+            "user_attendance_table",
             context,
         )
-        response = retarget(response, "#attendance_management_section")
+        response = retarget(response, "#user_attendance_table")
         response = reswap(response, "outerHTML")
 
         if current_biometric_data.user_id_in_device:
@@ -196,6 +211,7 @@ def sync_user_attendance(request, year="", month=""):
                 "Your Biometric Device User ID has not been set. Please configure it in your profile before proceeding.",
                 "DANGER",
             )
+            response = reswap(response, "none")
         return response
 
 
@@ -511,8 +527,8 @@ def user_attendance_management(request, user_id="", year="", month=""):
     context = {}
     users = get_employees_list_per_department()
     now = datetime.now()
-    selected_year = request.POST.get("attendance_year") or now.year
-    selected_month = request.POST.get("attendance_month") or now.month
+    selected_year = request.POST.get("attendance_year") or year or now.year
+    selected_month = request.POST.get("attendance_month") or month or now.month
     selected_user_id = request.POST.get("selected_user") or user_id
     selected_year = int(selected_year)
     selected_month = int(selected_month)
@@ -554,6 +570,15 @@ def user_attendance_management(request, user_id="", year="", month=""):
                     "day": day,
                     "daily_user_shift": daily_user_shift,
                     "clocked_time": clocked_time,
+                    "holidays": get_holiday_for_specific_day(
+                        day=day, month=selected_month, year=selected_year
+                    ),
+                    "approved_overtime": check_user_has_approved_overtime_on_specific_date(
+                        user=selected_user,
+                        day=day,
+                        month=selected_month,
+                        year=selected_year,
+                    ),
                 }
             )
         context.update({"monthly_record_data": monthly_record_data})
@@ -562,7 +587,7 @@ def user_attendance_management(request, user_id="", year="", month=""):
         response = HttpResponse()
         response.content = render_block_to_string(
             "attendance/user_attendance_management.html",
-            "user_attendance_management_section",
+            "user_management_attendance_table_container",
             context,
         )
         response = push_url(
@@ -576,7 +601,7 @@ def user_attendance_management(request, user_id="", year="", month=""):
                 },
             ),
         )
-        response = retarget(response, "#user_attendance_management_section")
+        response = retarget(response, "#user_management_attendance_table_container")
         response = reswap(response, "outerHTML")
         return response
 

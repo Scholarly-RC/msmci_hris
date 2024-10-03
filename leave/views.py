@@ -185,7 +185,7 @@ def user_review_leave_request(request):
                 response = create_global_alert_instance(
                     response,
                     f"An error has occured while responing to the selected leave request. Details: {error}",
-                    type="DANGER",
+                    "DANGER",
                 )
                 response = reswap(response, "none")
                 return response
@@ -271,7 +271,7 @@ def review_leave_request(request):
                 response = create_global_alert_instance(
                     response,
                     f"An error occurred while processing the selected leave request. Details: {error}",
-                    type="DANGER",
+                    "DANGER",
                 )
                 response = reswap(response, "none")
                 return response

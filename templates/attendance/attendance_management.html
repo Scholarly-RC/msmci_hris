@@ -75,75 +75,104 @@
                     <div class="overflow-x-auto">
                         <div class="inline-block min-w-full align-middle">
                             <div class="overflow-hidden shadow">
-                                <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
-                                    <thead class="bg-gray-100 dark:bg-gray-700">
-                                        <tr>
-                                            <th scope="col"
-                                                class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                                Day
-                                            </th>
-                                            <th scope="col"
-                                                class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                                Shift
-                                            </th>
-                                            <th scope="col"
-                                                class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                                Time In
-                                            </th>
-                                            <th scope="col"
-                                                class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                                Time In Difference
-                                            </th>
-                                            <th scope="col"
-                                                class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                                Time Out
-                                            </th>
-                                            <th scope="col"
-                                                class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                                Time Out Difference
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                                        {% for user_shift_data in monthly_record_data %}
-                                            {% block user_table_record %}
-                                                <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
-                                                    <td class="flex items-center p-4 mr-12 space-x-6 whitespace-nowrap">
-                                                        <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
-                                                            <div class="text-base font-semibold text-gray-900 dark:text-white">{{ user_shift_data.day }}</div>
-                                                        </div>
-                                                    </td>
-                                                    <td class="max-w-sm p-4 overflow-hidden text-base font-bold text-gray-500 truncate xl:max-w-xs dark:text-gray-400">
-                                                        <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
-                                                            <div class="text-base font-semibold text-gray-900 dark:text-white">
-                                                                {{ user_shift_data.daily_user_shift.shift.description }}
+                                {% block user_attendance_table %}
+                                    <table id="user_attendance_table"
+                                           class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
+                                        <thead class="bg-gray-100 dark:bg-gray-700">
+                                            <tr>
+                                                <th scope="col"
+                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                                    Day
+                                                </th>
+                                                <th scope="col"
+                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                                    Shift
+                                                </th>
+                                                <th scope="col"
+                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                                    Time In
+                                                </th>
+                                                <th scope="col"
+                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                                    Time In Difference
+                                                </th>
+                                                <th scope="col"
+                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                                    Time Out
+                                                </th>
+                                                <th scope="col"
+                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                                    Time Out Difference
+                                                </th>
+                                                <th scope="col"
+                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                    Holiday
+                                                </th>
+                                                <th scope="col"
+                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                    Overtime
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                                            {% for user_shift_data in monthly_record_data %}
+                                                {% block user_table_record %}
+                                                    <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                        <td class="flex items-center p-4 mr-12 space-x-6 whitespace-nowrap">
+                                                            <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                                                                <div class="text-base font-semibold text-gray-900 dark:text-white">{{ user_shift_data.day }}</div>
                                                             </div>
-                                                            <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">
-                                                                {{ user_shift_data.daily_user_shift.shift.get_twelve_hour_format_shift_range }}
+                                                        </td>
+                                                        <td class="max-w-sm p-4 overflow-hidden text-base font-bold text-gray-500 truncate xl:max-w-xs dark:text-gray-400">
+                                                            <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                                                                <div class="text-base font-semibold text-gray-900 dark:text-white">
+                                                                    {{ user_shift_data.daily_user_shift.shift.description }}
+                                                                </div>
+                                                                <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">
+                                                                    {{ user_shift_data.daily_user_shift.shift.get_twelve_hour_format_shift_range }}
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </td>
-                                                    <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                        {% if user_shift_data.clocked_time.clock_in %}{{ user_shift_data.clocked_time.clock_in|date:"h:i a" }}{% endif %}
-                                                    </td>
-                                                    <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                        {% if user_shift_data.clocked_time.clock_in_time_diff_formatted %}
-                                                            {{ user_shift_data.clocked_time.clock_in_time_diff_formatted }}
-                                                        {% endif %}
-                                                    </td>
-                                                    <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                        {% if user_shift_data.clocked_time.clock_out %}{{ user_shift_data.clocked_time.clock_out|date:"h:i a" }}{% endif %}
-                                                    </td>
-                                                    <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                        {% if user_shift_data.clocked_time.clock_out_time_diff_formatted %}
-                                                            {{ user_shift_data.clocked_time.clock_out_time_diff_formatted }}
-                                                        {% endif %}
-                                                    </td>
-                                                </tr>
-                                            {% endblock %}
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                                                        </td>
+                                                        <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                            {% if user_shift_data.clocked_time.clock_in %}{{ user_shift_data.clocked_time.clock_in|date:"h:i a" }}{% endif %}
+                                                        </td>
+                                                        <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                            {% if user_shift_data.clocked_time.clock_in_time_diff_formatted %}
+                                                                {{ user_shift_data.clocked_time.clock_in_time_diff_formatted }}
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                            {% if user_shift_data.clocked_time.clock_out %}{{ user_shift_data.clocked_time.clock_out|date:"h:i a" }}{% endif %}
+                                                        </td>
+                                                        <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                            {% if user_shift_data.clocked_time.clock_out_time_diff_formatted %}
+                                                                {{ user_shift_data.clocked_time.clock_out_time_diff_formatted }}
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                                                            {% if user_shift_data.holidays %}
+                                                                {% for holiday in user_shift_data.holidays %}{{ holiday.get_name_display }}{% endfor %}
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                                                            {% if user_shift_data.approved_overtime %}
+                                                                <svg class="mx-auto w-6 h-6 text-gray-800 dark:text-white"
+                                                                     aria-hidden="true"
+                                                                     xmlns="http://www.w3.org/2000/svg"
+                                                                     width="24"
+                                                                     height="24"
+                                                                     fill="none"
+                                                                     viewBox="0 0 24 24">
+                                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5" />
+                                                                </svg>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                {% endblock %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% endblock %}
                             </div>
                         </div>
                     </div>

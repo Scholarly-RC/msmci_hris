@@ -143,6 +143,9 @@ class Holiday(models.Model):
         holiday_str = f"{self.name} - " + self.get_display_date()
         return holiday_str
 
+    def get_name_display(self):
+        return f"{self.name} ({'Regular' if self.is_regular else 'Special'})"
+
     def get_holiday_date(self):
         return get_date_object(
             self.year or datetime.datetime.now().year, self.month, self.day

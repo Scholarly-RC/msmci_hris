@@ -78,158 +78,189 @@
                     </div>
                     <div class="overflow-x-auto">
                         <div class="inline-block min-w-full align-middle">
-                            <div class="overflow-hidden shadow">
-                                {% if monthly_record_data %}
-                                    <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
-                                        <thead class="bg-gray-100 dark:bg-gray-700">
-                                            <tr>
-                                                <th scope="col"
-                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                                    Day
-                                                </th>
-                                                <th scope="col"
-                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                                    Shift
-                                                </th>
-                                                <th scope="col"
-                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                                    Time In
-                                                </th>
-                                                <th scope="col"
-                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                                    Time In Difference
-                                                </th>
-                                                <th scope="col"
-                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                                    Time Out
-                                                </th>
-                                                <th scope="col"
-                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                                    Time Out Difference
-                                                </th>
-                                                <th scope="col"
-                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                                    Modify
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                                            {% for user_shift_data in monthly_record_data %}
-                                                {% block user_table_record %}
-                                                    <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
-                                                        <td class="flex items-center p-4 mr-12 space-x-6 whitespace-nowrap">
-                                                            <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
-                                                                <div class="text-base font-semibold text-gray-900 dark:text-white">{{ user_shift_data.day }}</div>
-                                                            </div>
-                                                        </td>
-                                                        <td class="max-w-sm p-4 overflow-hidden text-base font-bold text-gray-500 truncate xl:max-w-xs dark:text-gray-400">
-                                                            <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
-                                                                <div class="text-base font-semibold text-gray-900 dark:text-white">
-                                                                    {{ user_shift_data.daily_user_shift.shift.description }}
+                            {% block user_management_attendance_table_container %}
+                                <div id="user_management_attendance_table_container"
+                                     class="h-[39rem] overflow-y-auto shadow">
+                                    {% if monthly_record_data %}
+                                        <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-600">
+                                            <thead class="bg-gray-100 dark:bg-gray-700 sticky top-0">
+                                                <tr>
+                                                    <th scope="col"
+                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                                        Day
+                                                    </th>
+                                                    <th scope="col"
+                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
+                                                        Shift
+                                                    </th>
+                                                    <th scope="col"
+                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                        Time In
+                                                    </th>
+                                                    <th scope="col"
+                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                        Time In Difference
+                                                    </th>
+                                                    <th scope="col"
+                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                        Time Out
+                                                    </th>
+                                                    <th scope="col"
+                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                        Time Out Difference
+                                                    </th>
+                                                    <th scope="col"
+                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                        Holiday
+                                                    </th>
+                                                    <th scope="col"
+                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                        Overtime
+                                                    </th>
+                                                    <th scope="col"
+                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                        Modify
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                                                {% for user_shift_data in monthly_record_data %}
+                                                    {% block user_table_record %}
+                                                        <tr class="hover:bg-gray-100 dark:hover:bg-gray-700">
+                                                            <td class="flex items-center p-4 mr-12 space-x-6 whitespace-nowrap">
+                                                                <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                                                                    <div class="text-base font-semibold text-gray-900 dark:text-white">{{ user_shift_data.day }}</div>
                                                                 </div>
-                                                                <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">
-                                                                    {{ user_shift_data.daily_user_shift.shift.get_twelve_hour_format_shift_range }}
+                                                            </td>
+                                                            <td class="max-w-sm p-4 overflow-hidden text-base font-bold text-gray-500 truncate xl:max-w-xs dark:text-gray-400">
+                                                                <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                                                                    <div class="text-base font-semibold text-gray-900 dark:text-white">
+                                                                        {{ user_shift_data.daily_user_shift.shift.description }}
+                                                                    </div>
+                                                                    <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">
+                                                                        {{ user_shift_data.daily_user_shift.shift.get_twelve_hour_format_shift_range }}
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        </td>
-                                                        <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                            {% if record_edit_mode %}
-                                                                <div class="w-32 relative">
-                                                                    <label for="clock_in_time">Clock In:</label>
-                                                                    <input type="time"
-                                                                           id="clock_in_time"
-                                                                           name="clock_in_time"
-                                                                           class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                                           value="{{ user_shift_data.clocked_time.clock_in_str }}"
-                                                                           required />
-                                                                </div>
-                                                            {% else %}
-                                                                {% if user_shift_data.clocked_time.clock_in %}{{ user_shift_data.clocked_time.clock_in|date:"h:i a" }}{% endif %}
-                                                            {% endif %}
-                                                        </td>
-                                                        <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                            {% if not record_edit_mode %}
-                                                                {% if user_shift_data.clocked_time.clock_in_time_diff_formatted %}
-                                                                    {{ user_shift_data.clocked_time.clock_in_time_diff_formatted }}
-                                                                {% endif %}
-                                                            {% endif %}
-                                                        </td>
-                                                        <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                            {% if record_edit_mode %}
-                                                                <div class="w-32 relative">
-                                                                    <label for="clock_out_time">Clock Out:</label>
-                                                                    <input type="time"
-                                                                           id="clock_out_time"
-                                                                           name="clock_out_time"
-                                                                           class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                                           value="{{ user_shift_data.clocked_time.clock_out_str }}"
-                                                                           required />
-                                                                </div>
-                                                            {% else %}
-                                                                {% if user_shift_data.clocked_time.clock_out %}{{ user_shift_data.clocked_time.clock_out|date:"h:i a" }}{% endif %}
-                                                            {% endif %}
-                                                        </td>
-                                                        <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                            {% if not record_edit_mode %}
-                                                                {% if user_shift_data.clocked_time.clock_out_time_diff_formatted %}
-                                                                    {{ user_shift_data.clocked_time.clock_out_time_diff_formatted }}
-                                                                {% endif %}
-                                                            {% endif %}
-                                                        </td>
-                                                        <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                            {% if user_shift_data.daily_user_shift %}
+                                                            </td>
+                                                            <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
                                                                 {% if record_edit_mode %}
-                                                                    <div class="flex flex-row">
-                                                                        <button type="button"
-                                                                                hx-post="{% url "attendance:toggle_user_management_record_edit" %}"
-                                                                                hx-vals='{"toggle_edit_mode": "off", "selected_day": {{ user_shift_data.day }}}'
-                                                                                hx-include="[name='selected_user'], [name='attendance_year'], [name='attendance_month']"
-                                                                                hx-target="closest tr">
-                                                                            <svg class="w-6 h-6"
-                                                                                 xmlns="http://www.w3.org/2000/svg"
-                                                                                 fill="currentColor"
-                                                                                 viewBox="0 0 24 24">
-                                                                                <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm3.707,12.293a1,1,0,1,1-1.414,1.414L12,13.414,9.707,15.707a1,1,0,0,1-1.414-1.414L10.586,12,8.293,9.707A1,1,0,0,1,9.707,8.293L12,10.586l2.293-2.293a1,1,0,0,1,1.414,1.414L13.414,12Z" />
-                                                                            </svg>
-                                                                        </button>
-                                                                        <button type="button"
-                                                                                hx-post="{% url "attendance:toggle_user_management_record_edit" %}"
-                                                                                hx-vals='{"save_record": "True", "selected_day": {{ user_shift_data.day }}}'
-                                                                                hx-include="[name='selected_user'], [name='attendance_year'], [name='attendance_month'], [name='clock_in_time'], [name='clock_out_time']"
-                                                                                hx-target="closest tr">
-                                                                            <svg class="w-6 h-6"
-                                                                                 xmlns="http://www.w3.org/2000/svg"
-                                                                                 fill="currentColor"
-                                                                                 viewBox="0 0 24 24">
-                                                                                <path d="M21 20V8.414a1 1 0 0 0-.293-.707l-4.414-4.414A1 1 0 0 0 15.586 3H4a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1zM9 8h4a1 1 0 0 1 0 2H9a1 1 0 0 1 0-2zm7 11H8v-4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z" />
-                                                                            </svg>
-                                                                        </button>
+                                                                    <div class="w-32 relative mx-auto">
+                                                                        <label for="clock_in_time">Clock In</label>
+                                                                        <input type="time"
+                                                                               id="clock_in_time"
+                                                                               name="clock_in_time"
+                                                                               class="text-center bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                                               value="{{ user_shift_data.clocked_time.clock_in_str }}"
+                                                                               required />
                                                                     </div>
                                                                 {% else %}
-                                                                    <button type="button"
-                                                                            hx-post="{% url "attendance:toggle_user_management_record_edit" %}"
-                                                                            hx-vals='{"toggle_edit_mode": "on", "selected_day": {{ user_shift_data.day }}}'
-                                                                            hx-include="[name='selected_user'], [name='attendance_year'], [name='attendance_month']"
-                                                                            hx-target="closest tr">
-                                                                        <svg class="w-6 h-6"
-                                                                             fill="currentColor"
-                                                                             viewBox="0 0 20 20"
-                                                                             xmlns="http://www.w3.org/2000/svg">
-                                                                            <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path>
-                                                                            <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd">
-                                                                            </path>
-                                                                        </svg>
-                                                                    </button>
+                                                                    {% if user_shift_data.clocked_time.clock_in %}{{ user_shift_data.clocked_time.clock_in|date:"h:i a" }}{% endif %}
                                                                 {% endif %}
-                                                            {% endif %}
-                                                        </td>
-                                                    </tr>
-                                                {% endblock %}
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                {% endif %}
-                            </div>
+                                                            </td>
+                                                            <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                                                                {% if not record_edit_mode %}
+                                                                    {% if user_shift_data.clocked_time.clock_in_time_diff_formatted %}
+                                                                        {{ user_shift_data.clocked_time.clock_in_time_diff_formatted }}
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                                                                {% if record_edit_mode %}
+                                                                    <div class="w-32 relative mx-auto">
+                                                                        <label for="clock_out_time">Clock Out</label>
+                                                                        <input type="time"
+                                                                               id="clock_out_time"
+                                                                               name="clock_out_time"
+                                                                               class="text-center bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                                               value="{{ user_shift_data.clocked_time.clock_out_str }}"
+                                                                               required />
+                                                                    </div>
+                                                                {% else %}
+                                                                    {% if user_shift_data.clocked_time.clock_out %}{{ user_shift_data.clocked_time.clock_out|date:"h:i a" }}{% endif %}
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                                                                {% if not record_edit_mode %}
+                                                                    {% if user_shift_data.clocked_time.clock_out_time_diff_formatted %}
+                                                                        {{ user_shift_data.clocked_time.clock_out_time_diff_formatted }}
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                                                                {% if user_shift_data.holidays %}
+                                                                    {% for holiday in user_shift_data.holidays %}{{ holiday.get_name_display }}{% endfor %}
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                                                                {% if user_shift_data.approved_overtime %}
+                                                                    <svg class="mx-auto w-6 h-6 text-gray-800 dark:text-white"
+                                                                         aria-hidden="true"
+                                                                         xmlns="http://www.w3.org/2000/svg"
+                                                                         width="24"
+                                                                         height="24"
+                                                                         fill="none"
+                                                                         viewBox="0 0 24 24">
+                                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5" />
+                                                                    </svg>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                                {% if user_shift_data.daily_user_shift %}
+                                                                    {% if record_edit_mode %}
+                                                                        <div class="flex flex-row">
+                                                                            <button type="button"
+                                                                                    hx-post="{% url "attendance:toggle_user_management_record_edit" %}"
+                                                                                    hx-vals='{"toggle_edit_mode": "off", "selected_day": {{ user_shift_data.day }}}'
+                                                                                    hx-include="[name='selected_user'], [name='attendance_year'], [name='attendance_month']"
+                                                                                    hx-target="closest tr">
+                                                                                <svg class="w-6 h-6"
+                                                                                     xmlns="http://www.w3.org/2000/svg"
+                                                                                     fill="currentColor"
+                                                                                     viewBox="0 0 24 24">
+                                                                                    <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm3.707,12.293a1,1,0,1,1-1.414,1.414L12,13.414,9.707,15.707a1,1,0,0,1-1.414-1.414L10.586,12,8.293,9.707A1,1,0,0,1,9.707,8.293L12,10.586l2.293-2.293a1,1,0,0,1,1.414,1.414L13.414,12Z" />
+                                                                                </svg>
+                                                                            </button>
+                                                                            <button type="button"
+                                                                                    hx-post="{% url "attendance:toggle_user_management_record_edit" %}"
+                                                                                    hx-vals='{"save_record": "True", "selected_day": {{ user_shift_data.day }}}'
+                                                                                    hx-include="[name='selected_user'], [name='attendance_year'], [name='attendance_month'], [name='clock_in_time'], [name='clock_out_time']"
+                                                                                    hx-target="closest tr">
+                                                                                <svg class="w-6 h-6"
+                                                                                     xmlns="http://www.w3.org/2000/svg"
+                                                                                     fill="currentColor"
+                                                                                     viewBox="0 0 24 24">
+                                                                                    <path d="M21 20V8.414a1 1 0 0 0-.293-.707l-4.414-4.414A1 1 0 0 0 15.586 3H4a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1zM9 8h4a1 1 0 0 1 0 2H9a1 1 0 0 1 0-2zm7 11H8v-4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z" />
+                                                                                </svg>
+                                                                            </button>
+                                                                        </div>
+                                                                    {% else %}
+                                                                        <div class="flex justify-center">
+                                                                            <button type="button"
+                                                                                    hx-post="{% url "attendance:toggle_user_management_record_edit" %}"
+                                                                                    hx-vals='{"toggle_edit_mode": "on", "selected_day": {{ user_shift_data.day }}}'
+                                                                                    hx-include="[name='selected_user'], [name='attendance_year'], [name='attendance_month']"
+                                                                                    hx-target="closest tr">
+                                                                                <svg class="w-6 h-6"
+                                                                                     fill="currentColor"
+                                                                                     viewBox="0 0 20 20"
+                                                                                     xmlns="http://www.w3.org/2000/svg">
+                                                                                    <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path>
+                                                                                    <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd">
+                                                                                    </path>
+                                                                                </svg>
+                                                                            </button>
+                                                                        </div>
+                                                                    {% endif %}
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                    {% endblock %}
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    {% endif %}
+                                </div>
+                            {% endblock %}
                         </div>
                     </div>
                 </div>
