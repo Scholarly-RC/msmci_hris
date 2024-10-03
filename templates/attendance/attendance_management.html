@@ -344,26 +344,26 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for request in requests_to_approve %}
-                                                {% block specific_overtime_request_to_approve %}
+                                            {% for overtime_request in requests_to_approve %}
+                                                {% block specific_overtime_request_to_respond %}
                                                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                                         <th scope="row"
                                                             class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                            {{ request.get_requestor_display }}
+                                                            {{ overtime_request.get_requestor_display }}
                                                         </th>
-                                                        <td class="px-6 py-4">{{ request.get_display_date }}</td>
-                                                        <td class="px-6 py-4">{{ request.get_status_display }}</td>
+                                                        <td class="px-6 py-4">{{ overtime_request.get_display_date }}</td>
+                                                        <td class="px-6 py-4">{{ overtime_request.get_status_display }}</td>
                                                         <td class="px-6 py-4">
-                                                            {% if request.status == "PEND" %}
+                                                            {% if overtime_request.status == "PEND" %}
                                                                 <button type="button"
                                                                         hx-post="{% url "attendance:respond_to_overtime_request" %}"
-                                                                        hx-vals='{"overtime_request": {{ request.id }}, "response": "APPROVE"}'
+                                                                        hx-vals='{"overtime_request": {{ overtime_request.id }}, "response": "APPROVE"}'
                                                                         class="px-3 py-2 text-xs font-medium text-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
                                                                     Approve
                                                                 </button>
                                                                 <button type="button"
                                                                         hx-post="{% url "attendance:respond_to_overtime_request" %}"
-                                                                        hx-vals='{"overtime_request": {{ request.id }}, "response": "REJECT"}'
+                                                                        hx-vals='{"overtime_request": {{ overtime_request.id }}, "response": "REJECT"}'
                                                                         class="px-3 py-2 text-xs font-medium text-center text-white bg-red-700 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
                                                                     Reject
                                                                 </button>

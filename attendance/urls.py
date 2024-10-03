@@ -38,6 +38,11 @@ urlpatterns = [
         name="request_overtime",
     ),
     path(
+        "overtime-management/respond",
+        attendance_views.overtime_management_respond_to_request,
+        name="overtime_management_respond_to_request",
+    ),
+    path(
         "overtime-management/delete-request",
         attendance_views.delete_overtime_request,
         name="delete_overtime_request",

@@ -113,45 +113,61 @@
                                         </thead>
                                         <tbody>
                                             {% for overtime_request in overtime_requests %}
-                                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                                    <th scope="row"
-                                                        class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">
-                                                        <div>
-                                                            <div class="font-bold text-lg">{{ overtime_request.get_requestor_display }}</div>
-                                                            <div class="text-base font-normal text-gray-500">{{ overtime_request.user.userdetails.department }}</div>
-                                                        </div>
-                                                    </th>
-                                                    <td class="px-6 py-4 text-center">{{ overtime_request.get_display_date }}</td>
-                                                    <td class="px-6 py-4 text-center">{{ overtime_request.get_approver_display }}</td>
-                                                    <td class="px-6 py-4 text-center">{{ overtime_request.get_status_display }}</td>
-                                                    {% block specific_overtime_request_action_button %}
-                                                        <td class="px-6 py-4 text-center">
-                                                            <div class="flex flex-col">
-                                                                {% if confirm_remove %}
-                                                                    <button type="button"
-                                                                            hx-delete="{% url "attendance:delete_overtime_request" %}"
-                                                                            hx-vals='{"overtime_request": {{ overtime_request.id }}}'
-                                                                            class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
-                                                                        Confirm
-                                                                    </button>
-                                                                    <button type="button"
-                                                                            hx-post="{% url "attendance:delete_overtime_request" %}"
-                                                                            hx-vals='{"overtime_request": {{ overtime_request.id }}, "cancel": "True"}'
-                                                                            class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
-                                                                        Cancel
-                                                                    </button>
-                                                                {% else %}
-                                                                    <button type="button"
-                                                                            hx-post="{% url "attendance:delete_overtime_request" %}"
-                                                                            hx-vals='{"overtime_request": {{ overtime_request.id }}}'
-                                                                            class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
-                                                                        Remove
-                                                                    </button>
-                                                                {% endif %}
+                                                {% block specific_overtime_request_to_respond %}
+                                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                        <th scope="row"
+                                                            class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">
+                                                            <div>
+                                                                <div class="font-bold text-lg">{{ overtime_request.get_requestor_display }}</div>
+                                                                <div class="text-base font-normal text-gray-500">{{ overtime_request.user.userdetails.department }}</div>
                                                             </div>
-                                                        </td>
-                                                    {% endblock %}
-                                                </tr>
+                                                        </th>
+                                                        <td class="px-6 py-4 text-center">{{ overtime_request.get_display_date }}</td>
+                                                        <td class="px-6 py-4 text-center">{{ overtime_request.get_approver_display }}</td>
+                                                        <td class="px-6 py-4 text-center">{{ overtime_request.get_status_display }}</td>
+                                                        {% block specific_overtime_request_action_button %}
+                                                            <td class="px-6 py-4 text-center">
+                                                                <div class="flex flex-col gap-1">
+                                                                    {% if confirm_remove %}
+                                                                        <button type="button"
+                                                                                hx-delete="{% url 'attendance:delete_overtime_request' %}"
+                                                                                hx-vals='{"overtime_request": {{ overtime_request.id }}}'
+                                                                                class="font-medium text-green-600 dark:text-green-500 hover:underline">
+                                                                            Confirm
+                                                                        </button>
+                                                                        <button type="button"
+                                                                                hx-post="{% url 'attendance:delete_overtime_request' %}"
+                                                                                hx-vals='{"overtime_request": {{ overtime_request.id }}, "cancel": "True"}'
+                                                                                class="font-medium text-red-600 dark:text-red-500 hover:underline">
+                                                                            Cancel
+                                                                        </button>
+                                                                    {% else %}
+                                                                        {% if overtime_request.approver == user and overtime_request.status == "PEND" %}
+                                                                            <button type="button"
+                                                                                    hx-post="{% url "attendance:overtime_management_respond_to_request" %}"
+                                                                                    hx-vals='{"overtime_request": {{ overtime_request.id }}, "response": "APPROVE"}'
+                                                                                    class="font-medium text-green-600 hover:underline">
+                                                                                Approve
+                                                                            </button>
+                                                                            <button type="button"
+                                                                                    hx-post="{% url "attendance:overtime_management_respond_to_request" %}"
+                                                                                    hx-vals='{"overtime_request": {{ overtime_request.id }}, "response": "REJECT"}'
+                                                                                    class="font-medium text-red-600 hover:underline">
+                                                                                Reject
+                                                                            </button>
+                                                                        {% endif %}
+                                                                        <button type="button"
+                                                                                hx-post="{% url 'attendance:delete_overtime_request' %}"
+                                                                                hx-vals='{"overtime_request": {{ overtime_request.id }}}'
+                                                                                class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                                                                            Remove
+                                                                        </button>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </td>
+                                                        {% endblock %}
+                                                    </tr>
+                                                {% endblock %}
                                             {% endfor %}
                                         </tbody>
                                     </table>

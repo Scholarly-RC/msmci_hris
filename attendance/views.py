@@ -342,10 +342,10 @@ def respond_to_overtime_request(request):
             user = request.user
             data = request.POST
             overtime_request = process_respond_to_overtime_request(user, data)
-            context["request"] = overtime_request
+            context["overtime_request"] = overtime_request
             response.content = render_block_to_string(
                 "attendance/attendance_management.html",
-                "specific_overtime_request_to_approve",
+                "specific_overtime_request_to_respond",
                 context,
             )
             response = create_global_alert_instance(
@@ -379,8 +379,10 @@ def overtime_management(request):
     departments = get_department_list()
     overtime_status_list = get_overtime_request_status_list()
     approvers = get_overtime_request_approvers()
+    user = request.user
     context.update(
         {
+            "user": user,
             "overtime_requests": overtime_requests,
             "overtime_requests_year_list": overtime_requests_year_list,
             "departments": departments,
@@ -402,10 +404,43 @@ def overtime_management(request):
     return render(request, "attendance/overtime_management.html", context)
 
 
+def overtime_management_respond_to_request(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        try:
+            user = request.user
+            data = request.POST
+            overtime_request = process_respond_to_overtime_request(user, data)
+            context["overtime_request"] = overtime_request
+            response.content = render_block_to_string(
+                "attendance/attendance_management.html",
+                "specific_overtime_request_to_respond",
+                context,
+            )
+            response = create_global_alert_instance(
+                response,
+                f"You have successfully {overtime_request.get_status_display()} the selected overtime request.",
+                "SUCCESS",
+            )
+            response = retarget(response, "closest tr")
+            response = reswap(response, "outerHTML")
+            return response
+        except Exception as error:
+            response = create_global_alert_instance(
+                response,
+                f"An error occurred while processing your response to the overtime request. Details: {error}.",
+                "DANGER",
+            )
+            response = reswap(response, "none")
+            return response
+
+
 def delete_overtime_request(request):
     context = {}
     if request.htmx:
         response = HttpResponse()
+        user = request.user
         if request.method == "DELETE":
             try:
                 data = QueryDict(request.body)
@@ -432,6 +467,7 @@ def delete_overtime_request(request):
             if not "cancel" in data:
                 context["confirm_remove"] = True
 
+            context["user"] = user
             overtime_request_id = data.get("overtime_request")
             context["overtime_request"] = OverTime.objects.get(id=overtime_request_id)
             response.content = render_block_to_string(
