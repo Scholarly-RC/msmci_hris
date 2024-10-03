@@ -18,10 +18,17 @@ from attendance.actions import (
     process_create_overtime_request,
     process_daily_shift_schedule,
     process_delete_holiday,
+    process_deleting_overtime_request,
     process_respond_to_overtime_request,
 )
 from attendance.biometric_device import get_biometric_data
-from attendance.models import AttendanceRecord, DailyShiftRecord, Holiday, Shift
+from attendance.models import (
+    AttendanceRecord,
+    DailyShiftRecord,
+    Holiday,
+    OverTime,
+    Shift,
+)
 from attendance.utils.assign_shift_utils import get_employee_assignments
 from attendance.utils.attendance_utils import (
     get_employees_list_per_department,
@@ -37,6 +44,9 @@ from attendance.utils.date_utils import (
 )
 from attendance.utils.holiday_utils import get_holidays, get_holidays_year_list
 from attendance.utils.overtime_utils import (
+    get_all_overtime_request,
+    get_overtime_request_approvers,
+    get_overtime_request_status_list,
     get_overtime_requests_year_list,
     get_user_overtime_approver,
     get_user_overtime_requests,
@@ -45,6 +55,7 @@ from attendance.utils.overtime_utils import (
 from attendance.validations import add_holiday_validation
 from core.models import BiometricDetail, Department
 from hris.utils import create_global_alert_instance
+from payroll.utils import get_department_list
 
 
 ### Attendance Management ###
@@ -352,6 +363,84 @@ def respond_to_overtime_request(request):
                 "DANGER",
             )
             response = reswap(response, "none")
+            return response
+
+
+def overtime_management(request):
+    context = {}
+
+    if "overtime_filter" in request.POST:
+        filter_data = request.POST
+    else:
+        filter_data = {}
+
+    overtime_requests = get_all_overtime_request(filter_data=filter_data)
+    overtime_requests_year_list = get_overtime_requests_year_list(overtime_requests)
+    departments = get_department_list()
+    overtime_status_list = get_overtime_request_status_list()
+    approvers = get_overtime_request_approvers()
+    context.update(
+        {
+            "overtime_requests": overtime_requests,
+            "overtime_requests_year_list": overtime_requests_year_list,
+            "departments": departments,
+            "overtime_status_list": overtime_status_list,
+            "approvers": approvers,
+        }
+    )
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "attendance/overtime_management.html",
+            "overtime_request_table",
+            context,
+        )
+        response = retarget(response, "#overtime_request_table")
+        response = reswap(response, "outerHTML")
+        return response
+
+    return render(request, "attendance/overtime_management.html", context)
+
+
+def delete_overtime_request(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "DELETE":
+            try:
+                data = QueryDict(request.body)
+                process_deleting_overtime_request(data)
+                response = create_global_alert_instance(
+                    response,
+                    "The selected overtime record has been successfully deleted.",
+                    "SUCCESS",
+                )
+                response = retarget(response, "closest tr")
+                response = reswap(response, "delete")
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while attempting to delete the selected overtime record. Please try again. Details: {error}",
+                    "DANGER",
+                )
+                response = reswap(response, "none")
+                return response
+
+        if request.method == "POST":
+            data = request.POST
+            if not "cancel" in data:
+                context["confirm_remove"] = True
+
+            overtime_request_id = data.get("overtime_request")
+            context["overtime_request"] = OverTime.objects.get(id=overtime_request_id)
+            response.content = render_block_to_string(
+                "attendance/overtime_management.html",
+                "specific_overtime_request_action_button",
+                context,
+            )
+            response = retarget(response, "closest td")
+            response = reswap(response, "outerHTML")
             return response
 
 

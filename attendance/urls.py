@@ -16,6 +16,37 @@ urlpatterns = [
         attendance_views.get_attendance_request,
         name="get_attendance_request",
     ),
+    ### OVERTIME URLS ###
+    path(
+        "request-overtime/respond",
+        attendance_views.respond_to_overtime_request,
+        name="respond_to_overtime_request",
+    ),
+    path(
+        "request-overtime/view/request-to-approve",
+        attendance_views.view_overtime_request_to_approve,
+        name="view_overtime_request_to_approve",
+    ),
+    path(
+        "request-overtime/submit",
+        attendance_views.submit_overtime_request,
+        name="submit_overtime_request",
+    ),
+    path(
+        "request-overtime",
+        attendance_views.request_overtime,
+        name="request_overtime",
+    ),
+    path(
+        "overtime-management/delete-request",
+        attendance_views.delete_overtime_request,
+        name="delete_overtime_request",
+    ),
+    path(
+        "overtime-management",
+        attendance_views.overtime_management,
+        name="overtime_management",
+    ),
     ### HOLIDAY URLS SETTINGS ###
     path(
         "holiday-settings/remove",
@@ -73,26 +104,6 @@ urlpatterns = [
         "sync-user-attendance-data",
         attendance_views.sync_user_attendance,
         name="sync_user_attendance",
-    ),
-    path(
-        "request-overtime/respond",
-        attendance_views.respond_to_overtime_request,
-        name="respond_to_overtime_request",
-    ),
-    path(
-        "request-overtime/view/request-to-approve",
-        attendance_views.view_overtime_request_to_approve,
-        name="view_overtime_request_to_approve",
-    ),
-    path(
-        "request-overtime/submit",
-        attendance_views.submit_overtime_request,
-        name="submit_overtime_request",
-    ),
-    path(
-        "request-overtime",
-        attendance_views.request_overtime,
-        name="request_overtime",
     ),
     path(
         "<str:year>/<str:month>",

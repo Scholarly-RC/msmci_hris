@@ -1,5 +1,6 @@
 from django.apps import apps
 from django.db.models import Q
+from django.http import QueryDict
 
 
 def get_user_overtime_approver(user):
@@ -54,3 +55,52 @@ def get_overtime_requests_year_list(overtime_requests):
     )
 
     return list(overtime_requests)
+
+
+def get_all_overtime_request(filter_data: QueryDict = {}):
+    OvertimeModel = apps.get_model("attendance", "Overtime")
+    overtime_requests = OvertimeModel.objects.order_by("-date")
+
+    if not filter_data:
+        return overtime_requests
+
+    user_search = filter_data.get("user_search")
+    selected_year = filter_data.get("selected_year")
+    selected_department = filter_data.get("selected_department")
+    selected_status = filter_data.get("selected_status")
+    selected_approver = filter_data.get("selected_approver")
+
+    if user_search:
+        user_search_filter = (
+            Q(user__first_name__icontains=user_search)
+            | Q(user__last_name__icontains=user_search)
+            | Q(user__userdetails__middle_name__icontains=user_search)
+            | Q(user__email__icontains=user_search)
+        )
+        overtime_requests = overtime_requests.filter(user_search_filter)
+
+    if selected_year and selected_year != "0":
+        overtime_requests = overtime_requests.filter(Q(date__year=selected_year))
+
+    if selected_department and selected_department != "0":
+        overtime_requests = overtime_requests.filter(
+            Q(user__userdetails__department_id=selected_department)
+        )
+
+    if selected_status and selected_status != "0":
+        overtime_requests = overtime_requests.filter(Q(status=selected_status))
+
+    if selected_approver and selected_approver != "0":
+        overtime_requests = overtime_requests.filter(Q(approver_id=selected_approver))
+
+    return overtime_requests
+
+
+def get_overtime_request_status_list():
+    OvertimeModel = apps.get_model("attendance", "Overtime")
+    return OvertimeModel.Status.choices
+
+
+def get_overtime_request_approvers():
+    UserModel = apps.get_model("auth", "User")
+    return UserModel.objects.exclude(approved_overtimes__isnull=True)

@@ -238,3 +238,14 @@ def process_respond_to_overtime_request(user, payload):
         return overtime_request
     except Exception as error:
         raise error
+
+
+@transaction.atomic
+def process_deleting_overtime_request(payload):
+    try:
+        OvertimeModel = apps.get_model("attendance", "OverTime")
+        overtime_request_id = payload.get("overtime_request")
+        overtime_request = OvertimeModel.objects.get(id=overtime_request_id)
+        overtime_request.delete()
+    except Exception as error:
+        raise error
