@@ -159,7 +159,7 @@ def manually_set_user_clocked_time(user, selected_date, clock_in_time, clock_out
 def process_add_holiday(payload):
     try:
         HolidayModel = apps.get_model("attendance", "Holiday")
-        name = payload.get("holiday_name")
+        name = payload.get("holiday_name").strip()
         date_str = payload.get("holiday_date")
         date = get_date_object_from_date_str(date_str)
         is_regular = "is_holiday_regular" in payload
@@ -247,5 +247,56 @@ def process_deleting_overtime_request(payload):
         overtime_request_id = payload.get("overtime_request")
         overtime_request = OvertimeModel.objects.get(id=overtime_request_id)
         overtime_request.delete()
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_create_new_shift(payload):
+    try:
+        ShiftModel = apps.get_model("attendance", "Shift")
+
+        shift_description = payload.get("shift_description").strip()
+        start_time = get_time_object(payload.get("start_time"))
+        end_time = get_time_object(payload.get("end_time"))
+
+        shift_model = ShiftModel.objects.create(
+            description=shift_description, start_time=start_time, end_time=end_time
+        )
+
+        return shift_model
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_removing_shift(payload):
+    try:
+        ShiftModel = apps.get_model("attendance", "Shift")
+        shift_id = payload.get("shift")
+        shift = ShiftModel.objects.get(id=shift_id)
+        shift.delete()
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_modify_department_shift(payload):
+    try:
+        DepartmentModel = apps.get_model("core", "Department")
+        ShiftModel = apps.get_model("attendance", "Shift")
+
+        department_id = payload.get("department")
+        shift_id = payload.get("shift")
+
+        department = DepartmentModel.objects.get(id=department_id)
+        shift = ShiftModel.objects.get(id=shift_id)
+
+        if "selected" in payload:
+            shift.departments.add(department)
+        else:
+            shift.departments.remove(department)
+
+        return shift, department
     except Exception as error:
         raise error

@@ -54,6 +54,7 @@ class Shift(models.Model):
     start_time = models.TimeField(_("Shift Start Time"), null=True, blank=True)
     end_time = models.TimeField(_("Shift End Time"), null=True, blank=True)
     is_active = models.BooleanField(_("Shift Is Active"), default=True)
+    departments = models.ManyToManyField(Department, related_name="shifts", blank=True)
 
     class Meta:
         verbose_name_plural = "Shifts"

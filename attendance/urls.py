@@ -65,6 +65,26 @@ urlpatterns = [
     ),
     ### SHIFT MANGEMENT URLS ###
     path(
+        "shift-management/shift/modify-department-shift",
+        attendance_views.modify_department_shift,
+        name="modify_department_shift",
+    ),
+    path(
+        "shift-management/shift/remove",
+        attendance_views.remove_selected_shift,
+        name="remove_selected_shift",
+    ),
+    path(
+        "shift-management/shift/create",
+        attendance_views.create_new_shift,
+        name="create_new_shift",
+    ),
+    path(
+        "shift-management/shift/settings",
+        attendance_views.shift_settings,
+        name="shift_settings",
+    ),
+    path(
         "shift-management/asign/user/<str:department>/<str:year>/<str:month>/<str:day>",
         attendance_views.assign_user_to_shift,
         name="assign_user_to_shift",

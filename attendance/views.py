@@ -16,10 +16,13 @@ from attendance.actions import (
     manually_set_user_clocked_time,
     process_add_holiday,
     process_bulk_daily_shift_schedule,
+    process_create_new_shift,
     process_create_overtime_request,
     process_daily_shift_schedule,
     process_delete_holiday,
     process_deleting_overtime_request,
+    process_modify_department_shift,
+    process_removing_shift,
     process_respond_to_overtime_request,
 )
 from attendance.biometric_device import get_biometric_data
@@ -58,7 +61,8 @@ from attendance.utils.overtime_utils import (
     get_user_overtime_requests,
     get_user_overtime_requests_to_approve,
 )
-from attendance.validations import add_holiday_validation
+from attendance.utils.shift_utils import get_all_shifts
+from attendance.validations import add_holiday_validation, create_new_shift_validation
 from core.models import BiometricDetail, Department
 from core.notification import create_notification
 from hris.utils import create_global_alert_instance
@@ -925,6 +929,125 @@ def assign_user_to_shift(request, department="", year="", month="", day=""):
         return response
 
 
+def shift_settings(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "GET":
+            shifts = get_all_shifts()
+            departments = get_department_list()
+            context.update({"shifts": shifts, "departments": departments})
+            response.content = render_block_to_string(
+                "attendance/shift_management.html",
+                "shift_settings_container",
+                context,
+            )
+            response = trigger_client_event(
+                response, "openShiftSettingsModal", after="swap"
+            )
+            response = retarget(response, "#shift_settings_container")
+            response = reswap(response, "outerHTML")
+            return response
+        if request.method == "POST":
+            pass
+
+
+def create_new_shift(request):
+    context = {}
+    if request.htmx and request.POST:
+        response = HttpResponse()
+        try:
+            data = request.POST
+            errors = create_new_shift_validation(data)
+            if errors:
+                for error in errors:
+                    response = create_global_alert_instance(
+                        response, errors[error], "WARNING"
+                    )
+                    response = reswap(response, "none")
+                    return response
+            process_create_new_shift(data)
+            shifts = get_all_shifts()
+            departments = get_department_list()
+            context.update({"shifts": shifts, "departments": departments})
+            response.content = render_block_to_string(
+                "attendance/shift_management.html",
+                "shift_settings_container",
+                context,
+            )
+            response = create_global_alert_instance(
+                response, "Shift added successfully!", "SUCCESS"
+            )
+            response = retarget(response, "#shift_settings_container")
+            response = reswap(response, "outerHTML")
+            return response
+        except Exception as error:
+            response = create_global_alert_instance(
+                response,
+                f"An error occurred while adding a new shift. Details: {error}",
+                "DANGER",
+            )
+            response = reswap(response, "none")
+            return response
+
+
+def remove_selected_shift(request):
+    context = {}
+    if request.htmx and request.POST:
+        response = HttpResponse()
+        try:
+            data = request.POST
+            process_removing_shift(data)
+            shifts = get_all_shifts()
+            departments = get_department_list()
+            context.update({"shifts": shifts, "departments": departments})
+            response.content = render_block_to_string(
+                "attendance/shift_management.html",
+                "shift_settings_container",
+                context,
+            )
+            response = create_global_alert_instance(
+                response, "Shift removed successfully!", "SUCCESS"
+            )
+            response = retarget(response, "#shift_settings_container")
+            response = reswap(response, "outerHTML")
+            return response
+
+        except Exception as error:
+            response = create_global_alert_instance(
+                response,
+                f"An error occurred while removing the selected shift. Details: {error}",
+                "DANGER",
+            )
+            response = reswap(response, "none")
+            return response
+
+
+def modify_department_shift(request):
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        try:
+            data = request.POST
+            shift, department = process_modify_department_shift(data)
+            action = "removed" if "selected" not in data else "added"
+            response = create_global_alert_instance(
+                response,
+                f"The selected shift has been successfully {action} for the {department} department.",
+                "SUCCESS",
+            )
+            response = reswap(response, "none")
+            return response
+        except Exception as error:
+            response = create_global_alert_instance(
+                response,
+                f"An error occurred while modifying the shift for the selected department. Error details: {error}.",
+                "DANGER",
+            )
+            response = reswap(response, "none")
+            return response
+
+
+### Holiday Views ##
 def holiday_settings(request):
     context = {}
     if request.htmx:
