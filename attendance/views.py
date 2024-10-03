@@ -279,7 +279,7 @@ def submit_overtime_request(request):
                 recipient_id=overtime_request.approver.id,
                 url=(
                     reverse("attendance:attendance_management")
-                    if overtime_request.approver.userdetails.is_hr()
+                    if not overtime_request.approver.userdetails.is_hr()
                     else reverse("attendance:overtime_management")
                 ),
             )
