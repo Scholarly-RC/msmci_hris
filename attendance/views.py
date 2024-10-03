@@ -1,5 +1,5 @@
 import calendar
-import datetime
+from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -7,6 +7,7 @@ from django.http import HttpResponse
 from django.http.request import QueryDict
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.timezone import make_aware
 from django.views.decorators.csrf import csrf_exempt
 from django_htmx.http import push_url, reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
@@ -54,6 +55,7 @@ from attendance.utils.overtime_utils import (
 )
 from attendance.validations import add_holiday_validation
 from core.models import BiometricDetail, Department
+from core.notification import create_notification
 from hris.utils import create_global_alert_instance
 from payroll.utils import get_department_list
 
@@ -62,7 +64,7 @@ from payroll.utils import get_department_list
 def attendance_management(request, year="", month=""):
     context = {"list_of_months": get_list_of_months()}
     current_user = request.user
-    now = datetime.datetime.now()
+    now = datetime.now()
     selected_year = request.POST.get("attendance_year") or year or now.year
     selected_month = request.POST.get("attendance_month") or month or now.month
     selected_year = int(selected_year)
@@ -123,7 +125,7 @@ def attendance_management(request, year="", month=""):
 def sync_user_attendance(request, year="", month=""):
     context = {"list_of_months": get_list_of_months()}
     current_user = request.user
-    now = datetime.datetime.now()
+    now = datetime.now()
     selected_year = request.POST.get("attendance_year") or now.year
     selected_month = request.POST.get("attendance_month") or now.month
     selected_year = int(selected_year)
@@ -252,7 +254,7 @@ def submit_overtime_request(request):
         user = request.user
         if request.method == "POST":
             data = request.POST
-            process_create_overtime_request(user, data)
+            overtime_request = process_create_overtime_request(user, data)
             approvers = get_user_overtime_approver(user)
             overtime_requests = get_user_overtime_requests(user)
             overtime_years = get_overtime_requests_year_list(overtime_requests)
@@ -264,11 +266,22 @@ def submit_overtime_request(request):
                     "overtime_requests": overtime_requests,
                     "overtime_years": overtime_years,
                 }
-            )  # TODO: Add Notification
+            )
             response.content = render_block_to_string(
                 "attendance/attendance_management.html",
                 "request_overtime_container",
                 context,
+            )
+            create_notification(
+                content=f"<b>{overtime_request.get_requestor_display()}</b> has submitted an overtime request for <b>{overtime_request.get_display_date()}</b>.",
+                date=make_aware(datetime.now()),
+                sender_id=overtime_request.user.id,
+                recipient_id=overtime_request.approver.id,
+                url=(
+                    reverse("attendance:attendance_management")
+                    if overtime_request.approver.userdetails.is_hr()
+                    else reverse("attendance:overtime_management")
+                ),
             )
             response = create_global_alert_instance(
                 response, "Overtime successfully submitted for review.", "SUCCESS"
@@ -353,6 +366,13 @@ def respond_to_overtime_request(request):
                 f"You have successfully {overtime_request.get_status_display()} the selected overtime request.",
                 "SUCCESS",
             )
+            create_notification(
+                content=f"Your overtime request for <b>{overtime_request.get_display_date()}</b> has been <b>{overtime_request.get_status_display()}</b> by <b>{overtime_request.get_approver_display()}</b>.",
+                date=make_aware(datetime.now()),
+                sender_id=overtime_request.approver.id,
+                recipient_id=overtime_request.user.id,
+                url=reverse("attendance:attendance_management"),
+            )
             response = retarget(response, "closest tr")
             response = reswap(response, "outerHTML")
             return response
@@ -423,6 +443,13 @@ def overtime_management_respond_to_request(request):
                 f"You have successfully {overtime_request.get_status_display()} the selected overtime request.",
                 "SUCCESS",
             )
+            create_notification(
+                content=f"Your overtime request for <b>{overtime_request.get_display_date()}</b> has been <b>{overtime_request.get_status_display()}</b> by <b>{overtime_request.get_approver_display()}</b>.",
+                date=make_aware(datetime.now()),
+                sender_id=overtime_request.approver.id,
+                recipient_id=overtime_request.user.id,
+                url=reverse("attendance:attendance_management"),
+            )
             response = retarget(response, "closest tr")
             response = reswap(response, "outerHTML")
             return response
@@ -483,7 +510,7 @@ def delete_overtime_request(request):
 def user_attendance_management(request, user_id="", year="", month=""):
     context = {}
     users = get_employees_list_per_department()
-    now = datetime.datetime.now()
+    now = datetime.now()
     selected_year = request.POST.get("attendance_year") or now.year
     selected_month = request.POST.get("attendance_month") or now.month
     selected_user_id = request.POST.get("selected_user") or user_id
@@ -623,7 +650,7 @@ def toggle_user_management_record_edit(request):
 ### Shift Management ###
 def shift_management(request, department="", year="", month=""):
     context = {"list_of_months": get_list_of_months()}
-    now = datetime.datetime.now()
+    now = datetime.now()
     shift_year = request.POST.get("shift_year") or year or now.year
     shift_month = request.POST.get("shift_month") or month or now.month
     shift_department = request.POST.get("shift_department") or department
