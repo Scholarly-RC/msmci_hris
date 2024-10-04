@@ -119,6 +119,10 @@
                                                     </th>
                                                     <th scope="col"
                                                         class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                        On Leave
+                                                    </th>
+                                                    <th scope="col"
+                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
                                                         Modify
                                                     </th>
                                                 </tr>
@@ -202,6 +206,22 @@
                                                                          viewBox="0 0 24 24">
                                                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5" />
                                                                     </svg>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
+                                                                {% if user_shift_data.approved_leave %}
+                                                                    <svg class="mx-auto w-6 h-6 text-gray-800 dark:text-white"
+                                                                         aria-hidden="true"
+                                                                         xmlns="http://www.w3.org/2000/svg"
+                                                                         width="24"
+                                                                         height="24"
+                                                                         fill="none"
+                                                                         viewBox="0 0 24 24">
+                                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5" />
+                                                                    </svg>
+                                                                    {% for leave in user_shift_data.approved_leave %}
+                                                                        <p class="text-gray-500 dark:text-gray-400">{{ leave.get_type_display }}</p>
+                                                                    {% endfor %}
                                                                 {% endif %}
                                                             </td>
                                                             <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">

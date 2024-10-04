@@ -85,12 +85,12 @@ urlpatterns = [
         name="shift_settings",
     ),
     path(
-        "shift-management/asign/user/<str:department>/<str:year>/<str:month>/<str:day>",
+        "shift-management/assign/user/<str:department>/<str:year>/<str:month>/<str:day>",
         attendance_views.assign_user_to_shift,
         name="assign_user_to_shift",
     ),
     path(
-        "shift-management/asign/<str:department>/<str:year>/<str:month>/<str:day>",
+        "shift-management/assign/<str:department>/<str:year>/<str:month>/<str:day>",
         attendance_views.assign_shift,
         name="assign_shift",
     ),

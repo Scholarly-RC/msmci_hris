@@ -30,7 +30,7 @@ from leave.utils import (
     get_leave_to_review,
     get_leave_types,
     get_leave_year_list,
-    get_predidents,
+    get_presidents,
     get_user_leave,
 )
 from payroll.utils import get_department_list
@@ -345,7 +345,7 @@ def approver_settings(request):
                     "selected_department": selected_department,
                     "department_heads": department_heads,
                     "directors": get_directors(),
-                    "presidents": get_predidents(),
+                    "presidents": get_presidents(),
                     "hrs": get_user_with_hr_role(),
                 }
             )

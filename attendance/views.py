@@ -66,6 +66,7 @@ from attendance.validations import add_holiday_validation, create_new_shift_vali
 from core.models import BiometricDetail, Department
 from core.notification import create_notification
 from hris.utils import create_global_alert_instance
+from leave.utils import check_user_has_approved_leave_on_specific_date
 from payroll.utils import get_department_list
 
 
@@ -109,6 +110,9 @@ def attendance_management(request, year="", month=""):
                     day=day, month=selected_month, year=selected_year
                 ),
                 "approved_overtime": check_user_has_approved_overtime_on_specific_date(
+                    user=current_user, day=day, month=selected_month, year=selected_year
+                ),
+                "approved_leave": check_user_has_approved_leave_on_specific_date(
                     user=current_user, day=day, month=selected_month, year=selected_year
                 ),
             }
@@ -583,6 +587,12 @@ def user_attendance_management(request, user_id="", year="", month=""):
                         month=selected_month,
                         year=selected_year,
                     ),
+                    "approved_leave": check_user_has_approved_leave_on_specific_date(
+                        user=selected_user,
+                        day=day,
+                        month=selected_month,
+                        year=selected_year,
+                    ),
                 }
             )
         context.update({"monthly_record_data": monthly_record_data})
@@ -773,7 +783,8 @@ def assign_shift(request, department="", year="", month="", day=""):
     employees = User.objects.filter(
         userdetails__department=selected_department
     ).order_by("first_name")
-    shifts = Shift.objects.filter(is_active=True)
+
+    shifts = selected_department.shifts.order_by("start_time")
 
     selected_date = get_date_object(int(shift_year), int(shift_month), int(shift_day))
 

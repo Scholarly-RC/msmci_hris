@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models import Count, Q
 from django.db.models.functions import TruncMonth
 
+from attendance.utils.date_utils import get_date_object
 from hris.exceptions import RoleError
 from leave.enums import LeaveRequestAction
 
@@ -26,7 +27,7 @@ def get_directors():
     return User.objects.filter(userdetails__role=director)
 
 
-def get_predidents():
+def get_presidents():
     """ """
     user_details_model = apps.get_model("core", "UserDetails")
     president = user_details_model.Role.PRESIDENT.value
@@ -122,13 +123,13 @@ def get_leave_to_review(
     )
 
     if specific_user_id and specific_user_id != "0":
-        leave = leave.filter(Q(user__id=specific_user_id))
+        leave = leave.filter(user__id=specific_user_id)
 
     if month and month != "0":
-        leave = leave.filter(Q(date__month=month))
+        leave = leave.filter(date__month=month)
 
     if year and year != "0":
-        leave = leave.filter(Q(date__year=year))
+        leave = leave.filter(date__year=year)
 
     grouped_leave = group_leave_by_month_and_year(leave)
 
@@ -152,3 +153,16 @@ def get_leave_year_list() -> list:
     )
 
     return list(leave_years)
+
+
+def check_user_has_approved_leave_on_specific_date(
+    user, day: int, month: int, year: int
+) -> bool:
+    selected_date = get_date_object(year=year, month=month, day=day)
+    approved_status = LeaveRequestAction.APPROVED.value
+
+    return user.user_leaves.filter(
+        Q(first_approver_data__status=approved_status)
+        | Q(second_approver_data__status=approved_status),
+        date=selected_date,
+    )
