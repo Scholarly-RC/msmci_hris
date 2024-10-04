@@ -4,29 +4,39 @@
     <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
         <div class="w-full relative px-2 lg:px-10">
             <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3 mt-10">
-                Performance and Learning Management
+                {% if user.userdetails.is_hr %}
+                    Peer Evaluation Management
+                {% else %}
+                    Performance and Learning Management
+                {% endif %}
             </h1>
             {% block performance_and_learning_management_section %}
                 <div id="performance_and_learning_management_section"
-                     class="min-h-[45rem] flex flex-col gap-6 p-4 mb-10 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                     class="{% if user.userdetails.is_hr %}h-[47rem]{% else %}h-[45rem]{% endif %} flex flex-col gap-6 p-4 mb-10 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                     <div class="sm:hidden">
                         <select name="selected_evaluation"
                                 hx-post="{% url "performance:switch_performance_evalution" %}"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                            <option value="{% url 'performance:performance_evaluation' %}"
-                                    {% if evaluation_section == "self" %}selected{% endif %}>Self Evaluation</option>
+                            {% if not user.userdetails.is_hr %}
+                                <option value="{% url 'performance:performance_evaluation' %}"
+                                        {% if evaluation_section == "self" %}selected{% endif %}>
+                                    Self Evaluation
+                                </option>
+                            {% endif %}
                             <option value="{% url 'performance:performance_peer_evaluation' %}"
                                     {% if evaluation_section == "peer" %}selected{% endif %}>Peer Evaluation</option>
                         </select>
                     </div>
                     <ul class="hidden text-sm font-medium text-center text-gray-500 rounded-lg shadow sm:flex dark:divide-gray-700 dark:text-gray-400">
-                        <li class="w-full focus-within:z-10">
-                            <button type="button"
-                                    hx-post="{% url 'performance:performance_evaluation' %}"
-                                    class="inline-block w-full p-4 {% if evaluation_section == 'self' %} text-gray-900 bg-gray-100 border border-gray-200 dark:border-gray-700 rounded-l-lg focus:ring-4 focus:ring-blue-300 active focus:outline-none dark:bg-gray-700 dark:text-white {% else %} text-gray-700 bg-white border border-gray-200 dark:border-gray-700 hover:text-gray-900 hover:bg-gray-50 focus:ring-4 focus:ring-blue-300 focus:outline-none dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700 {% endif %}">
-                                Self Evaluation
-                            </button>
-                        </li>
+                        {% if not user.userdetails.is_hr %}
+                            <li class="w-full focus-within:z-10">
+                                <button type="button"
+                                        hx-post="{% url 'performance:performance_evaluation' %}"
+                                        class="inline-block w-full p-4 {% if evaluation_section == 'self' %} text-gray-900 bg-gray-100 border border-gray-200 dark:border-gray-700 rounded-l-lg focus:ring-4 focus:ring-blue-300 active focus:outline-none dark:bg-gray-700 dark:text-white {% else %} text-gray-700 bg-white border border-gray-200 dark:border-gray-700 hover:text-gray-900 hover:bg-gray-50 focus:ring-4 focus:ring-blue-300 focus:outline-none dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700 {% endif %}">
+                                    Self Evaluation
+                                </button>
+                            </li>
+                        {% endif %}
                         <li class="w-full focus-within:z-10">
                             <button type="button"
                                     hx-post="{% url 'performance:performance_peer_evaluation' %}"
@@ -91,7 +101,7 @@
                                                             </div>
                                                         {% endblock %}
                                                     </div>
-                                                    <div class="h-[35rem] overflow-y-scroll grid grid-cols-1">
+                                                    <div class="h-[29.5rem] overflow-y-scroll grid grid-cols-1">
                                                         {% if current_evaluation.is_submitted %}
                                                             {% for content in current_submitted_evaluation_data %}
                                                                 <div class="p-4 bg-white rounded-lg md:px-10 dark:bg-gray-800">
@@ -438,7 +448,7 @@
                                                             </div>
                                                         </div>
                                                     {% empty %}
-                                                        <h2 class="mx-auto my-auto text-4xl font-extrabold dark:text-white">No peer evaluation at the moment.</h2>
+                                                        <h2 class="mx-auto my-auto text-4xl font-extrabold dark:text-white">No peer evaluations available.</h2>
                                                     {% endfor %}
                                                 </div>
                                             </div>
@@ -451,7 +461,9 @@
                 {% endblock %}
             </div>
         {% endblock %}
-        {% include "performance/components/sections_menu.html" %}
+        {% if not user.userdetails.is_hr %}
+            {% include "performance/components/sections_menu.html" %}
+        {% endif %}
     </div>
 </div>
 {% endblock %}

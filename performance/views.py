@@ -65,6 +65,9 @@ def performance_evaluation(request):
     context = {"evaluation_section": "self"}
     current_user = request.user
 
+    if current_user.userdetails.is_hr():
+        return redirect(reverse("performance:performance_peer_evaluation"))
+
     user_evaluations = current_user.evaluatee_evaluations.filter(
         is_finalized=True
     ).order_by("-year")
@@ -129,6 +132,7 @@ def performance_evaluation(request):
 def performance_peer_evaluation(request, evaluation_id=""):
     context = {"evaluation_section": "peer"}
     current_user = request.user
+    context["user"] = current_user
 
     peer_evaluations = (
         current_user.evaluator_evaluations.exclude(
