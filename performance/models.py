@@ -187,7 +187,10 @@ class UserEvaluation(models.Model):
         verbose_name_plural = "User Evaluations"
 
     def __str__(self):
-        return f"({self.evaluatee.userdetails.get_user_fullname()}) - ({self.year} - {self.quarter}) - {'Finalized' if self.is_finalized else 'Pending'}"
+        return f"({self.get_evaluatee_display()}) - ({self.year} - {self.quarter}) - {'Finalized' if self.is_finalized else 'Pending'}"
+
+    def get_evaluatee_display(self):
+        return self.evaluatee.userdetails.get_user_fullname()
 
     def get_year_and_quarter(self):
         quarter = self.Quarter(self.quarter).name.replace("_", " ")
