@@ -290,7 +290,7 @@ def get_users_with_payslip_data(users, month: int, year: int):
     return data
 
 
-def get_payslip_fixed_compensations(payslip):
+def get_payslip_fixed_compensations(payslip, semi_monthly=False):
     FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
     month = payslip.month
     year = payslip.year
@@ -301,6 +301,9 @@ def get_payslip_fixed_compensations(payslip):
     )
 
     total_amount = compensations.aggregate(total=Sum("amount"))["total"] or 0
+
+    if semi_monthly:
+        total_amount = total_amount / 2
 
     return compensations, total_amount
 
@@ -314,11 +317,11 @@ def get_payslip_variable_deductions(payslip):
 
 
 def get_payslip_variable_compensations(payslip):
-    deductions = payslip.variable_deductions.all()
+    compensation = payslip.variable_compensation.all()
 
-    total_amount = deductions.aggregate(total=Sum("amount"))["total"] or 0
+    total_amount = compensation.aggregate(total=Sum("amount"))["total"] or 0
 
-    return deductions, total_amount
+    return compensation, total_amount
 
 
 def get_salary_from_rank(rank_code):

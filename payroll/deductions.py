@@ -50,7 +50,8 @@ class Sss:
 
 class Philhealth:
     def __init__(self, salary):
-        self.salary = salary
+        # INFO: Remove * 2 solving for monthly
+        self.salary = salary * 2
         philhealth_deduction_configuration = (
             get_deduction_configuration_object().philhealth_config()
         )
@@ -78,7 +79,7 @@ class Philhealth:
         if self.salary > self.max_compensation:
             return self.max_contribution
 
-        return self.salary * (self.rate / 2)
+        return (self.salary * self.rate) / 2
 
 
 class Tax:
@@ -131,4 +132,5 @@ class PagIbig:
         self.amount = Decimal(pagibig_deduction_configuration_data.get("amount"))
 
     def get_employee_deduction(self):
+        # INFO: Remove / 2 solving for monthly
         return self.amount / 2
