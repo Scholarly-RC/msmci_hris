@@ -265,7 +265,32 @@
                                         </div>
                                         <div>
                                             <hr class="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700">
-                                            <h2 class="text-xl font-extrabold dark:text-white text-center mb-2">Compensations</h2>
+                                            {% if payslip.get_data.variable_deductions %}
+                                                <h2 class="text-xl font-extrabold dark:text-white text-center my-2">Variable Compensations</h2>
+                                                {% for compensation in payslip.get_data.variable_compensations %}
+                                                    <div class="w-full">
+                                                        <div class="w-full flex flex-row justify-between">
+                                                            <label for="compensation_{{ compensation.id }}_id"
+                                                                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                                {{ compensation.name|title }}
+                                                            </label>
+                                                            <button type="button"
+                                                                    hx-post="{% url "payroll:remove_variable_payslip_compensation" %}"
+                                                                    hx-vals='{"compensation": {{ compensation.id }}}'
+                                                                    class="font-small text-blue-600 dark:text-blue-500 hover:underline">
+                                                                Remove
+                                                            </button>
+                                                        </div>
+                                                        <input type="text"
+                                                               id="compensation_{{ compensation.id }}_id"
+                                                               name="compensation_{{ compensation.name }}"
+                                                               value="{{ compensation.amount|floatformat:2 }}"
+                                                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                               readonly />
+                                                    </div>
+                                                {% endfor %}
+                                            {% endif %}
+                                            <h2 class="text-xl font-extrabold dark:text-white text-center my-2">Compensations</h2>
                                             <div class="grid grid-cols-2 gap-2">
                                                 {% for compensation in payslip.get_data.compensations %}
                                                     <div>
@@ -286,12 +311,12 @@
                                         <div class="w-full">
                                             <label for="salary_with_compensation_id"
                                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                                Ajusted Salary With Compensations
+                                                Gross Pay
                                             </label>
                                             <input type="text"
                                                    id="salary_with_compensation_id"
                                                    name="salary_with_compensation"
-                                                   value="{{ payslip.get_data.adjusted_salary_with_compensations|floatformat:2 }}"
+                                                   value="{{ payslip.get_data.gross_pay|floatformat:2 }}"
                                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                    readonly />
                                         </div>

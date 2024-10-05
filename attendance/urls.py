@@ -16,14 +16,81 @@ urlpatterns = [
         attendance_views.get_attendance_request,
         name="get_attendance_request",
     ),
+    ### OVERTIME URLS ###
+    path(
+        "request-overtime/respond",
+        attendance_views.respond_to_overtime_request,
+        name="respond_to_overtime_request",
+    ),
+    path(
+        "request-overtime/view/request-to-approve",
+        attendance_views.view_overtime_request_to_approve,
+        name="view_overtime_request_to_approve",
+    ),
+    path(
+        "request-overtime/submit",
+        attendance_views.submit_overtime_request,
+        name="submit_overtime_request",
+    ),
+    path(
+        "request-overtime",
+        attendance_views.request_overtime,
+        name="request_overtime",
+    ),
+    path(
+        "overtime-management/respond",
+        attendance_views.overtime_management_respond_to_request,
+        name="overtime_management_respond_to_request",
+    ),
+    path(
+        "overtime-management/delete-request",
+        attendance_views.delete_overtime_request,
+        name="delete_overtime_request",
+    ),
+    path(
+        "overtime-management",
+        attendance_views.overtime_management,
+        name="overtime_management",
+    ),
+    ### HOLIDAY URLS SETTINGS ###
+    path(
+        "holiday-settings/remove",
+        attendance_views.remove_holiday,
+        name="remove_holiday",
+    ),
+    path(
+        "holiday-settings",
+        attendance_views.holiday_settings,
+        name="holiday_settings",
+    ),
     ### SHIFT MANGEMENT URLS ###
     path(
-        "shift-management/asign/user/<str:department>/<str:year>/<str:month>/<str:day>",
+        "shift-management/shift/modify-department-shift",
+        attendance_views.modify_department_shift,
+        name="modify_department_shift",
+    ),
+    path(
+        "shift-management/shift/remove",
+        attendance_views.remove_selected_shift,
+        name="remove_selected_shift",
+    ),
+    path(
+        "shift-management/shift/create",
+        attendance_views.create_new_shift,
+        name="create_new_shift",
+    ),
+    path(
+        "shift-management/shift/settings",
+        attendance_views.shift_settings,
+        name="shift_settings",
+    ),
+    path(
+        "shift-management/assign/user/<str:department>/<str:year>/<str:month>/<str:day>",
         attendance_views.assign_user_to_shift,
         name="assign_user_to_shift",
     ),
     path(
-        "shift-management/asign/<str:department>/<str:year>/<str:month>/<str:day>",
+        "shift-management/assign/<str:department>/<str:year>/<str:month>/<str:day>",
         attendance_views.assign_shift,
         name="assign_shift",
     ),
@@ -31,6 +98,11 @@ urlpatterns = [
         "shift-management/<str:department>/<str:year>/<str:month>",
         attendance_views.shift_management,
         name="shift_management_filtered",
+    ),
+    path(
+        "shift-management/update-calendar",
+        attendance_views.update_shift_calendar,
+        name="update_shift_calendar",
     ),
     path(
         "shift-management",
@@ -62,6 +134,11 @@ urlpatterns = [
         "<str:year>/<str:month>",
         attendance_views.attendance_management,
         name="attendance_management_filtered",
+    ),
+    path(
+        "close-modals",
+        attendance_views.attendance_module_close_modals,
+        name="attendance_module_close_modals",
     ),
     path(
         "",

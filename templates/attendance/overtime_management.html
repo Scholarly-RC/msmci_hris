@@ -1,0 +1,183 @@
+{% extends "layout.html" %}
+{% block content %}
+    {% include "navbar.html" %}
+    <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
+        <div class="w-full relative px-2 lg:px-10">
+            <div class="flex flex-row justify-between mt-10">
+                <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3">Overtime Management</h1>
+            </div>
+            {% block payroll_management_section %}
+                <div id="payroll_management_section"
+                     class="h-[48rem] overflow-y-auto flex flex-col gap-6 p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <div class="flex flex-row gap-2">
+                        <div class="w-1/2">
+                            <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                <form class="flex flex-col gap-2">
+                                    <div>
+                                        <label for="user_search_id"
+                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Search
+                                        </label>
+                                        <input type="search"
+                                               id="user_search_id"
+                                               name="user_search"
+                                               hx-post="{% url "attendance:overtime_management" %}"
+                                               hx-vals='{"overtime_filter": "True"}'
+                                               hx-trigger="input changed delay:200ms"
+                                               class="block w-full p-4 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                               placeholder="Search User..."
+                                               required />
+                                    </div>
+                                    <div>
+                                        <label for="selected_year_id"
+                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Filter by Year
+                                        </label>
+                                        <select id="selected_year_id"
+                                                name="selected_year"
+                                                hx-post="{% url "attendance:overtime_management" %}"
+                                                hx-vals='{"overtime_filter": "True"}'
+                                                hx-trigger="change"
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                            <option selected value="0">All</option>
+                                            {% for overtime_requests_year in overtime_requests_year_list %}
+                                                <option value="{{ overtime_requests_year }}">{{ overtime_requests_year }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="selected_department_id"
+                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Filter by Department
+                                        </label>
+                                        <select id="selected_department_id"
+                                                name="selected_department"
+                                                hx-post="{% url "attendance:overtime_management" %}"
+                                                hx-vals='{"overtime_filter": "True"}'
+                                                hx-trigger="change"
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                            <option selected value="0">All</option>
+                                            {% for department in departments %}<option value="{{ department.id }}">{{ department.name }}</option>{% endfor %}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="selected_status_id"
+                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Filter by Status
+                                        </label>
+                                        <select id="selected_status_id"
+                                                name="selected_status"
+                                                hx-post="{% url "attendance:overtime_management" %}"
+                                                hx-vals='{"overtime_filter": "True"}'
+                                                hx-trigger="change"
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                            <option selected value="0">All</option>
+                                            {% for overtime_status in overtime_status_list %}
+                                                <option value="{{ overtime_status.0 }}">{{ overtime_status.1 }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="selected_approver_id"
+                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Approver
+                                        </label>
+                                        <select id="selected_approver_id"
+                                                name="selected_approver"
+                                                hx-post="{% url "attendance:overtime_management" %}"
+                                                hx-vals='{"overtime_filter": "True"}'
+                                                hx-trigger="change"
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                            <option selected value="0">All</option>
+                                            {% for approver in approvers %}
+                                                <option value="{{ approver.id }}">{{ approver.userdetails.get_user_fullname|title }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="h-[44.5rem] w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                            <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+                                {% block overtime_request_table %}
+                                    <table id="overtime_request_table"
+                                           class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3">Name</th>
+                                                <th scope="col" class="px-6 py-3 text-center">Date</th>
+                                                <th scope="col" class="px-6 py-3 text-center">Approver</th>
+                                                <th scope="col" class="px-6 py-3 text-center">Status</th>
+                                                <th scope="col" class="px-6 py-3 text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for overtime_request in overtime_requests %}
+                                                {% block specific_overtime_request_to_respond %}
+                                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                        <th scope="row"
+                                                            class="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">
+                                                            <div>
+                                                                <div class="font-bold text-lg">{{ overtime_request.get_requestor_display }}</div>
+                                                                <div class="text-base font-normal text-gray-500">{{ overtime_request.user.userdetails.department }}</div>
+                                                            </div>
+                                                        </th>
+                                                        <td class="px-6 py-4 text-center">{{ overtime_request.get_display_date }}</td>
+                                                        <td class="px-6 py-4 text-center">{{ overtime_request.get_approver_display }}</td>
+                                                        <td class="px-6 py-4 text-center">{{ overtime_request.get_status_display }}</td>
+                                                        {% block specific_overtime_request_action_button %}
+                                                            <td class="px-6 py-4 text-center">
+                                                                <div class="flex flex-col gap-1">
+                                                                    {% if confirm_remove %}
+                                                                        <button type="button"
+                                                                                hx-delete="{% url 'attendance:delete_overtime_request' %}"
+                                                                                hx-vals='{"overtime_request": {{ overtime_request.id }}}'
+                                                                                class="font-medium text-green-600 dark:text-green-500 hover:underline">
+                                                                            Confirm
+                                                                        </button>
+                                                                        <button type="button"
+                                                                                hx-post="{% url 'attendance:delete_overtime_request' %}"
+                                                                                hx-vals='{"overtime_request": {{ overtime_request.id }}, "cancel": "True"}'
+                                                                                class="font-medium text-red-600 dark:text-red-500 hover:underline">
+                                                                            Cancel
+                                                                        </button>
+                                                                    {% else %}
+                                                                        {% if overtime_request.approver == user and overtime_request.status == "PEND" %}
+                                                                            <button type="button"
+                                                                                    hx-post="{% url "attendance:overtime_management_respond_to_request" %}"
+                                                                                    hx-vals='{"overtime_request": {{ overtime_request.id }}, "response": "APPROVE"}'
+                                                                                    class="font-medium text-green-600 hover:underline">
+                                                                                Approve
+                                                                            </button>
+                                                                            <button type="button"
+                                                                                    hx-post="{% url "attendance:overtime_management_respond_to_request" %}"
+                                                                                    hx-vals='{"overtime_request": {{ overtime_request.id }}, "response": "REJECT"}'
+                                                                                    class="font-medium text-red-600 hover:underline">
+                                                                                Reject
+                                                                            </button>
+                                                                        {% endif %}
+                                                                        <button type="button"
+                                                                                hx-post="{% url 'attendance:delete_overtime_request' %}"
+                                                                                hx-vals='{"overtime_request": {{ overtime_request.id }}}'
+                                                                                class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                                                                            Remove
+                                                                        </button>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </td>
+                                                        {% endblock %}
+                                                    </tr>
+                                                {% endblock %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% endblock %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
+        </div>
+    </div>
+{% endblock %}
+{% block javascript %}{% endblock %}

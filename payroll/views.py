@@ -223,7 +223,7 @@ def modify_job(request):
                 response = create_global_alert_instance(
                     response,
                     f"An error occurred while updating Job #{job.id}. Details: {error}",
-                    type="DANGER",
+                    "DANGER",
                 )
                 response = reswap(response, "none")
                 return response

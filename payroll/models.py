@@ -15,6 +15,7 @@ from payroll.utils import (
     get_mp2_object,
     get_payslip_fixed_compensations,
     get_payslip_variable_deductions,
+    get_payslip_variable_compensations,
     get_salary_from_rank,
 )
 
@@ -158,6 +159,9 @@ class Mp2(models.Model):
     def __str__(self):
         return "MP2 - Users"
 
+    def get_semi_monthly_amount(self):
+        return self.amount / 2
+
 
 class FixedCompensation(models.Model):
     name = models.CharField(
@@ -264,43 +268,44 @@ class Payslip(models.Model):
 
         base_salary = self.salary
 
+        per_cutoff = base_salary / 2
+
         fixed_compensations, total_fixed_compensation = get_payslip_fixed_compensations(
-            self
+            self, semi_monthly=True
         )
+        payslip_variable_compensation, total_variable_compensation = (
+            get_payslip_variable_compensations(self)
+        )
+
+        gross_pay = per_cutoff + total_fixed_compensation + total_variable_compensation
 
         payslip_variable_deductions, total_variable_deductions = (
             get_payslip_variable_deductions(self)
         )
 
-        adjusted_salary_with_compensations = base_salary + total_fixed_compensation
-
-        adjusted_salary_with_compensations_and_total_variable_deductions = (
-            adjusted_salary_with_compensations / 2
-        ) - total_variable_deductions
-
-        # TODO: CONFIGURE LOGIC
+        gross_pay_after_variable_deduction = gross_pay - total_variable_deductions
 
         sss_employee_deduction = Sss(
-            adjusted_salary_with_compensations
+            gross_pay_after_variable_deduction
         ).get_employee_deduction()
         philhealth_employee_deduction = Philhealth(
-            adjusted_salary_with_compensations
+            gross_pay_after_variable_deduction
         ).get_employee_deduction()
         pag_ibig_employee_deduction = PagIbig().get_employee_deduction()
         mp2_employee_deduction = (
-            get_mp2_object().amount if self.user.mp2.all() else Decimal(0.00)
+            get_mp2_object().get_semi_monthly_amount()
+            if self.user.mp2.all()
+            else Decimal(0.00)
         )
 
-        salary_after_contributions = adjusted_salary_with_compensations - (
+        taxable_income = gross_pay - (
             sss_employee_deduction
             + philhealth_employee_deduction
+            + pag_ibig_employee_deduction
             + mp2_employee_deduction
         )
 
-        tax_employee_deduction = Tax(
-            salary_after_contributions / 2
-        ).get_employee_deduction()
-
+        tax_employee_deduction = Tax(taxable_income).get_employee_deduction()
         mandatory_deductions = (
             sss_employee_deduction
             + philhealth_employee_deduction
@@ -311,22 +316,22 @@ class Payslip(models.Model):
 
         total_deductions = mandatory_deductions + total_variable_deductions
 
-        final_net_salary = adjusted_salary_with_compensations - mandatory_deductions
+        final_net_salary = gross_pay - total_deductions
 
         salary_details.update(
             {
-                "salary": base_salary / 2,
+                "salary": per_cutoff,
                 "compensations": fixed_compensations,
+                "variable_compensations": payslip_variable_compensation,
+                "gross_pay": gross_pay,
                 "variable_deductions": payslip_variable_deductions,
-                "adjusted_salary_with_compensations": adjusted_salary_with_compensations
-                / 2,
-                "sss_deduction": sss_employee_deduction / 2,
-                "philhealth_deduction": philhealth_employee_deduction / 2,
-                "pag_ibig_deduction": pag_ibig_employee_deduction / 2,
-                "mp2_deduction": mp2_employee_deduction / 2,
+                "sss_deduction": sss_employee_deduction,
+                "philhealth_deduction": philhealth_employee_deduction,
+                "pag_ibig_deduction": pag_ibig_employee_deduction,
+                "mp2_deduction": mp2_employee_deduction,
                 "tax_deduction": tax_employee_deduction,
-                "total_deductions": total_deductions / 2,
-                "net_salary": final_net_salary / 2,
+                "total_deductions": total_deductions,
+                "net_salary": final_net_salary,
             }
         )
         return salary_details
@@ -364,12 +369,22 @@ class Payslip(models.Model):
 
         data = self.get_data()
 
-        earnings = [{"Base Pay": data.get("salary")}] + [
-            {compensation.name: compensation.get_semi_monthly_amount()}
-            for compensation in data.get("compensations")
-        ]
+        earnings = (
+            [{"Base Pay": data.get("salary")}]
+            + [
+                {compensation.name: compensation.get_semi_monthly_amount()}
+                for compensation in data.get("compensations")
+            ]
+            + [
+                {compensation.name: compensation.amount}
+                for compensation in data.get("variable_compensations")
+            ]
+        )
 
         deductions = [
+            {deduction.name: deduction.amount}
+            for deduction in data.get("variable_deductions")
+        ] + [
             {"SSS": data.get("sss_deduction")},
             {"PhilHealth": data.get("philhealth_deduction")},
             {"Pag-Ibig": data.get("pag_ibig_deduction")},
@@ -381,7 +396,7 @@ class Payslip(models.Model):
 
         return {
             "row_data": data_for_payslip_table,
-            "total_earnings": data.get("adjusted_salary_with_compensations"),
+            "total_earnings": data.get("gross_pay"),
             "total_deductions": data.get("total_deductions"),
             "net_salary": data.get("net_salary"),
         }

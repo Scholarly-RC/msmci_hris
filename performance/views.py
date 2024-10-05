@@ -1,6 +1,6 @@
-import datetime
 import mimetypes
 import os
+from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -17,6 +17,7 @@ from django_htmx.http import (
 )
 from render_block import render_block_to_string
 
+from core.notification import create_notification
 from performance.actions import (
     add_poll_choice,
     add_self_evaluation,
@@ -64,6 +65,9 @@ def performance_management(request):
 def performance_evaluation(request):
     context = {"evaluation_section": "self"}
     current_user = request.user
+
+    if current_user.userdetails.is_hr():
+        return redirect(reverse("performance:performance_peer_evaluation"))
 
     user_evaluations = current_user.evaluatee_evaluations.filter(
         is_finalized=True
@@ -129,6 +133,7 @@ def performance_evaluation(request):
 def performance_peer_evaluation(request, evaluation_id=""):
     context = {"evaluation_section": "peer"}
     current_user = request.user
+    context["user"] = current_user
 
     peer_evaluations = (
         current_user.evaluator_evaluations.exclude(
@@ -242,7 +247,7 @@ def submit_self_evaluation(request):
         data = request.POST
         current_evaluation_id = data.get("current_evaluation")
         current_evaluation = Evaluation.objects.get(id=current_evaluation_id)
-        current_evaluation.date_submitted = make_aware(datetime.datetime.now())
+        current_evaluation.date_submitted = make_aware(datetime.now())
         current_evaluation.save()
 
         current_user_evaluation = current_evaluation.user_evaluation
@@ -284,7 +289,7 @@ def submit_peer_evaluation(request):
         data = request.POST
         current_evaluation_id = data.get("current_evaluation")
         current_evaluation = Evaluation.objects.get(id=current_evaluation_id)
-        current_evaluation.date_submitted = make_aware(datetime.datetime.now())
+        current_evaluation.date_submitted = make_aware(datetime.now())
         current_evaluation.save()
 
         current_user = current_evaluation.evaluator
@@ -347,9 +352,7 @@ def user_evaluation_management(request, year=""):
         context.update({"user_search_query": user_search_query})
         users = users.filter(search_params)
 
-    selected_year = (
-        request.POST.get("evaluation_year") or year or datetime.datetime.now().year
-    )
+    selected_year = request.POST.get("evaluation_year") or year or datetime.now().year
     selected_year = int(selected_year)
 
     first_quarter_value = UserEvaluation.Quarter.FIRST_QUARTER.value
@@ -400,7 +403,7 @@ def modify_user_evaluation(request, pk, quarter, year=""):
 
     evaluator_choices = get_user_evaluator_choices(selected_user)
 
-    selected_year = year or datetime.datetime.now().year
+    selected_year = year or datetime.now().year
     selected_year = int(selected_year)
 
     user_evaluation, user_evaluation_created = UserEvaluation.objects.get_or_create(
@@ -454,6 +457,7 @@ def modify_user_evaluation(request, pk, quarter, year=""):
 
 def finalize_user_evaluation_toggle(request, user_evaluation_id):
     context = {}
+    user = request.user
     user_evaluation = UserEvaluation.objects.get(id=user_evaluation_id)
     user_evaluation.is_finalized = not user_evaluation.is_finalized
     user_evaluation.save()
@@ -468,6 +472,15 @@ def finalize_user_evaluation_toggle(request, user_evaluation_id):
 
     if user_evaluation.is_finalized:
         evaluator_choices = evaluator_choices.filter(id__in=existing_evaluators)
+
+        for evaluator_choice in evaluator_choices:
+            create_notification(
+                content=f"You are assigned as an evaluator of <b>{user_evaluation.get_evaluatee_display()}</b> for <b>{user_evaluation.get_year_and_quarter()}</b>.",
+                date=make_aware(datetime.now()),
+                sender_id=user.id,
+                recipient_id=evaluator_choice.id,
+                url=reverse("performance:performance_peer_evaluation"),
+            )
 
         existing_evaluations = user_evaluation.evaluations.all()
         context.update({"existing_evaluation_data": existing_evaluations})

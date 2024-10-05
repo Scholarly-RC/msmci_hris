@@ -30,7 +30,7 @@ from leave.utils import (
     get_leave_to_review,
     get_leave_types,
     get_leave_year_list,
-    get_predidents,
+    get_presidents,
     get_user_leave,
 )
 from payroll.utils import get_department_list
@@ -185,7 +185,7 @@ def user_review_leave_request(request):
                 response = create_global_alert_instance(
                     response,
                     f"An error has occured while responing to the selected leave request. Details: {error}",
-                    type="DANGER",
+                    "DANGER",
                 )
                 response = reswap(response, "none")
                 return response
@@ -271,7 +271,7 @@ def review_leave_request(request):
                 response = create_global_alert_instance(
                     response,
                     f"An error occurred while processing the selected leave request. Details: {error}",
-                    type="DANGER",
+                    "DANGER",
                 )
                 response = reswap(response, "none")
                 return response
@@ -345,7 +345,7 @@ def approver_settings(request):
                     "selected_department": selected_department,
                     "department_heads": department_heads,
                     "directors": get_directors(),
-                    "presidents": get_predidents(),
+                    "presidents": get_presidents(),
                     "hrs": get_user_with_hr_role(),
                 }
             )

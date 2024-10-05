@@ -15,7 +15,7 @@
                     </div>
                     <div class="w-full">
                         <div class="flex justify-center">
-                            <div class="relative w-[50%] border-b border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                            <div class="relative w-full lg:w-[50%] border-b border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                                 <div class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
                                     <svg class="w-4 h-4 text-gray-500 dark:text-gray-400"
                                          aria-hidden="true"
@@ -37,16 +37,14 @@
                         </div>
                     </div>
                     {% block shift_card_container %}
-                        <div id="shift_card_container" class="grid grid-cols-3 gap-6">
+                        <div id="shift_card_container" class="grid lg:grid-cols-3 gap-6">
                             {% for employee_assignment in employee_assignments %}
                                 <div class="block w-full p-2 bg-white rounded-lg shadow dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                                     <div class="text-lg font-bold text-gray-900 dark:text-white text-center mb-2">
                                         {{ employee_assignment.shift.description|upper }}
                                     </div>
-                                    <div id="dropdownSearch"
-                                         class="z-10 bg-white rounded-lg shadow w-full dark:bg-gray-700 border border-gray-200 dark:border-gray-700">
-                                        <ul class="h-48 px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200 p-2"
-                                            aria-labelledby="dropdownSearchButton">
+                                    <div class="z-10 bg-white rounded-lg shadow w-full dark:bg-gray-700 border border-gray-200 dark:border-gray-700">
+                                        <ul class="h-48 px-3 pb-3 overflow-y-auto text-sm text-gray-700 dark:text-gray-200 p-2">
                                             {% for employee in employee_assignment.assigned_users %}
                                                 <li>
                                                     <div class="flex items-center ps-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">

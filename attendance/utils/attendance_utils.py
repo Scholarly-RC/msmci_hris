@@ -100,6 +100,7 @@ def get_user_clocked_time(user, year: int, month: int, day: int, shift):
     )
 
     def _get_time_difference(from_time, to_time):
+        # Combine the time with the selected date
         from_time = datetime.datetime.combine(selected_date, from_time)
         to_time = datetime.datetime.combine(selected_date, to_time)
 
@@ -107,14 +108,35 @@ def get_user_clocked_time(user, year: int, month: int, day: int, shift):
         time_difference = to_time - from_time
         time_difference_total_seconds = time_difference.total_seconds()
 
-        # Get the difference in minutes
-        hours_difference = time_difference_total_seconds // 3600
-        minutes_difference = (time_difference_total_seconds % 3600) // 60
+        # Get the total difference in minutes
+        total_minutes_difference = int(time_difference_total_seconds // 60)
 
-        return int(hours_difference), int(minutes_difference)
+        # Calculate hours and remaining minutes
+        hours_difference = abs(total_minutes_difference) // 60
+        minutes_difference = abs(total_minutes_difference) % 60
+
+        # Build the output string
+        if total_minutes_difference > 0:
+            if hours_difference > 0:
+                return (
+                    f"+{hours_difference}h {minutes_difference}m"
+                    if minutes_difference > 0
+                    else f"+{hours_difference}h"
+                )
+            return f"+{minutes_difference}m"
+        elif total_minutes_difference < 0:
+            if hours_difference > 0:
+                return (
+                    f"-{hours_difference}h {minutes_difference}m"
+                    if minutes_difference > 0
+                    else f"-{hours_difference}h"
+                )
+            return f"-{minutes_difference}m"
+        else:
+            return "On Time"
 
     clock_in_time_difference = (
-        _get_time_difference(shift.start_time, clock_in_timestamp)
+        _get_time_difference(clock_in_timestamp, shift.start_time)
         if clock_in_timestamp
         else None
     )
@@ -134,17 +156,6 @@ def get_user_clocked_time(user, year: int, month: int, day: int, shift):
             formatted_time += f"{minutes}m"
         return formatted_time.strip()
 
-    clock_in_time_diff_formatted = (
-        _format_time_difference(*clock_in_time_difference)
-        if clock_in_time_difference
-        else None
-    )
-    clock_out_time_diff_formatted = (
-        _format_time_difference(*clock_out_time_difference)
-        if clock_out_time_difference
-        else None
-    )
-
     clock_in_time_str = (
         get_twenty_four_hour_time_str_from_time_object(clock_in_timestamp)
         if clock_in_timestamp
@@ -162,41 +173,11 @@ def get_user_clocked_time(user, year: int, month: int, day: int, shift):
         "clock_out": clock_out_timestamp,
         "clock_in_str": clock_in_time_str,
         "clock_out_str": clock_out_time_str,
-        "clock_in_time_diff_formatted": clock_in_time_diff_formatted,
-        "clock_out_time_diff_formatted": clock_out_time_diff_formatted,
+        "clock_in_time_diff_formatted": clock_in_time_difference,
+        "clock_out_time_diff_formatted": clock_out_time_difference,
     }
 
     return clocked_time
-
-
-def get_all_holidays_list():
-    """
-    Retrieves a list of all holidays from the Holiday model.
-    """
-    holiday_model = apps.get_model("attendance", "Holiday")
-    all_holidays = holiday_model.objects.all()
-    return all_holidays
-
-
-def get_holiday_for_specific_month_and_year(month: int, year: int):
-    """
-    Retrieves holidays for a specific month and year, combining regular and non-regular holidays.
-    """
-    holidays_for_this_specific_month_and_year = (
-        get_all_holidays_list()
-        .filter(month=month, year=year, is_regular=False)
-        .values_list("day", "name")
-    )
-    regular_holidays_for_this_specific_month_and_year = (
-        get_all_holidays_list()
-        .filter(month=month, is_regular=True)
-        .values_list("day", "name")
-    )
-    combined_holidays = (
-        holidays_for_this_specific_month_and_year
-        | regular_holidays_for_this_specific_month_and_year
-    )
-    return combined_holidays
 
 
 def get_employees_list_per_department():

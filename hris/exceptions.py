@@ -12,3 +12,11 @@ class UserNotApprover(Exception):
 
 class InvalidLeaveRequestAction(Exception):
     pass
+
+
+class InvalidApproverPermission(Exception):
+    pass
+
+
+class InvalidApproverResponse(Exception):
+    pass

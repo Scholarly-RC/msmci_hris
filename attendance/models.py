@@ -54,6 +54,7 @@ class Shift(models.Model):
     start_time = models.TimeField(_("Shift Start Time"), null=True, blank=True)
     end_time = models.TimeField(_("Shift End Time"), null=True, blank=True)
     is_active = models.BooleanField(_("Shift Is Active"), default=True)
+    departments = models.ManyToManyField(Department, related_name="shifts", blank=True)
 
     class Meta:
         verbose_name_plural = "Shifts"
@@ -140,12 +141,64 @@ class Holiday(models.Model):
         verbose_name_plural = "Holidays"
 
     def __str__(self):
-        holiday_str = f"{self.name} - {get_months_dict().get(self.month)} {self.day}"
-        if not self.is_regular:
-            holiday_str += f", {self.year}"
+        holiday_str = f"{self.name} - " + self.get_display_date()
         return holiday_str
+
+    def get_name_display(self):
+        return f"{self.name} ({'Regular' if self.is_regular else 'Special'})"
 
     def get_holiday_date(self):
         return get_date_object(
             self.year or datetime.datetime.now().year, self.month, self.day
         )
+
+    def get_display_date(self):
+        display_date = f"{get_months_dict().get(self.month)} {self.day}"
+        if not self.is_regular:
+            display_date += f", {self.year}"
+        return display_date
+
+
+class OverTime(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "PEND", _("Pending")
+        APPROVED = "APP", _("Approved")
+        REJECTED = "REK", _("Rejected")
+
+    user = models.ForeignKey(
+        User, on_delete=models.RESTRICT, related_name="overtime_requests"
+    )
+    approver = models.ForeignKey(
+        User, on_delete=models.RESTRICT, related_name="approved_overtimes"
+    )
+    date = models.DateField(_("Overtime Date"), null=True, blank=True)
+
+    status = models.CharField(
+        _("Overtime Request Status"),
+        choices=Status.choices,
+        max_length=4,
+        default=Status.PENDING.value,
+        null=True,
+        blank=True,
+    )
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Overtime Requests"
+
+    def __str__(self):
+        return f"Overtime request by {self.user.userdetails.get_user_fullname()} on {self.date} - Status: {self.get_status_display()}"
+
+    def get_display_date(self):
+        return get_readable_date_from_date_object(self.date)
+
+    def get_status_display(self):
+        return self.Status(self.status).name
+
+    def get_requestor_display(self):
+        return self.user.userdetails.get_user_fullname().title()
+
+    def get_approver_display(self):
+        return self.approver.userdetails.get_user_fullname().title()

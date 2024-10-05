@@ -5,7 +5,12 @@ from django.db import transaction
 
 from attendance.utils.assign_shift_utils import get_employee_assignments
 from attendance.utils.biometric_utils import process_biometric_data_from_device
-from attendance.utils.date_utils import get_date_object, get_time_object
+from attendance.utils.date_utils import (
+    get_date_object,
+    get_date_object_from_date_str,
+    get_time_object,
+)
+from hris.exceptions import InvalidApproverPermission, InvalidApproverResponse
 
 
 @transaction.atomic
@@ -148,3 +153,150 @@ def manually_set_user_clocked_time(user, selected_date, clock_in_time, clock_out
         clock_out_datetime = datetime.datetime.combine(selected_date, clock_out_time)
         current_modified_clock_out_record.timestamp = clock_out_datetime
         current_modified_clock_out_record.save()
+
+
+@transaction.atomic
+def process_add_holiday(payload):
+    try:
+        HolidayModel = apps.get_model("attendance", "Holiday")
+        name = payload.get("holiday_name").strip()
+        date_str = payload.get("holiday_date")
+        date = get_date_object_from_date_str(date_str)
+        is_regular = "is_holiday_regular" in payload
+
+        holiday = HolidayModel.objects.create(
+            name=name,
+            year=date.year,
+            month=date.month,
+            day=date.day,
+            is_regular=is_regular,
+        )
+
+        return holiday
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_delete_holiday(payload):
+    try:
+        HolidayModel = apps.get_model("attendance", "Holiday")
+        holiday_id = payload.get("holiday")
+        holiday = HolidayModel.objects.get(id=holiday_id)
+        holiday.delete()
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_create_overtime_request(user, payload):
+    try:
+        UserModel = apps.get_model("auth", "User")
+        OvertimeModel = apps.get_model("attendance", "OverTime")
+        pending_status = OvertimeModel.Status.PENDING.value
+        selected_approver_id = payload.get("selected_approver")
+        selected_approver = UserModel.objects.get(id=selected_approver_id)
+        date_str = payload.get("overtime_date")
+        overtime_date = get_date_object_from_date_str(date_str)
+
+        overtime = OvertimeModel.objects.create(
+            user=user,
+            approver=selected_approver,
+            date=overtime_date,
+            status=pending_status,
+        )
+        return overtime
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_respond_to_overtime_request(user, payload):
+    try:
+        OvertimeModel = apps.get_model("attendance", "OverTime")
+        overtime_status = OvertimeModel.Status
+        overtime_request_id = payload.get("overtime_request")
+        response = payload.get("response")
+        overtime_request = OvertimeModel.objects.get(id=overtime_request_id)
+
+        if overtime_request.approver != user:
+            raise InvalidApproverPermission(
+                "You do not have permission to respond to this overtime request."
+            )
+
+        if response == "APPROVE":
+            overtime_request.status = overtime_status.APPROVED.value
+        elif response == "REJECT":
+            overtime_request.status = overtime_status.REJECTED.value
+        else:
+            raise InvalidApproverResponse(
+                "Only 'Approve' or 'Reject' responses are allowed."
+            )
+
+        overtime_request.save()
+
+        return overtime_request
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_deleting_overtime_request(payload):
+    try:
+        OvertimeModel = apps.get_model("attendance", "OverTime")
+        overtime_request_id = payload.get("overtime_request")
+        overtime_request = OvertimeModel.objects.get(id=overtime_request_id)
+        overtime_request.delete()
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_create_new_shift(payload):
+    try:
+        ShiftModel = apps.get_model("attendance", "Shift")
+
+        shift_description = payload.get("shift_description").strip()
+        start_time = get_time_object(payload.get("start_time"))
+        end_time = get_time_object(payload.get("end_time"))
+
+        shift_model = ShiftModel.objects.create(
+            description=shift_description, start_time=start_time, end_time=end_time
+        )
+
+        return shift_model
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_removing_shift(payload):
+    try:
+        ShiftModel = apps.get_model("attendance", "Shift")
+        shift_id = payload.get("shift")
+        shift = ShiftModel.objects.get(id=shift_id)
+        shift.delete()
+    except Exception as error:
+        raise error
+
+
+@transaction.atomic
+def process_modify_department_shift(payload):
+    try:
+        DepartmentModel = apps.get_model("core", "Department")
+        ShiftModel = apps.get_model("attendance", "Shift")
+
+        department_id = payload.get("department")
+        shift_id = payload.get("shift")
+
+        department = DepartmentModel.objects.get(id=department_id)
+        shift = ShiftModel.objects.get(id=shift_id)
+
+        if "selected" in payload:
+            shift.departments.add(department)
+        else:
+            shift.departments.remove(department)
+
+        return shift, department
+    except Exception as error:
+        raise error
