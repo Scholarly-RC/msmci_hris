@@ -1,0 +1,116 @@
+{% extends "layout.html" %}
+{% block content %}
+    {% include "navbar.html" %}
+    <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
+        <div class="w-full relative px-2 lg:px-10">
+            <div class="flex flex-row justify-between mt-10">
+                <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white py-3">Reports and Analytics</h1>
+            </div>
+            {% block leave_management_section %}
+                <div id="leave_management_section"
+                     class="h-[48rem] overflow-y-auto flex flex-col gap-6 p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <div class="flex flex-row gap-4 h-full">
+                        <div class="w-1/3 flex flex-col justify-between p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                            {% block reports_and_analytics_filter_section %}
+                                <div id="reports_and_analytics_filter_section"
+                                      class="w-full flex flex-col gap-2"
+                                      >
+                                    <div>
+                                        <label for="selected_module_id"
+                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                            Module
+                                        </label>
+                                        <select id="selected_module_id"
+                                                name="selected_module"
+                                                hx-get="{% url "reports_and_analytics:reports_and_analytics_menu" %}"
+                                                hx-trigger="change"
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                            <option selected value="">Select a Module . . .</option>
+                                            {% for module in modules %}
+                                                <option value="{{ module.0 }}"
+                                                        {% if selected_module == module.0 %}selected{% endif %}>
+                                                    {{ module.1 }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    {% if reports %}
+                                        <div>
+                                            <label for="selected_report_id"
+                                                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                Report
+                                            </label>
+                                            <select id="selected_report_id"
+                                                    name="selected_report"
+                                                    hx-get="{% url "reports_and_analytics:reports_and_analytics_menu" %}"
+                                                    hx-include="[name='selected_module']"
+                                                    hx-trigger="change"
+                                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                                <option selected>Choose a Report</option>
+                                                {% for report in reports %}
+                                                    <option value="{{ report.0 }}"
+                                                            {% if selected_report == report.0 %}selected{% endif %}>
+                                                        {{ report.1|title }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    {% endif %}
+                                    {% if selected_report == "YEARLY_SALARY_EXPENSE" %}
+                                    <form hx-post="{% url "reports_and_analytics:view_yearly_salary_expense_report" %}">
+                                        <div>
+                                            <label for="selected_year_id"
+                                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                Year
+                                            </label>
+                                            <select id="selected_year_id"
+                                                    name="selected_year"
+                                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                    required>
+                                                <option selected value="">Choose a Year</option>
+                                                {% for year in years %}
+                                                    <option value="{{ year }}">
+                                                        {{ year }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="flex justify-center mt-4">
+                                            <button type="submit"
+                                                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                                View
+                                            </button>
+                                        </div>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            {% endblock %}
+                        </div>
+                        <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                            <div id="report_content_display" class="w-full flex items-center justify-center h-full">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
+        </div>
+    </div>
+{% endblock %}
+{% block javascript %}
+<script>
+    const openSelectedReport = (url) => {
+        // Specify the dimensions and features of the popup window
+        const options = 'width=600,height=400,scrollbars=yes';
+
+        // Open a new window or tab with the provided URL
+        window.open(url, '_blank', options);
+    };
+    document.addEventListener('openSelectedReport', (event) => {
+        const {
+            report_url_view
+        } = event.detail;
+        openSelectedReport(report_url_view);
+    });
+</script>
+{% endblock %}

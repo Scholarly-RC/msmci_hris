@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "performance",
     "payroll",
     "prose",
+    "reports_and_analytics",
     "django_q",
 ]
 

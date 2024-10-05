@@ -302,7 +302,7 @@ def get_payslip_fixed_compensations(payslip, semi_monthly=False):
 
     total_amount = compensations.aggregate(total=Sum("amount"))["total"] or 0
 
-    if semi_monthly:
+    if semi_monthly and total_amount:
         total_amount = total_amount / 2
 
     return compensations, total_amount

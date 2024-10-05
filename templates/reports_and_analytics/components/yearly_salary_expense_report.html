@@ -1,0 +1,136 @@
+{% extends "layout.html" %}
+{% block title %}Yearly Salary Expense Report for Year {{ selected_year }}{% endblock title %}
+{% block content %}
+    <div class="w-[65rem] mx-auto p-6">
+        <div>
+            <input type="hidden" id="report_data" value="{{ chart_option_data }}">
+            <div class="w-full bg-white rounded-lg border shadow dark:bg-gray-800 p-3 md:p-4">
+                <div class="flex justify-between border-gray-200 border-b dark:border-gray-700 pb-3">
+                    <dl>
+                        <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">
+                            Total Salary Expense for <b>Year {{ selected_year }}</b>
+                        </dt>
+                        <dd class="leading-none text-xl font-bold text-red-600 dark:text-red-500">
+                            -{{ total_expenses }}
+                        </dd>
+                    </dl>
+                </div>
+                <div id="bar-chart"></div>
+            </div>
+            <div class="w-full flex justify-center mt-2">
+                {% if not for_print_download %}
+                    <button type="button"
+                            hx-post="{% url "reports_and_analytics:popup_yearly_salary_expense_report" %}"
+                            hx-vals='{"selected_year": {{ selected_year }}}'
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Print/Download
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <script>
+        const inputElement = document.getElementById('report_data');
+        const inputValue = inputElement.value;
+        let parsedArray = {};
+
+        if (inputValue) {
+            parsedArray = JSON.parse(inputValue);
+        }
+
+        const months = parsedArray.months;
+        const total_amounts = parsedArray.total_amounts;
+
+        const options = {
+            series: [{
+                name: "Expense",
+                data: total_amounts,
+                color: "#F05252",
+            }],
+            chart: {
+                sparkline: {
+                    enabled: false,
+                },
+                type: "bar",
+                width: "100%",
+                height: 400,
+                toolbar: {
+                    show: false,
+                }
+            },
+            fill: {
+                opacity: 1,
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: true,
+                    columnWidth: "100%",
+                    borderRadiusApplication: "end",
+                    borderRadius: 6,
+                    dataLabels: {
+                        position: "top",
+                    },
+                },
+            },
+            legend: {
+                show: true,
+                position: "bottom",
+            },
+            dataLabels: {
+                enabled: false,
+            },
+            tooltip: {
+                shared: true,
+                intersect: false,
+                formatter: function(value) {
+                    return "P" + value
+                }
+            },
+            xaxis: {
+                labels: {
+                    show: true,
+                    style: {
+                        fontFamily: "Inter, sans-serif",
+                        cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                    },
+                    formatter: function(value) {
+                        return "P" + value
+                    }
+                },
+                categories: months,
+                axisTicks: {
+                    show: false,
+                },
+                axisBorder: {
+                    show: false,
+                },
+            },
+            yaxis: {
+                labels: {
+                    show: true,
+                    style: {
+                        fontFamily: "Inter, sans-serif",
+                        cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                    }
+                }
+            },
+            grid: {
+                show: true,
+                strokeDashArray: 4,
+                padding: {
+                    left: 2,
+                    right: 2,
+                    top: -20
+                },
+            },
+            fill: {
+                opacity: 1,
+            }
+        }
+
+        if (document.getElementById("bar-chart") && typeof ApexCharts !== 'undefined') {
+            const chart = new ApexCharts(document.getElementById("bar-chart"), options);
+            chart.render();
+        }
+    </script>
+{% endblock %}
