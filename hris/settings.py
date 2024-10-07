@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     "prose",
     "reports_and_analytics",
     "django_q",
+    "tailwind",
+    "theme",
 ]
 
 MIDDLEWARE = [
@@ -203,3 +205,12 @@ LOGGING = {
         },
     },
 }
+
+
+TAILWIND_APP_NAME = "theme"
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
+
+NPM_BIN_PATH = os.getenv("NPM_BIN_PATH")
