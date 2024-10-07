@@ -491,36 +491,7 @@
 {% block javascript %}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // General function to initialize modals
-            const initializeModal = (id) => {
-                const modalElement = document.getElementById(id);
-                if (modalElement) {
-                    const options = {
-                        placement: 'center-center',
-                        backdrop: 'static',
-                        backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
-                        closable: true,
-                    };
-
-                    const instanceOptions = {
-                        id: id,
-                        override: true
-                    };
-
-                    const modal = new Modal(modalElement, options, instanceOptions);
-                    modal.show();
-                }
-            };
-
-            // General function to close modals
-            const closeModal = (id) => {
-                const modalElement = document.getElementById(id);
-                if (modalElement) {
-                    const modal = new Modal(modalElement);
-                    modal.hide();
-                }
-            };
-
+            
             const updateCalendar = () => {
                 const shiftMonth = document.getElementById('shift_month').value;
                 const shiftYear = document.getElementById('shift_year').value;
@@ -541,14 +512,11 @@
             const initializeShiftSettingsModal = () => initializeModal('shift_settings_modal');
             const closeShiftSettingsModal = () => closeModal('shift_settings_modal');
 
-
-
             // Event listeners for modals
             document.addEventListener('openHolidaySettingsModal', initializeHolidaySettingsModal);
             document.addEventListener('closeHolidaySettingsModal', closeHolidaySettingsModal);
             document.addEventListener('openShiftSettingsModal', initializeShiftSettingsModal);
             document.addEventListener('closeShiftSettingsModal', closeShiftSettingsModal);
-
 
             document.addEventListener('updateCalendar', () => {
                 updateCalendar();

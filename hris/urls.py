@@ -19,6 +19,10 @@ urlpatterns = [
         include("performance.urls", namespace="performance"),
     ),
     path(
+        "reports_and_analytics/",
+        include("reports_and_analytics.urls", namespace="reports_and_analytics"),
+    ),
+    path(
         "alert/",
         hris_views.show_alert,
         name="show_alert",

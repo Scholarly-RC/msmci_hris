@@ -44,6 +44,10 @@ class UserDetails(models.Model):
         METHODIST = "MET", _("Methodist")
         CHURCH_OF_CHRIST = "COC", _("Church of Christ")
 
+    class Gender(models.TextChoices):
+        MALE = "M", _("Male")
+        FEMALE = "F", _("Femane")
+
     user = models.OneToOneField(User, on_delete=models.RESTRICT, primary_key=True)
     middle_name = models.CharField(
         _("User Middle Name"), max_length=100, null=True, blank=True
@@ -55,6 +59,14 @@ class UserDetails(models.Model):
         upload_to=get_user_profile_picture_directory_path,
     )
     date_of_birth = models.DateField(_("User Date of Birth"), null=True, blank=True)
+    gender = models.CharField(
+        _("User Gender"),
+        max_length=3,
+        choices=Gender.choices,
+        default=None,
+        null=True,
+        blank=True,
+    )
     phone_number = models.CharField(
         _("User Phone Number"), max_length=500, null=True, blank=True
     )

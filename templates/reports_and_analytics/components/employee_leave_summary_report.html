@@ -1,0 +1,142 @@
+{% extends "layout.html" %}
+{% block title %}
+    {{ selected_user.userdetails.get_user_fullname }} Employee Leave Summary ({{ from_date_display }} - {{ to_date_display }})
+{% endblock title %}
+{% block content %}
+    <div class="w-[65rem] mx-auto p-6">
+        <div>
+            <input type="hidden"
+                   id="employee_leave_summary_report_data"
+                   value="{{ chart_option_data }}">
+            <div class="w-full bg-white rounded-lg border shadow dark:bg-gray-800 p-4 md:p-6">
+                <div class="flex justify-between items-start w-full">
+                    <dl>
+                        <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
+                            Name: <b>{{ selected_user.userdetails.get_user_fullname|title }}</b>
+                        </dt>
+                        <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
+                            Employee Leave Summary <b>({{ from_date_display }} - {{ to_date_display }})</b>
+                        </dt>
+                    </dl>
+                </div>
+                <!-- Line Chart -->
+                <div id="column-chart" class="py-6"></div>
+            </div>
+            <div class="w-full flex justify-center mt-2">
+                {% if not for_print_download %}
+                    <button type="button"
+                            hx-post="{% url "reports_and_analytics:popup_employee_leave_summary_report" %}"
+                            hx-vals='{"selected_user": {{ selected_user.id }}, "from_date": "{{ from_date }}", "to_date": "{{ to_date }}"}'
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Print/Download
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <script>
+        var employeeLeaveSummaryReportChartOptions = () => {
+            const inputElement = document.getElementById('employee_leave_summary_report_data');
+            const inputValue = inputElement.value;
+            let parsedArray = {};
+
+            if (inputValue) {
+                parsedArray = JSON.parse(inputValue);
+            }
+
+            const leave_data_list = parsedArray.leave_data_list;
+
+            console.log(inputValue)
+
+            return {
+                colors: ["#1A56DB", "#FDBA8C"],
+                series: [{
+                    name: "Leave",
+                    color: "#1A56DB",
+                    data: leave_data_list,
+                }],
+                chart: {
+                    type: "bar",
+                    height: "320px",
+                    fontFamily: "Inter, sans-serif",
+                    toolbar: {
+                        show: false,
+                    },
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: "70%",
+                        borderRadiusApplication: "end",
+                        borderRadius: 8,
+                    },
+                },
+                tooltip: {
+                    shared: true,
+                    intersect: false,
+                    style: {
+                        fontFamily: "Inter, sans-serif",
+                    },
+                },
+                states: {
+                    hover: {
+                        filter: {
+                            type: "darken",
+                            value: 1,
+                        },
+                    },
+                },
+                stroke: {
+                    show: true,
+                    width: 0,
+                    colors: ["transparent"],
+                },
+                grid: {
+                    show: false,
+                    strokeDashArray: 4,
+                    padding: {
+                        left: 2,
+                        right: 2,
+                        top: -14
+                    },
+                },
+                dataLabels: {
+                    enabled: false,
+                },
+                legend: {
+                    show: false,
+                },
+                xaxis: {
+                    floating: false,
+                    labels: {
+                        show: true,
+                        style: {
+                            fontFamily: "Inter, sans-serif",
+                            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                        }
+                    },
+                    axisBorder: {
+                        show: false,
+                    },
+                    axisTicks: {
+                        show: false,
+                    },
+                },
+                yaxis: {
+                    show: false,
+                },
+                fill: {
+                    opacity: 1,
+                },
+            }
+        }
+
+        if (document.getElementById("column-chart") && typeof ApexCharts !== 'undefined') {
+            if (window.employeeLeaveSummaryReportChart) {
+                window.employeeLeaveSummaryReportChart.destroy()
+            }
+            window.employeeLeaveSummaryReportChart = new ApexCharts(document.getElementById("column-chart"), employeeLeaveSummaryReportChartOptions());
+            window.employeeLeaveSummaryReportChart.render();
+        }
+    </script>
+{% endblock %}

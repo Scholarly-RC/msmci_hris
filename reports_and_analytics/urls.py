@@ -1,0 +1,149 @@
+from django.urls import path
+
+from reports_and_analytics import views as raa_views
+
+app_name = "reports_and_analytics"
+
+urlpatterns = [
+    ### Attendance Reports Urls ###
+    path(
+        "report/employee-punctuality/view/<str:selected_user>/<str:from_date>/<str:to_date>",
+        raa_views.view_employee_punctuality_report,
+        name="view_employee_punctuality_report_with_data",
+    ),
+    path(
+        "report/employee-punctuality/popup",
+        raa_views.popup_employee_punctuality_report,
+        name="popup_employee_punctuality_report",
+    ),
+    path(
+        "report/employee-punctuality/view",
+        raa_views.view_employee_punctuality_report,
+        name="view_employee_punctuality_report",
+    ),
+    ### Performance and Learning Reports Urls ###
+    path(
+        "report/employee-performance-summary/view/<str:selected_year>/<str:selected_user>",
+        raa_views.view_employee_performance_evaluation_summary,
+        name="view_employee_performance_evaluation_summary_with_data",
+    ),
+    path(
+        "report/employee-performance-summary/popup",
+        raa_views.popup_employee_performance_evaluation_summary,
+        name="popup_employee_performance_evaluation_summary",
+    ),
+    path(
+        "report/employee-performance-summary/view",
+        raa_views.view_employee_performance_evaluation_summary,
+        name="view_employee_performance_evaluation_summary",
+    ),
+    ### Payroll Reports Urls ###
+    path(
+        "report/employee-yearly-salary-summary-report/view/<str:selected_year>/<str:selected_user>",
+        raa_views.view_employee_yearly_salary_summary_report,
+        name="view_employee_yearly_salary_summary_report_with_data",
+    ),
+    path(
+        "report/employee-yearly-salary-summary-report/popup",
+        raa_views.popup_employee_yearly_salary_summary_report,
+        name="popup_employee_yearly_salary_summary_report",
+    ),
+    path(
+        "report/employee-yearly-salary-summary-report/view",
+        raa_views.view_employee_yearly_salary_summary_report,
+        name="view_employee_yearly_salary_summary_report",
+    ),
+    path(
+        "report/yearly-salary-expense-report/view/<str:selected_year>",
+        raa_views.view_yearly_salary_expense_report,
+        name="view_yearly_salary_expense_report_with_data",
+    ),
+    path(
+        "report/yearly-salary-expense-report/popup",
+        raa_views.popup_yearly_salary_expense_report,
+        name="popup_yearly_salary_expense_report",
+    ),
+    path(
+        "report/yearly-salary-expense-report/view",
+        raa_views.view_yearly_salary_expense_report,
+        name="view_yearly_salary_expense_report",
+    ),
+    ### Leave Reports Urls ###
+    path(
+        "report/employee-leave-summary/view/<str:selected_user>/<str:from_date>/<str:to_date>",
+        raa_views.view_employee_leave_summary_report,
+        name="view_employee_leave_summary_report_with_data",
+    ),
+    path(
+        "report/employee-leave-summary/popup",
+        raa_views.popup_employee_leave_summary_report,
+        name="popup_employee_leave_summary_report",
+    ),
+    path(
+        "report/employee-leave-summary/view",
+        raa_views.view_employee_leave_summary_report,
+        name="view_employee_leave_summary_report",
+    ),
+    ### User Reports Urls ###
+    path(
+        "report/education-level/view/<str:as_of_date>",
+        raa_views.view_education_level_report,
+        name="view_education_level_report_with_data",
+    ),
+    path(
+        "report/education-level/popup",
+        raa_views.popup_education_level_report,
+        name="popup_education_level_report",
+    ),
+    path(
+        "report/education-level/view",
+        raa_views.view_education_level_report,
+        name="view_education_level_report",
+    ),
+    path(
+        "report/years-of-experience/view/<str:as_of_date>",
+        raa_views.view_years_of_experience_report,
+        name="view_years_of_experience_report_with_data",
+    ),
+    path(
+        "report/years-of-experience/popup",
+        raa_views.popup_years_of_experience_report,
+        name="popup_years_of_experience_report",
+    ),
+    path(
+        "report/years-of-experience/view",
+        raa_views.view_years_of_experience_report,
+        name="view_years_of_experience_report",
+    ),
+    path(
+        "report/gender-demographics/view/<str:as_of_date>",
+        raa_views.view_gender_demographics_report,
+        name="view_gender_demographics_report_with_data",
+    ),
+    path(
+        "report/gender-demographics/popup",
+        raa_views.popup_gender_demographics_report,
+        name="popup_gender_demographics_report",
+    ),
+    path(
+        "report/gender-demographics/view",
+        raa_views.view_gender_demographics_report,
+        name="view_gender_demographics_report",
+    ),
+    path(
+        "report/age-demographics/view/<str:as_of_date>",
+        raa_views.view_age_demographics_report,
+        name="view_age_demographics_report_with_data",
+    ),
+    path(
+        "report/age-demographics/popup",
+        raa_views.popup_age_demographics_report,
+        name="popup_age_demographics_report",
+    ),
+    path(
+        "report/age-demographics/view",
+        raa_views.view_age_demographics_report,
+        name="view_age_demographics_report",
+    ),
+    path("", raa_views.reports_and_analytics, name="reports_and_analytics"),
+]

@@ -81,6 +81,7 @@ def get_dict_for_user_and_user_details(querydict):
         "education",
         "employee_number",
         "role",
+        "gender",
     ]
 
     data = querydict.dict()
@@ -173,6 +174,14 @@ def get_role_list():
     """
     user_details_model = apps.get_model("core", "UserDetails")
     return user_details_model.Role.choices
+
+
+def get_gender_list():
+    """
+    Returns a list of gender choices from the UserDetails model.
+    """
+    user_details_model = apps.get_model("core", "UserDetails")
+    return user_details_model.Gender.choices
 
 
 def check_if_biometric_uid_exists(current_user, uid):

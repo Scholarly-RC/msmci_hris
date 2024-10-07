@@ -1,0 +1,150 @@
+{% extends "layout.html" %}
+{% block title %}
+    {{ selected_user.userdetails.get_user_fullname }} Performance Evaluation Summary Report - {{ selected_year }}
+{% endblock title %}
+{% block content %}
+    <div class="w-[65rem] mx-auto p-6">
+        <div>
+            <input type="hidden"
+                   id="employee_performance_evaluation_summary_report_data"
+                   value="{{ chart_option_data }}">
+            <div class="w-full bg-white rounded-lg border shadow dark:bg-gray-800 p-3 md:p-4">
+                <div class="flex justify-between border-gray-200 border-b dark:border-gray-700 pb-3">
+                    <dl>
+                        <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
+                            Name: <b>{{ selected_user.userdetails.get_user_fullname|title }}</b>
+                        </dt>
+                        <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
+                            Performance Evaluation Summary Report for Year <b>{{ selected_year }}</b>
+                        </dt>
+                    </dl>
+                </div>
+                <div id="bar-chart"></div>
+            </div>
+            <div class="w-full flex justify-center mt-2">
+                {% if not for_print_download %}
+                    <button type="button"
+                            hx-post="{% url "reports_and_analytics:popup_employee_performance_evaluation_summary" %}"
+                            hx-vals='{"selected_year": {{ selected_year }},"selected_user": {{ selected_user.id }}}'
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Print/Download
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <script>
+        var employeePerformanceEvaluationSummaryReportChartOptions = () => {
+            const inputElement = document.getElementById('employee_performance_evaluation_summary_report_data');
+            const inputValue = inputElement.value;
+            let parsedArray = {};
+
+            if (inputValue) {
+                parsedArray = JSON.parse(inputValue);
+            }
+
+            const quarters_list = parsedArray.quarters_list;
+            const self_rating_value_list = parsedArray.self_rating_value_list;
+            const peer_rating_value_list = parsedArray.peer_rating_value_list;
+
+            return {
+                series: [{
+                    name: "Self Rating",
+                    data: self_rating_value_list,
+                    color: "#31C48D",
+                }, {
+                    name: "Peer Rating",
+                    data: peer_rating_value_list,
+                    color: "#002D5D",
+                }],
+                chart: {
+                    sparkline: {
+                        enabled: false,
+                    },
+                    type: "bar",
+                    width: "100%",
+                    height: 400,
+                    toolbar: {
+                        show: false,
+                    }
+                },
+                fill: {
+                    opacity: 1,
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: true,
+                        columnWidth: "100%",
+                        borderRadiusApplication: "end",
+                        borderRadius: 6,
+                        dataLabels: {
+                            position: "top",
+                        },
+                    },
+                },
+                legend: {
+                    show: true,
+                    position: "bottom",
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: function(val) {
+                        return val;
+                    },
+                    offsetX: -50,
+                },
+                tooltip: {
+                    enabled: false,
+                },
+                xaxis: {
+                    labels: {
+                        show: true,
+                        style: {
+                            fontFamily: "Inter, sans-serif",
+                            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                        },
+                        formatter: function(value) {
+                            return value
+                        }
+                    },
+                    categories: quarters_list,
+                    axisTicks: {
+                        show: false,
+                    },
+                    axisBorder: {
+                        show: false,
+                    },
+                },
+                yaxis: {
+                    labels: {
+                        show: true,
+                        style: {
+                            fontFamily: "Inter, sans-serif",
+                            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                        }
+                    }
+                },
+                grid: {
+                    show: true,
+                    strokeDashArray: 4,
+                    padding: {
+                        left: 2,
+                        right: 2,
+                        top: -20
+                    },
+                },
+                fill: {
+                    opacity: 1,
+                }
+            }
+        }
+
+        if (document.getElementById("bar-chart") && typeof ApexCharts !== 'undefined') {
+            if (window.employeePerformanceEvaluationSummaryReportChart) {
+                window.employeePerformanceEvaluationSummaryReportChart.destroy();
+            }
+            window.employeePerformanceEvaluationSummaryReportChart = new ApexCharts(document.getElementById("bar-chart"), employeePerformanceEvaluationSummaryReportChartOptions());
+            window.employeePerformanceEvaluationSummaryReportChart.render();
+        }
+    </script>
+{% endblock %}

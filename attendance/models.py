@@ -22,7 +22,11 @@ class AttendanceRecord(models.Model):
         OVERTIME_OUT = "OT_OUT", _("Overtime Out")
 
     user_biometric_detail = models.ForeignKey(
-        BiometricDetail, on_delete=models.RESTRICT, null=True, blank=True
+        BiometricDetail,
+        on_delete=models.RESTRICT,
+        related_name="attendance_records",
+        null=True,
+        blank=True,
     )
     user_id_from_device = models.IntegerField(
         _("Attendance Record User ID From Device"), null=True, blank=True

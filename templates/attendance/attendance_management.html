@@ -435,58 +435,17 @@
 {% block javascript %}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // General function to initialize modals
-            const initializeModal = (id) => {
-                const modalElement = document.getElementById(id);
-                if (modalElement) {
-                    const options = {
-                        placement: 'center-center',
-                        backdrop: 'static',
-                        backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
-                        closable: true,
-                    };
-
-                    const instanceOptions = {
-                        id: id,
-                        override: true
-                    };
-
-                    const modal = new Modal(modalElement, options, instanceOptions);
-                    modal.show();
-                }
-            };
-
-            // General function to close modals
-            const closeModal = (id) => {
-                const modalElement = document.getElementById(id);
-                if (modalElement) {
-                    const modal = new Modal(modalElement);
-                    modal.hide();
-                }
-            };
-
-            const updateCalendar = () => {
-
-            };
-
             // Initialize specific modals
             const initializeRequestOvertimeModal = () => initializeModal('request_overtime_modal');
             const closeRequestOvertimeModal = () => closeModal('request_overtime_modal');
             const initializeOvertimeRequestsToApproveModal = () => initializeModal('overtime_request_to_approve_modal');
             const closeOvertimeRequestsToApproveModal = () => closeModal('overtime_request_to_approve_modal');
 
-
-
             // Event listeners for modals
             document.addEventListener('openRequestOvertimeModal', initializeRequestOvertimeModal);
             document.addEventListener('closeRequestOvertimeModal', closeRequestOvertimeModal);
             document.addEventListener('openOvertimeRequestsToApproveModal', initializeOvertimeRequestsToApproveModal);
             document.addEventListener('closeOvertimeRequestsToApproveModal', closeOvertimeRequestsToApproveModal);
-
-
-            document.addEventListener('updateCalendar', () => {
-                updateCalendar();
-            });
         });
     </script>
     <script>

@@ -1,0 +1,120 @@
+{% extends "layout.html" %}
+{% block title %}
+    {{ selected_user.userdetails.get_user_fullname }} Punctuality Report - ({{ from_date_display }} - {{ to_date_display }})
+{% endblock title %}
+{% block content %}
+    <div class="w-[65rem] mx-auto p-6">
+        <div>
+            <input type="hidden"
+                   id="employee_punctuality_report_data"
+                   value="{{ chart_option_data }}">
+            <div class="w-full bg-white rounded-lg border shadow dark:bg-gray-800 p-4 md:p-6">
+                <div class="flex justify-between items-start w-full">
+                    <dl>
+                        <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
+                            Name: <b>{{ selected_user.userdetails.get_user_fullname|title }}</b>
+                        </dt>
+                        <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
+                            Punctuality Report - <b>({{ from_date_display }} - {{ to_date_display }})</b>
+                        </dt>
+                    </dl>
+                </div>
+                <!-- Line Chart -->
+                <div class="py-6" id="pie-chart"></div>
+            </div>
+            <div class="w-full flex justify-center mt-2">
+                {% if not for_print_download %}
+                    <button type="button"
+                            hx-post="{% url "reports_and_analytics:popup_employee_punctuality_report" %}"
+                            hx-vals='{"selected_user": {{ selected_user.id }}, "from_date": "{{ from_date }}", "to_date": "{{ to_date }}"}'
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Print/Download
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <script>
+        var employeePunctualityReportChartOptions = () => {
+            const inputElement = document.getElementById('employee_punctuality_report_data');
+            const inputValue = inputElement.value;
+            let parsedArray = {};
+
+            if (inputValue) {
+                parsedArray = JSON.parse(inputValue);
+            }
+
+            const attendance_status = parsedArray.attendance_status;
+            const attendance_values = parsedArray.attendance_values;
+
+            return {
+                series: attendance_values,
+                colors: ["#1C64F2", "#16BDCA", "#9061F9", "#FF6F61", "#D4AF37"],
+                chart: {
+                    height: 420,
+                    width: "100%",
+                    type: "pie",
+                },
+                stroke: {
+                    colors: ["white"],
+                    lineCap: "",
+                },
+                plotOptions: {
+                    pie: {
+                        labels: {
+                            show: true,
+                        },
+                        size: "100%",
+                        dataLabels: {
+                            offset: -25
+                        }
+                    },
+                },
+                labels: attendance_status,
+                dataLabels: {
+                    enabled: true,
+                    style: {
+                        fontFamily: "Inter, sans-serif",
+                    },
+                },
+                legend: {
+                    position: "bottom",
+                    fontFamily: "Inter, sans-serif",
+                    fontSize: '14px',
+                    formatter: function(seriesName, opts) {
+                        const count = opts.w.globals.series[opts.seriesIndex] || 0;
+                        return `${seriesName}: ${count}`;
+                    },
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function(value) {
+                            return value
+                        },
+                    },
+                },
+                xaxis: {
+                    labels: {
+                        formatter: function(value) {
+                            return value + "%"
+                        },
+                    },
+                    axisTicks: {
+                        show: false,
+                    },
+                    axisBorder: {
+                        show: false,
+                    },
+                },
+            }
+        }
+
+        if (document.getElementById("pie-chart") && typeof ApexCharts !== 'undefined') {
+            if (window.employeePunctualityReportChart) {
+                window.employeePunctualityReportChart.destroy()
+            }
+            window.employeePunctualityReportChart = new ApexCharts(document.getElementById("pie-chart"), employeePunctualityReportChartOptions());
+            window.employeePunctualityReportChart.render();
+        }
+    </script>
+{% endblock %}

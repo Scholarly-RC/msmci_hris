@@ -1,0 +1,148 @@
+{% extends "layout.html" %}
+{% block title %}
+    {{ selected_user.userdetails.get_user_fullname }} Salary Summary Report for Year {{ selected_year }}
+{% endblock title %}
+{% block content %}
+    <div class="w-[65rem] mx-auto p-6">
+        <div>
+            <input type="hidden"
+                   id="employee_yearly_salary_report_data"
+                   value="{{ chart_option_data }}">
+            <div class="w-full bg-white rounded-lg border shadow dark:bg-gray-800 p-3 md:p-4">
+                <div class="flex justify-between border-gray-200 border-b dark:border-gray-700 pb-3">
+                    <dl>
+                        <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
+                            Name: <b>{{ selected_user.userdetails.get_user_fullname|title }}</b>
+                        </dt>
+                        <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
+                            Salary Summary for <b>Year {{ selected_year }}</b>
+                        </dt>
+                        <dd class="leading-none text-xl font-bold text-green-500 dark:text-green-400">
+                            ₱{{ total_salary }}
+                        </dd>
+                    </dl>
+                </div>
+                <div id="bar-chart"></div>
+            </div>
+            <div class="w-full flex justify-center mt-2">
+                {% if not for_print_download %}
+                    <button type="button"
+                            hx-post="{% url "reports_and_analytics:popup_employee_yearly_salary_summary_report" %}"
+                            hx-vals='{"selected_year": {{ selected_year }}, "selected_user": {{ selected_user.id }}}'
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Print/Download
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <script>
+        var employeeYearlySalarySummaryReportChartOptions = () => {
+            const inputElement = document.getElementById('employee_yearly_salary_report_data');
+            const inputValue = inputElement.value;
+            let parsedArray = {};
+
+            if (inputValue) {
+                parsedArray = JSON.parse(inputValue);
+            }
+
+            const months = parsedArray.months;
+            const total_amount_list = parsedArray.total_amount_list;
+
+            return {
+                series: [{
+                    name: "Income",
+                    data: total_amount_list,
+                    color: "#31C48D",
+                }],
+                chart: {
+                    sparkline: {
+                        enabled: false,
+                    },
+                    type: "bar",
+                    width: "100%",
+                    height: 400,
+                    toolbar: {
+                        show: false,
+                    }
+                },
+                fill: {
+                    opacity: 1,
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: true,
+                        columnWidth: "100%",
+                        borderRadiusApplication: "end",
+                        borderRadius: 6,
+                        dataLabels: {
+                            position: "top",
+                        },
+                    },
+                },
+                legend: {
+                    show: true,
+                    position: "bottom",
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: function(val) {
+                        return "₱" + val;
+                    },
+                    offsetX: -50,
+                },
+                tooltip: {
+                    enabled: false,
+                },
+                xaxis: {
+                    labels: {
+                        show: true,
+                        style: {
+                            fontFamily: "Inter, sans-serif",
+                            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                        },
+                        formatter: function(value) {
+                            return "₱" + value
+                        }
+                    },
+                    categories: months,
+                    axisTicks: {
+                        show: false,
+                    },
+                    axisBorder: {
+                        show: false,
+                    },
+                },
+                yaxis: {
+                    labels: {
+                        show: true,
+                        style: {
+                            fontFamily: "Inter, sans-serif",
+                            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                        }
+                    }
+                },
+                grid: {
+                    show: true,
+                    strokeDashArray: 4,
+                    padding: {
+                        left: 4,
+                        right: 2,
+                        top: -20
+                    },
+                },
+                fill: {
+                    opacity: 1,
+                }
+            }
+        }
+
+        if (document.getElementById("bar-chart") && typeof ApexCharts !== 'undefined') {
+            if (window.employeeYearlySalarySummaryReportChart) {
+                window.employeeYearlySalarySummaryReportChart.destroy();
+            }
+            window.employeeYearlySalarySummaryReportChart = new ApexCharts(document.getElementById("bar-chart"), employeeYearlySalarySummaryReportChartOptions());
+            window.employeeYearlySalarySummaryReportChart.render();
+        }
+    </script>
+{% endblock %}

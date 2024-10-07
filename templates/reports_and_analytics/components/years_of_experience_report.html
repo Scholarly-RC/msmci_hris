@@ -1,0 +1,151 @@
+{% extends "layout.html" %}
+{% block title %}
+    Years of Experience Report - ({{ as_of_date }})
+{% endblock title %}
+{% block content %}
+    <div class="w-[65rem] mx-auto p-6">
+        <div>
+            <input type="hidden"
+                   id="years_of_experience_report_data"
+                   value="{{ chart_option_data }}">
+            <div class="w-full bg-white rounded-lg border shadow dark:bg-gray-800 p-3 md:p-4">
+                <div class="flex justify-between border-gray-200 border-b dark:border-gray-700 pb-3">
+                    <dl>
+                        <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
+                            Years of Experience Report for as of <b>{{ as_of_date }}</b>
+                        </dt>
+                    </dl>
+                    <dl>
+                        <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">Average Years of Service</dt>
+                        <dd class="leading-none text-xl font-bold text-green-500 dark:text-green-400">
+                            {{ years_of_experience_average }} year/s
+                        </dd>
+                    </dl>
+                </div>
+                <div id="bar-chart"></div>
+            </div>
+            <div class="w-full flex justify-center mt-2">
+                {% if not for_print_download %}
+                    <button type="button"
+                            hx-post="{% url "reports_and_analytics:popup_years_of_experience_report" %}"
+                            hx-vals='{"as_of_date": "{{ as_of_date }}"}'
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Print/Download
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <script>
+        var yearsOfExperienceReportChartOptions = () => {
+            const inputElement = document.getElementById('years_of_experience_report_data');
+            const inputValue = inputElement.value;
+            let parsedArray = {};
+
+            if (inputValue) {
+                parsedArray = JSON.parse(inputValue);
+            }
+
+            const yearsOfExperience = parsedArray.years_of_experience_group_list;
+            const yearsOfExperienceCount = parsedArray.years_of_experience_count_group_list;
+
+            return {
+                series: [{
+                    name: "Experience",
+                    color: "#31C48D",
+                    data: yearsOfExperienceCount,
+                }],
+                chart: {
+                    sparkline: {
+                        enabled: false,
+                    },
+                    type: "bar",
+                    width: "100%",
+                    height: 400,
+                    toolbar: {
+                        show: false,
+                    }
+                },
+                fill: {
+                    opacity: 1,
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: true,
+                        columnWidth: "100%",
+                        borderRadiusApplication: "end",
+                        borderRadius: 6,
+                        dataLabels: {
+                            position: "top",
+                        },
+                    },
+                },
+                legend: {
+                    show: true,
+                    position: "bottom",
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: function(val) {
+                        return val;
+                    },
+                    offsetX: -50,
+                },
+                tooltip: {
+                    enabled: false,
+                },
+                xaxis: {
+                    labels: {
+                        show: true,
+                        style: {
+                            fontFamily: "Inter, sans-serif",
+                            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                        },
+                        formatter: function(value) {
+                            return value;
+                        }
+                    },
+                    categories: yearsOfExperience,
+                    axisTicks: {
+                        show: false,
+                    },
+                    axisBorder: {
+                        show: false,
+                    },
+                },
+                yaxis: {
+                    labels: {
+                        show: true,
+                        style: {
+                            fontFamily: "Inter, sans-serif",
+                            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                        },
+                        formatter: function(value) {
+                            return value + " year/s";
+                        }
+                    }
+                },
+                grid: {
+                    show: true,
+                    strokeDashArray: 4,
+                    padding: {
+                        left: 2,
+                        right: 2,
+                        top: -20
+                    },
+                },
+                fill: {
+                    opacity: 1,
+                }
+            }
+        }
+
+        if (document.getElementById("bar-chart") && typeof ApexCharts !== 'undefined') {
+            if (window.yearsOfExperienceReportChart) {
+                window.yearsOfExperienceReportChart.destroy();
+            }
+            window.yearsOfExperienceReportChart = new ApexCharts(document.getElementById("bar-chart"), yearsOfExperienceReportChartOptions());
+            window.yearsOfExperienceReportChart.render();
+        }
+    </script>
+{% endblock %}

@@ -8,6 +8,7 @@ from django.db.models import (
     DurationField,
     ExpressionWrapper,
     F,
+    Q,
     Value,
     When,
 )
@@ -196,3 +197,14 @@ def get_employees_list_per_department():
         .order_by("-userdetails__department", "first_name", "-department_exists")
     )
     return all_users
+
+
+def get_employees_with_attendance_record():
+    return (
+        User.objects.filter(
+            Q(biometricdetail__user_id_in_device__isnull=False)
+            & Q(biometricdetail__attendance_records__isnull=False)
+        )
+        .distinct()
+        .order_by("first_name")
+    )

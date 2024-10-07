@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from django.apps import apps
 from django.conf import settings
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.utils.timezone import make_aware
 
 from hris.exceptions import InitializationError
@@ -226,6 +226,16 @@ def get_payslip_year_list() -> list:
     return list(payslip_years)
 
 
+def get_users_with_payslip():
+    UserModel = apps.get_model("auth", "User")
+    UserDetails = apps.get_model("core", "UserDetails")
+    hr_role = UserDetails.Role.HR.value
+
+    return UserModel.objects.exclude(
+        Q(userdetails__role=hr_role) | Q(payslips__isnull=True)
+    ).order_by("first_name")
+
+
 def get_compensation_year_list() -> list:
     FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
 
@@ -302,7 +312,7 @@ def get_payslip_fixed_compensations(payslip, semi_monthly=False):
 
     total_amount = compensations.aggregate(total=Sum("amount"))["total"] or 0
 
-    if semi_monthly:
+    if semi_monthly and total_amount:
         total_amount = total_amount / 2
 
     return compensations, total_amount
