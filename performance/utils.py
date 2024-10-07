@@ -334,3 +334,17 @@ def get_users_per_shared_resources(user, resource):
     )
 
     return users
+
+
+def get_finalized_user_evaluation_year_list():
+    UserEvaluationModel = apps.get_model("performance", "UserEvaluation")
+    return (
+        UserEvaluationModel.objects.filter(is_finalized=True)
+        .values_list("year", flat=True)
+        .distinct()
+    )
+
+
+def get_user_evaluation_users():
+    UserModel = apps.get_model("auth", "User")
+    return UserModel.objects.filter(evaluatee_evaluations__is_finalized=True)

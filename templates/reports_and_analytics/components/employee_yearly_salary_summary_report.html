@@ -1,21 +1,24 @@
 {% extends "layout.html" %}
 {% block title %}
-    Yearly Salary Expense Report for Year {{ selected_year }}
+    {{ selected_user.userdetails.get_user_fullname }} Salary Summary Report for Year {{ selected_year }}
 {% endblock title %}
 {% block content %}
     <div class="w-[65rem] mx-auto p-6">
         <div>
             <input type="hidden"
-                   id="yearly_salary_expense_report_data"
+                   id="employee_yearly_salary_report_data"
                    value="{{ chart_option_data }}">
             <div class="w-full bg-white rounded-lg border shadow dark:bg-gray-800 p-3 md:p-4">
                 <div class="flex justify-between border-gray-200 border-b dark:border-gray-700 pb-3">
                     <dl>
                         <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
-                            Total Salary Expense for <b>Year {{ selected_year }}</b>
+                            Name: <b>{{ selected_user.userdetails.get_user_fullname|title }}</b>
                         </dt>
-                        <dd class="leading-none text-xl font-bold text-red-600 dark:text-red-500">
-                            -{{ total_expenses }}
+                        <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
+                            Salary Summary for <b>Year {{ selected_year }}</b>
+                        </dt>
+                        <dd class="leading-none text-xl font-bold text-green-500 dark:text-green-400">
+                            ₱{{ total_salary }}
                         </dd>
                     </dl>
                 </div>
@@ -24,8 +27,8 @@
             <div class="w-full flex justify-center mt-2">
                 {% if not for_print_download %}
                     <button type="button"
-                            hx-post="{% url "reports_and_analytics:popup_yearly_salary_expense_report" %}"
-                            hx-vals='{"selected_year": {{ selected_year }}}'
+                            hx-post="{% url "reports_and_analytics:popup_employee_yearly_salary_summary_report" %}"
+                            hx-vals='{"selected_year": {{ selected_year }}, "selected_user": {{ selected_user.id }}}'
                             class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                         Print/Download
                     </button>
@@ -34,8 +37,8 @@
         </div>
     </div>
     <script>
-        var yearlySalaryExpenseReportChartOptions = () => {
-            const inputElement = document.getElementById('yearly_salary_expense_report_data');
+        var employeeYearlySalarySummaryReportChartOptions = () => {
+            const inputElement = document.getElementById('employee_yearly_salary_report_data');
             const inputValue = inputElement.value;
             let parsedArray = {};
 
@@ -44,13 +47,13 @@
             }
 
             const months = parsedArray.months;
-            const total_amounts = parsedArray.total_amounts;
+            const total_amount_list = parsedArray.total_amount_list;
 
             return {
                 series: [{
-                    name: "Expense",
-                    data: total_amounts,
-                    color: "#F05252",
+                    name: "Income",
+                    data: total_amount_list,
+                    color: "#31C48D",
                 }],
                 chart: {
                     sparkline: {
@@ -123,7 +126,7 @@
                     show: true,
                     strokeDashArray: 4,
                     padding: {
-                        left: 2,
+                        left: 4,
                         right: 2,
                         top: -20
                     },
@@ -135,11 +138,11 @@
         }
 
         if (document.getElementById("bar-chart") && typeof ApexCharts !== 'undefined') {
-            if (window.yearlySalaryExpenseReportChart) {
-                window.yearlySalaryExpenseReportChart.destroy();
+            if (window.employeeYearlySalarySummaryReportChart) {
+                window.employeeYearlySalarySummaryReportChart.destroy();
             }
-            window.yearlySalaryExpenseReportChart = new ApexCharts(document.getElementById("bar-chart"), yearlySalaryExpenseReportChartOptions());
-            window.yearlySalaryExpenseReportChart.render();
+            window.employeeYearlySalarySummaryReportChart = new ApexCharts(document.getElementById("bar-chart"), employeeYearlySalarySummaryReportChartOptions());
+            window.employeeYearlySalarySummaryReportChart.render();
         }
     </script>
 {% endblock %}

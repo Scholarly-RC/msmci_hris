@@ -1,0 +1,116 @@
+{% extends "layout.html" %}
+{% block title %}
+    Age Demographics Report - ({{ as_of_date }})
+{% endblock title %}
+{% block content %}
+    <div class="w-[65rem] mx-auto p-6">
+        <div>
+            <input type="hidden"
+                   id="age_demographics_report_data"
+                   value="{{ chart_option_data }}">
+            <div class="w-full bg-white rounded-lg border shadow dark:bg-gray-800 p-4 md:p-6">
+                <div class="flex justify-between items-start w-full">
+                    <dl>
+                        <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
+                            Age Demographics Report as of <b>{{ as_of_date }}</b>
+                        </dt>
+                    </dl>
+                </div>
+                <div class="py-6" id="pie-chart"></div>
+            </div>
+            <div class="w-full flex justify-center mt-2">
+                {% if not for_print_download %}
+                    <button type="button"
+                            hx-post="{% url "reports_and_analytics:popup_age_demographics_report" %}"
+                            hx-vals='{"as_of_date": "{{ as_of_date }}"}'
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Print/Download
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <script>
+        var ageDemographicsReportChartOptions = () => {
+            const inputElement = document.getElementById('age_demographics_report_data');
+            const inputValue = inputElement.value;
+            let parsedArray = {};
+
+            if (inputValue) {
+                parsedArray = JSON.parse(inputValue);
+            }
+
+            const age_groups = parsedArray.age_groups;
+            const age_group_count = parsedArray.age_group_count;
+
+            return {
+                series: age_group_count,
+                colors: ["#1C64F2", "#16BDCA", "#9061F9", "#FF6F61", "#D4AF37"],
+                chart: {
+                    height: 420,
+                    width: "100%",
+                    type: "pie",
+                },
+                stroke: {
+                    colors: ["white"],
+                    lineCap: "",
+                },
+                plotOptions: {
+                    pie: {
+                        labels: {
+                            show: true,
+                        },
+                        size: "100%",
+                        dataLabels: {
+                            offset: -25
+                        }
+                    },
+                },
+                labels: age_groups,
+                dataLabels: {
+                    enabled: true,
+                    style: {
+                        fontFamily: "Inter, sans-serif",
+                    },
+                },
+                legend: {
+                    position: "bottom",
+                    fontFamily: "Inter, sans-serif",
+                    fontSize: '14px',
+                    formatter: function(seriesName, opts) {
+                        const count = opts.w.globals.series[opts.seriesIndex] || 0;
+                        return `${seriesName}: ${count}`;
+                    },
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function(value) {
+                            return value
+                        },
+                    },
+                },
+                xaxis: {
+                    labels: {
+                        formatter: function(value) {
+                            return value + "%"
+                        },
+                    },
+                    axisTicks: {
+                        show: false,
+                    },
+                    axisBorder: {
+                        show: false,
+                    },
+                },
+            }
+        }
+
+        if (document.getElementById("pie-chart") && typeof ApexCharts !== 'undefined') {
+            if (window.ageDemographicReportChart) {
+                window.ageDemographicReportChart.destroy()
+            }
+            window.ageDemographicReportChart = new ApexCharts(document.getElementById("pie-chart"), ageDemographicsReportChartOptions());
+            window.ageDemographicReportChart.render();
+        }
+    </script>
+{% endblock %}

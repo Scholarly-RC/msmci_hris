@@ -14,8 +14,8 @@ from payroll.utils import (
     calculate_basic_salary_steps,
     get_mp2_object,
     get_payslip_fixed_compensations,
-    get_payslip_variable_deductions,
     get_payslip_variable_compensations,
+    get_payslip_variable_deductions,
     get_salary_from_rank,
 )
 
@@ -216,7 +216,7 @@ class Payslip(models.Model):
         FIRST = "1ST", _("1st Period")
         SECOND = "2ND", _("2nd Period")
 
-    user = models.ForeignKey(User, on_delete=models.RESTRICT)
+    user = models.ForeignKey(User, on_delete=models.RESTRICT, related_name="payslips")
     rank = models.CharField(
         _("Current User Rank"), max_length=500, null=True, blank=True
     )

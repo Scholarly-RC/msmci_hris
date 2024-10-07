@@ -1,22 +1,22 @@
 {% extends "layout.html" %}
 {% block title %}
-    Yearly Salary Expense Report for Year {{ selected_year }}
+    {{ selected_user.userdetails.get_user_fullname }} Performance Evaluation Summary Report - {{ selected_year }}
 {% endblock title %}
 {% block content %}
     <div class="w-[65rem] mx-auto p-6">
         <div>
             <input type="hidden"
-                   id="yearly_salary_expense_report_data"
+                   id="employee_performance_evaluation_summary_report_data"
                    value="{{ chart_option_data }}">
             <div class="w-full bg-white rounded-lg border shadow dark:bg-gray-800 p-3 md:p-4">
                 <div class="flex justify-between border-gray-200 border-b dark:border-gray-700 pb-3">
                     <dl>
                         <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
-                            Total Salary Expense for <b>Year {{ selected_year }}</b>
+                            Name: <b>{{ selected_user.userdetails.get_user_fullname|title }}</b>
                         </dt>
-                        <dd class="leading-none text-xl font-bold text-red-600 dark:text-red-500">
-                            -{{ total_expenses }}
-                        </dd>
+                        <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
+                            Performance Evaluation Summary Report for Year <b>{{ selected_year }}</b>
+                        </dt>
                     </dl>
                 </div>
                 <div id="bar-chart"></div>
@@ -24,8 +24,8 @@
             <div class="w-full flex justify-center mt-2">
                 {% if not for_print_download %}
                     <button type="button"
-                            hx-post="{% url "reports_and_analytics:popup_yearly_salary_expense_report" %}"
-                            hx-vals='{"selected_year": {{ selected_year }}}'
+                            hx-post="{% url "reports_and_analytics:popup_employee_performance_evaluation_summary" %}"
+                            hx-vals='{"selected_year": {{ selected_year }},"selected_user": {{ selected_user.id }}}'
                             class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                         Print/Download
                     </button>
@@ -34,8 +34,8 @@
         </div>
     </div>
     <script>
-        var yearlySalaryExpenseReportChartOptions = () => {
-            const inputElement = document.getElementById('yearly_salary_expense_report_data');
+        var employeePerformanceEvaluationSummaryReportChartOptions = () => {
+            const inputElement = document.getElementById('employee_performance_evaluation_summary_report_data');
             const inputValue = inputElement.value;
             let parsedArray = {};
 
@@ -43,14 +43,19 @@
                 parsedArray = JSON.parse(inputValue);
             }
 
-            const months = parsedArray.months;
-            const total_amounts = parsedArray.total_amounts;
+            const quarters_list = parsedArray.quarters_list;
+            const self_rating_value_list = parsedArray.self_rating_value_list;
+            const peer_rating_value_list = parsedArray.peer_rating_value_list;
 
             return {
                 series: [{
-                    name: "Expense",
-                    data: total_amounts,
-                    color: "#F05252",
+                    name: "Self Rating",
+                    data: self_rating_value_list,
+                    color: "#31C48D",
+                }, {
+                    name: "Peer Rating",
+                    data: peer_rating_value_list,
+                    color: "#002D5D",
                 }],
                 chart: {
                     sparkline: {
@@ -84,7 +89,7 @@
                 dataLabels: {
                     enabled: true,
                     formatter: function(val) {
-                        return "₱" + val;
+                        return val;
                     },
                     offsetX: -50,
                 },
@@ -99,10 +104,10 @@
                             cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
                         },
                         formatter: function(value) {
-                            return "₱" + value
+                            return value
                         }
                     },
-                    categories: months,
+                    categories: quarters_list,
                     axisTicks: {
                         show: false,
                     },
@@ -135,11 +140,11 @@
         }
 
         if (document.getElementById("bar-chart") && typeof ApexCharts !== 'undefined') {
-            if (window.yearlySalaryExpenseReportChart) {
-                window.yearlySalaryExpenseReportChart.destroy();
+            if (window.employeePerformanceEvaluationSummaryReportChart) {
+                window.employeePerformanceEvaluationSummaryReportChart.destroy();
             }
-            window.yearlySalaryExpenseReportChart = new ApexCharts(document.getElementById("bar-chart"), yearlySalaryExpenseReportChartOptions());
-            window.yearlySalaryExpenseReportChart.render();
+            window.employeePerformanceEvaluationSummaryReportChart = new ApexCharts(document.getElementById("bar-chart"), employeePerformanceEvaluationSummaryReportChartOptions());
+            window.employeePerformanceEvaluationSummaryReportChart.render();
         }
     </script>
 {% endblock %}

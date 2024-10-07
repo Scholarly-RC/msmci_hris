@@ -1,21 +1,24 @@
 {% extends "layout.html" %}
 {% block title %}
-    Yearly Salary Expense Report for Year {{ selected_year }}
+    Years of Experience Report - ({{ as_of_date }})
 {% endblock title %}
 {% block content %}
     <div class="w-[65rem] mx-auto p-6">
         <div>
             <input type="hidden"
-                   id="yearly_salary_expense_report_data"
+                   id="years_of_experience_report_data"
                    value="{{ chart_option_data }}">
             <div class="w-full bg-white rounded-lg border shadow dark:bg-gray-800 p-3 md:p-4">
                 <div class="flex justify-between border-gray-200 border-b dark:border-gray-700 pb-3">
                     <dl>
                         <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
-                            Total Salary Expense for <b>Year {{ selected_year }}</b>
+                            Years of Experience Report for as of <b>{{ as_of_date }}</b>
                         </dt>
-                        <dd class="leading-none text-xl font-bold text-red-600 dark:text-red-500">
-                            -{{ total_expenses }}
+                    </dl>
+                    <dl>
+                        <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">Average Years of Service</dt>
+                        <dd class="leading-none text-xl font-bold text-green-500 dark:text-green-400">
+                            {{ years_of_experience_average }} year/s
                         </dd>
                     </dl>
                 </div>
@@ -24,8 +27,8 @@
             <div class="w-full flex justify-center mt-2">
                 {% if not for_print_download %}
                     <button type="button"
-                            hx-post="{% url "reports_and_analytics:popup_yearly_salary_expense_report" %}"
-                            hx-vals='{"selected_year": {{ selected_year }}}'
+                            hx-post="{% url "reports_and_analytics:popup_years_of_experience_report" %}"
+                            hx-vals='{"as_of_date": "{{ as_of_date }}"}'
                             class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                         Print/Download
                     </button>
@@ -34,8 +37,8 @@
         </div>
     </div>
     <script>
-        var yearlySalaryExpenseReportChartOptions = () => {
-            const inputElement = document.getElementById('yearly_salary_expense_report_data');
+        var yearsOfExperienceReportChartOptions = () => {
+            const inputElement = document.getElementById('years_of_experience_report_data');
             const inputValue = inputElement.value;
             let parsedArray = {};
 
@@ -43,14 +46,14 @@
                 parsedArray = JSON.parse(inputValue);
             }
 
-            const months = parsedArray.months;
-            const total_amounts = parsedArray.total_amounts;
+            const yearsOfExperience = parsedArray.years_of_experience_group_list;
+            const yearsOfExperienceCount = parsedArray.years_of_experience_count_group_list;
 
             return {
                 series: [{
-                    name: "Expense",
-                    data: total_amounts,
-                    color: "#F05252",
+                    name: "Experience",
+                    color: "#31C48D",
+                    data: yearsOfExperienceCount,
                 }],
                 chart: {
                     sparkline: {
@@ -84,7 +87,7 @@
                 dataLabels: {
                     enabled: true,
                     formatter: function(val) {
-                        return "₱" + val;
+                        return val;
                     },
                     offsetX: -50,
                 },
@@ -99,10 +102,10 @@
                             cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
                         },
                         formatter: function(value) {
-                            return "₱" + value
+                            return value;
                         }
                     },
-                    categories: months,
+                    categories: yearsOfExperience,
                     axisTicks: {
                         show: false,
                     },
@@ -116,6 +119,9 @@
                         style: {
                             fontFamily: "Inter, sans-serif",
                             cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                        },
+                        formatter: function(value) {
+                            return value + " year/s";
                         }
                     }
                 },
@@ -135,11 +141,11 @@
         }
 
         if (document.getElementById("bar-chart") && typeof ApexCharts !== 'undefined') {
-            if (window.yearlySalaryExpenseReportChart) {
-                window.yearlySalaryExpenseReportChart.destroy();
+            if (window.yearsOfExperienceReportChart) {
+                window.yearsOfExperienceReportChart.destroy();
             }
-            window.yearlySalaryExpenseReportChart = new ApexCharts(document.getElementById("bar-chart"), yearlySalaryExpenseReportChartOptions());
-            window.yearlySalaryExpenseReportChart.render();
+            window.yearsOfExperienceReportChart = new ApexCharts(document.getElementById("bar-chart"), yearsOfExperienceReportChartOptions());
+            window.yearsOfExperienceReportChart.render();
         }
     </script>
 {% endblock %}

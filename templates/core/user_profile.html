@@ -125,6 +125,28 @@
                                        value="{{ current_user.userdetails.str_date_of_birth }}">
                             </div>
                             <div class="col-span-6 sm:col-span-3">
+                                <div class="flex flex-row justify-between">
+                                    <label for="gender"
+                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        Gender
+                                    </label>
+                                    <p class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        {% if current_user.userdetails.get_age %}Age: <u>{{ current_user.userdetails.get_age }}</u>{% endif %}
+                                    </p>
+                                </div>
+                                <select id="gender"
+                                        name="gender"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                    <option value="">Choose Gender...</option>
+                                    {% for gender_detail in genders_list %}
+                                        <option value="{{ gender_detail.0 }}"
+                                                {% if gender_detail.0 == current_user.userdetails.gender %}selected{% endif %}>
+                                            {{ gender_detail.1 }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-span-6 sm:col-span-3">
                                 <label for="phone_number"
                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                     Phone

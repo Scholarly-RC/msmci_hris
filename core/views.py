@@ -25,6 +25,7 @@ from core.utils import (
     get_civil_status_list,
     get_education_list,
     get_education_list_with_degrees_earned,
+    get_gender_list,
     get_religion_list,
     get_role_list,
     get_users_sorted_by_department,
@@ -197,6 +198,7 @@ def user_profile(request):
     civil_status_list = get_civil_status_list()
     religion_list = get_religion_list()
     roles = get_role_list()
+    genders = get_gender_list()
     context = {
         "current_user": user,
         "department_list": departments,
@@ -204,6 +206,7 @@ def user_profile(request):
         "education_list": education_list,
         "religion_list": religion_list,
         "role_list": roles,
+        "genders_list": genders,
     }
 
     if (
