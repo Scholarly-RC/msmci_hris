@@ -42,7 +42,8 @@ logger = logging.getLogger(__name__)
 
 @login_required(login_url="/login")
 def main(request):
-    return render(request, "core/login.html")
+    context = {}
+    return render(request, "core/main.html", context)
 
 
 def user_login(request):
@@ -58,7 +59,7 @@ def user_login(request):
         response = HttpResponse()
         if user is not None:
             login(request, user)
-            response = HttpResponseClientRedirect(reverse("core:profile"))
+            response = HttpResponseClientRedirect(reverse("core:main"))
             return response
         else:
             if not password:

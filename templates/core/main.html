@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block content %}
+    {% include "navbar.html" %}
+    <div class="flex flex-col items-center justify-center min-h-screen px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
+        <section class="bg-white dark:bg-gray-900">
+            <div class="py-12 px-6 mx-auto max-w-screen-xl text-center lg:py-24">
+                <p class="mb-6 text-lg font-normal text-gray-600 lg:text-xl sm:px-16 lg:px-48 dark:text-gray-400">
+                    Hi, {{ request.user.userdetails.get_user_fullname|title }}
+                </p>
+                <h1 class="mb-6 text-4xl font-extrabold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
+                    Welcome to
+                    <br>
+                    <span class="text-blue-600 dark:text-blue-400">Scholarly Human Resource Information System</span>
+                </h1>
+                <p class="mt-4 text-md text-gray-500 lg:text-lg dark:text-gray-400">
+                    Your one-stop solution for managing human resources efficiently.
+                </p>
+            </div>
+        </section>
+    </div>
+{% endblock %}

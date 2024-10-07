@@ -61,5 +61,5 @@ urlpatterns = [
         core_views.notification_button_indicator,
         name="notification_button_indicator",
     ),
-    path("", core_views.user_login, name="main"),
+    path("", core_views.main, name="main"),
 ]
