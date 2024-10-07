@@ -5,7 +5,6 @@ from core import views as core_views
 app_name = "core"
 
 urlpatterns = [
-    path("", core_views.user_login, name="main"),
     path("login", core_views.user_login, name="login"),
     path("logout", core_views.user_logout, name="logout"),
     path("register", core_views.user_register, name="register"),
@@ -62,4 +61,5 @@ urlpatterns = [
         core_views.notification_button_indicator,
         name="notification_button_indicator",
     ),
+    path("", core_views.main, name="main"),
 ]

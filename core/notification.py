@@ -1,6 +1,9 @@
+import logging
 from datetime import datetime
 
 from django.apps import apps
+
+logger = logging.getLogger(__name__)
 
 
 def create_notification(
@@ -15,16 +18,20 @@ def create_notification(
         NotificationModel.objects.create(
             content=content, date=date, sender=sender, recipient=recipient, url=url
         )
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error("An error occurred while creating a notification", exc_info=True)
+        raise
 
 
 def mark_notification_read(notification):
     try:
         notification.read = True
         notification.save()
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error(
+            "An error occurred while marking notification as read", exc_info=True
+        )
+        raise
 
 
 def user_has_unread_notification(user):

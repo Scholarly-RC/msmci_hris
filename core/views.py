@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -35,10 +37,13 @@ from core.validations import password_validation
 from hris.utils import create_global_alert_instance
 from payroll.utils import get_rank_choices
 
+logger = logging.getLogger(__name__)
+
 
 @login_required(login_url="/login")
 def main(request):
-    return render(request, "core/login.html")
+    context = {}
+    return render(request, "core/main.html", context)
 
 
 def user_login(request):
@@ -54,7 +59,7 @@ def user_login(request):
         response = HttpResponse()
         if user is not None:
             login(request, user)
-            response = HttpResponseClientRedirect(reverse("core:profile"))
+            response = HttpResponseClientRedirect(reverse("core:main"))
             return response
         else:
             if not password:
@@ -295,7 +300,15 @@ def change_user_password(request):
                 )
                 return response
         except Exception as error:
-            raise error
+            logger.error(
+                "An error occurred while changing the user password", exc_info=True
+            )
+            response = create_global_alert_instance(
+                response,
+                "An error occurred while processing your request. Please try again.",
+                "DANGER",
+            )
+            return response
 
 
 @login_required(login_url="/login")
@@ -550,8 +563,13 @@ def bulk_add_new_users(request):
 
             response = HttpResponseClientRedirect(reverse("core:user_management"))
             return response
-        except Exception as e:
-            raise e
+        except Exception as error:
+            logger.error("An error occurred while adding new users", exc_info=True)
+            messages.error(
+                request,
+                "An error occurred while processing the file. Please check the format and try again.",
+            )
+            return redirect(reverse("core:user_management"))
 
 
 ### Notification Views ###
@@ -597,6 +615,7 @@ def open_notification(request):
             response = HttpResponseClientRedirect(notification.url)
             return response
         except Exception as error:
+            logger.error(f"Error accessing notification", exc_info=True)
             response = create_global_alert_instance(
                 response,
                 f"Something went wrong when accessing selected notification. Details: {error}.",

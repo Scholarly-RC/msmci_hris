@@ -127,7 +127,6 @@
             <script src="{% static 'assets/js/htmx.min.js' %}"></script>
             <script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
             <script src="{% static 'assets/js/general-modal-modifier.js' %}"></script>
-
             {% block javascript %}
             {% endblock javascript %}
             <script>
@@ -187,13 +186,36 @@
             </script>
             <script>
                 (function() {
+                    const $targetEl = document.getElementById('moduleDropdownMenu');
+                    const $triggerEl = document.getElementById('moduleDropdownButton');
+
+
+                    const options = {
+                        placement: 'bottom',
+                        triggerType: 'click',
+                        offsetSkidding: 0,
+                        offsetDistance: 10,
+                        delay: 300,
+                        ignoreClickOutsideClass: false,
+                    };
+
+                    const instanceOptions = {
+                        id: 'moduleDropdownMenu',
+                        override: true
+                    };
+
+                    const appMenuDropdown = new Dropdown($targetEl, $triggerEl, options, instanceOptions);
+                })();
+            </script>
+            <script>
+                (function() {
                     const $targetEl = document.getElementById('userNotification');
                     const $triggerEl = document.getElementById('userNotificationButton');
-            
+
                     const retrieveNotification = () => {
                         htmx.ajax('POST', '{% url "core:retrieve_notifications" %}');
                     };
-            
+
                     const options = {
                         placement: 'bottom',
                         triggerType: 'click',
@@ -205,12 +227,12 @@
                             retrieveNotification();
                         },
                     };
-            
+
                     const instanceOptions = {
                         id: 'userNotification',
                         override: true
                     };
-            
+
                     const dropdown = new Dropdown($targetEl, $triggerEl, options, instanceOptions);
                 })();
             </script>

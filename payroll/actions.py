@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from decimal import Decimal
 
@@ -11,6 +12,8 @@ from payroll.utils import (
     get_minimum_wage_object,
     get_mp2_object,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
@@ -32,7 +35,8 @@ def process_adding_job(payload):
         return new_job
 
     except Exception as error:
-        raise error
+        logger.error("Failed to add new job", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -56,7 +60,8 @@ def process_modifying_job(payload):
         return job
 
     except Exception as error:
-        raise error
+        logger.error("Failed to modify job", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -67,7 +72,8 @@ def process_deleting_job(job_id):
         job.delete()
 
     except Exception as error:
-        raise error
+        logger.error("Failed to delete job", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -82,7 +88,8 @@ def process_setting_minimum_wage_amount(amount):
         return minimum_wage
 
     except Exception as error:
-        raise error
+        logger.error("Failed to set minimum wage amount", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -102,8 +109,10 @@ def process_setting_deduction_config(payload):
             deduction_configuration.save()
 
         return deduction_configuration
+
     except Exception as error:
-        raise error
+        logger.error("Failed to set deduction configuration", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -126,7 +135,8 @@ def process_toggle_user_mp2_status(payload):
 
         return mp2, user, added
     except Exception as error:
-        raise error
+        logger.error("Failed to toggle MP2 status", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -140,7 +150,8 @@ def process_setting_mp2_amount(payload):
 
         return mp2
     except Exception as error:
-        raise error
+        logger.error("Failed to set MP2 amount", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -167,7 +178,8 @@ def process_get_or_create_user_payslip(
 
         return user, payslip
     except Exception as error:
-        raise error
+        logger.error("Error getting or creating payslip for user", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -180,7 +192,8 @@ def process_add_or_create_fixed_compensation(name: str, month: int, year: int):
         )
 
     except Exception as error:
-        raise error
+        logger.error("Error adding or creating fixed compensation", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -194,7 +207,8 @@ def process_modifying_fixed_compensation(payload):
         compensation.save()
         return compensation
     except Exception as error:
-        raise error
+        logger.error("Error modifying fixed compensation ID", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -206,7 +220,8 @@ def process_removing_fixed_compensation(payload):
         )
         compensation.delete()
     except Exception as error:
-        raise error
+        logger.error("Error removing fixed compensation ID", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -225,8 +240,10 @@ def process_modifying_fixed_compensation_users(
             compensation.users.remove(user)
 
         return compensation, user
+
     except Exception as error:
-        raise error
+        logger.error("Error modifying fixed compensation for user ID", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -246,7 +263,8 @@ def process_adding_variable_payslip_deduction(payload):
 
         return new_deduction
     except Exception as error:
-        raise error
+        logger.error("Error adding variable payslip deduction", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -259,7 +277,8 @@ def process_removing_variable_payslip_deduction(payload):
 
         return
     except Exception as error:
-        raise error
+        logger.error("Error removing variable payslip deduction", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -279,7 +298,8 @@ def process_adding_variable_payslip_compensation(payload):
 
         return new_variable_compensation
     except Exception as error:
-        raise error
+        logger.error("Error adding variable payslip compensation", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -291,7 +311,8 @@ def process_removing_variable_payslip_compensation(payload):
 
         return
     except Exception as error:
-        raise error
+        logger.error("Error removing variable payslip compensation", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -313,7 +334,8 @@ def process_toggle_payslip_release_status(payload):
 
         return payslip
     except Exception as error:
-        raise error
+        logger.error("Error toggling payslip release status", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -335,7 +357,8 @@ def process_creating_thirteenth_month_pay(payload):
 
         return thirteenth_month_pay
     except Exception as error:
-        raise error
+        logger.error("Error creating thirteenth month pay", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -352,7 +375,8 @@ def process_updating_thirteenth_month_pay(payload):
 
         return thirteenth_month_pay
     except Exception as error:
-        raise error
+        logger.error("Error updating thirteenth month pay", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -371,7 +395,8 @@ def process_toggling_thirteenth_month_pay_release(payload):
 
         return thirteenth_month_pay
     except Exception as error:
-        raise error
+        logger.error("Error toggling thirteenth month pay release", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -385,7 +410,8 @@ def process_delete_thirteenth_month_pay(payload):
 
         thirteenth_month_pay.delete()
     except Exception as error:
-        raise error
+        logger.error("Error deleting thirteenth month pay", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -411,7 +437,8 @@ def process_add_thirteenth_month_pay_variable_deduction(payload):
 
         return thirteenth_month_pay
     except Exception as error:
-        raise error
+        logger.error("Error adding variable deduction", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -435,4 +462,5 @@ def process_remove_thirteenth_month_pay_variable_deduction(payload):
 
         return thirteenth_month_pay
     except Exception as error:
-        raise error
+        logger.error("Error removing variable deduction", exc_info=True)
+        raise

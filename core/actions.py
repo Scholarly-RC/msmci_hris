@@ -1,7 +1,11 @@
+import logging
+
 from django.apps import apps
 from django.db import transaction
 
 from core.utils import get_dict_for_user_and_user_details, string_to_date
+
+logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
@@ -9,11 +13,15 @@ def process_change_profile_picture(profile_picture, user_details):
     """
     Updates the user's profile picture, deleting the old one if it exists.
     """
-    if user_details.profile_picture:
-        user_details.profile_picture.delete()
-    user_details.profile_picture = profile_picture
-    user_details.save()
-    return user_details
+    try:
+        if user_details.profile_picture:
+            user_details.profile_picture.delete()
+        user_details.profile_picture = profile_picture
+        user_details.save()
+        return user_details
+    except Exception:
+        logger.error("Error occurred while updating the profile picture", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -47,8 +55,11 @@ def process_update_user_and_user_details(user_instance, querydict):
         user_details.save()
 
         return user_instance
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error(
+            "An error occurred while updating user and user details", exc_info=True
+        )
+        raise
 
 
 @transaction.atomic

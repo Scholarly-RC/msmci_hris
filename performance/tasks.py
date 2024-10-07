@@ -1,8 +1,11 @@
+import logging
 import os
 import subprocess
 
 from django.conf import settings
 from filelock import FileLock
+
+logger = logging.getLogger(__name__)
 
 
 def convert_document_to_pdf(uploaded_file_instance, file_name):
@@ -11,7 +14,6 @@ def convert_document_to_pdf(uploaded_file_instance, file_name):
 
     try:
         lock.acquire()
-        print("Lock acquired.")
 
         document_path = uploaded_file_instance.resource.path
         document_extension = uploaded_file_instance.get_file_extension()
@@ -26,8 +28,6 @@ def convert_document_to_pdf(uploaded_file_instance, file_name):
             document_path,
         ]
 
-        print(f"Running command: {' '.join(command)}")
-
         subprocess.run(command, check=True, capture_output=True, text=True)
 
         output_pdf_path = document_path.replace(document_extension, ".pdf")
@@ -37,20 +37,18 @@ def convert_document_to_pdf(uploaded_file_instance, file_name):
             uploaded_file_instance.save()
             print("PDF conversion successful.")
         else:
-            print("PDF conversion failed: Output file not found.")
+            logger.warning("PDF conversion failed: Output file not found.")
 
     except subprocess.CalledProcessError as e:
-        print(f"Error during PDF conversion: {e.stderr}")
+        logger.error(f"Error during PDF conversion: {e.stderr}")
         raise
 
     except Exception as error:
-        print(f"An error occurred: {error}")
+        logger.exception("An error occurred during PDF conversion.")
         raise
 
     finally:
         lock.release()
-        print("Lock released.")
-
         if os.path.exists(lock_file):
             os.remove(lock_file)
             print("Lock file removed.")

@@ -7,6 +7,7 @@ from render_block import render_block_to_string
 
 from chat.models import Message
 from chat.utils import get_conversation, get_unseen_messages, mark_messages_as_seen
+from core.models import UserDetails
 
 
 # Create your views here.
@@ -34,10 +35,44 @@ def toggle_chat_window(request, open):
 def search_chat_users(request):
     context = {}
     if request.htmx and request.POST:
+        user = request.user
         search_query = request.POST.get("user_search")
         users = User.objects.filter(
             is_active=True,
-        ).exclude(id=request.user.id)
+        ).exclude(id=user.id)
+
+        if (
+            user.userdetails.role == ""
+            or user.userdetails.role == None
+            or user.userdetails.role == UserDetails.Role.EMPLOYEE.value
+        ):
+            users = users.filter(
+                Q(userdetails__role=UserDetails.Role.HR.value)
+                | Q(
+                    userdetails__role=UserDetails.Role.DEPARTMENT_HEAD.value,
+                    userdetails__department=user.userdetails.department,
+                )
+            )
+        elif user.userdetails.role == UserDetails.Role.DEPARTMENT_HEAD.value:
+            users = users.filter(
+                Q(userdetails__role=UserDetails.Role.HR.value)
+                | Q(userdetails__role=UserDetails.Role.DIRECTOR.value)
+                | Q(userdetails__department=user.userdetails.department)
+            )
+
+        elif user.userdetails.role == UserDetails.Role.DIRECTOR.value:
+            users = users.filter(
+                Q(userdetails__role=UserDetails.Role.HR.value)
+                | Q(userdetails__role=UserDetails.Role.DEPARTMENT_HEAD.value)
+                | Q(userdetails__role=UserDetails.Role.PRESIDENT.value)
+            )
+
+        elif user.userdetails.role == UserDetails.Role.PRESIDENT.value:
+            users = users.filter(
+                Q(userdetails__role=UserDetails.Role.HR.value)
+                | Q(userdetails__role=UserDetails.Role.DIRECTOR.value)
+            )
+
         if search_query:
             search_filter = (
                 Q(first_name__icontains=search_query)
