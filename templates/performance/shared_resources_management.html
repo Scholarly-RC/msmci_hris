@@ -525,35 +525,6 @@
                 });
             });
 
-            // Initialize Modals
-            const initializeModal = (id) => {
-                const modalElement = document.getElementById(id);
-                if (modalElement) {
-                    const options = {
-                        placement: 'center-center',
-                        backdrop: 'dynamic',
-                        backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
-                        closable: true,
-                    };
-
-                    const instanceOptions = {
-                        id: id,
-                        override: true
-                    };
-
-                    const modal = new Modal(modalElement, options, instanceOptions);
-                    modal.show();
-                }
-            };
-
-            const closeModal = (id) => {
-                const modalElement = document.getElementById(id);
-                if (modalElement) {
-                    const modal = new Modal(modalElement);
-                    modal.hide();
-                }
-            };
-
             // Initialize PDF Viewer
             const initializePdfViewer = async () => {
                 const pdfUrl = document.getElementById('resource_to_preview_url').value;
