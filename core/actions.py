@@ -62,8 +62,12 @@ def process_get_or_create_intial_user_one_to_one_fields(user):
     biometric_details, biometric_details_created = apps.get_model(
         "core", "BiometricDetail"
     ).objects.get_or_create(user=user)
+    leave_credit_details, leave_credit_created = apps.get_model(
+        "leave", "LeaveCredit"
+    ).objects.get_or_create(user=user, defaults={"credits": 0, "used_credits": 0})
 
     return [
         (user_details, user_details_created),
         (biometric_details, biometric_details_created),
+        (leave_credit_details, leave_credit_created),
     ]

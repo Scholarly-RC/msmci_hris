@@ -170,7 +170,7 @@ def user_register(request):
         user.set_password(password)
         user.save()
 
-        user_details, _ = process_get_or_create_intial_user_one_to_one_fields(user)
+        user_details, _, _ = process_get_or_create_intial_user_one_to_one_fields(user)
         user_details[0].employee_number = employee_id
         user_details[0].save()
 
@@ -384,8 +384,8 @@ def add_new_user(request):
                 },
             )
             if created:
-                user_details, _ = process_get_or_create_intial_user_one_to_one_fields(
-                    user
+                user_details, _, _ = (
+                    process_get_or_create_intial_user_one_to_one_fields(user)
                 )
                 user_details[0].employee_number = employee_id
                 user_details[0].save()
