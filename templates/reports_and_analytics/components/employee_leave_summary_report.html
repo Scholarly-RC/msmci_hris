@@ -23,7 +23,7 @@
                 <div id="column-chart" class="py-6"></div>
             </div>
             <div class="w-full flex justify-center mt-2">
-                {% if not for_print_download %}
+                {% if not hide_print_download_button and not for_print_download %}
                     <button type="button"
                             hx-post="{% url "reports_and_analytics:popup_employee_leave_summary_report" %}"
                             hx-vals='{"selected_user": {{ selected_user.id }}, "from_date": "{{ from_date }}", "to_date": "{{ to_date }}"}'

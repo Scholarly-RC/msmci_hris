@@ -25,7 +25,7 @@
                 <div id="bar-chart"></div>
             </div>
             <div class="w-full flex justify-center mt-2">
-                {% if not for_print_download %}
+                {% if not hide_print_download_button and not for_print_download %}
                     <button type="button"
                             hx-post="{% url "reports_and_analytics:popup_employee_yearly_salary_summary_report" %}"
                             hx-vals='{"selected_year": {{ selected_year }}, "selected_user": {{ selected_user.id }}}'

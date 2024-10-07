@@ -69,6 +69,7 @@ def view_employee_punctuality_report(
     is_user_hr = user.userdetails.is_hr()
     if not is_user_hr:
         selected_user = user.id
+        context["hide_print_download_button"] = True
 
     selected_user = request.POST.get("selected_user") or selected_user
     from_date = request.POST.get("from_date") or from_date
@@ -131,6 +132,7 @@ def view_employee_performance_evaluation_summary(
     is_user_hr = user.userdetails.is_hr()
     if not is_user_hr:
         selected_user = user.id
+        context["hide_print_download_button"] = True
 
     selected_user = request.POST.get("selected_user") or selected_user
     selected_year = request.POST.get("selected_year") or selected_year
@@ -231,6 +233,7 @@ def view_employee_yearly_salary_summary_report(
     is_user_hr = user.userdetails.is_hr()
     if not is_user_hr:
         selected_user = user.id
+        context["hide_print_download_button"] = True
 
     selected_user = request.POST.get("selected_user") or selected_user
     selected_year = request.POST.get("selected_year") or selected_year
@@ -289,6 +292,7 @@ def view_employee_leave_summary_report(
     is_user_hr = user.userdetails.is_hr()
     if not is_user_hr:
         selected_user = user.id
+        context["hide_print_download_button"] = True
 
     selected_user = request.POST.get("selected_user") or selected_user
     from_date = request.POST.get("from_date") or from_date
