@@ -190,11 +190,15 @@ LOGGING = {
             "filename": get_log_filename(),
             "formatter": "verbose",
         },
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
     },
     "loggers": {
         "django": {
-            "handlers": ["file"],
-            "level": "WARNING",
+            "handlers": ["file", "console"],
+            "level": "INFO",
             "propagate": True,
         },
     },
