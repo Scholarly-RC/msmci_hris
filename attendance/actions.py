@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 from django.apps import apps
 from django.db import transaction
@@ -11,6 +12,8 @@ from attendance.utils.date_utils import (
     get_time_object,
 )
 from hris.exceptions import InvalidApproverPermission, InvalidApproverResponse
+
+logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
@@ -40,8 +43,11 @@ def process_daily_shift_schedule(department, year, month, day, employee, shift):
         else:
             daily_shift_record.shifts.remove(new_daily_shift_schedule)
 
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error(
+            "An error occurred while processing the daily shift schedule", exc_info=True
+        )
+        raise
 
 
 @transaction.atomic
@@ -88,8 +94,12 @@ def process_bulk_daily_shift_schedule(
                 )
                 daily_shift_record.shifts.remove(*shift_schedules)
 
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error(
+            "An error occurred while processing bulk daily shift schedules",
+            exc_info=True,
+        )
+        raise
 
 
 @transaction.atomic
@@ -97,18 +107,24 @@ def add_user_attendance_record(attendance_data):
     """
     Creates a new attendance record for a user based on the provided biometric data from the device.
     """
-    attendance_record_model = apps.get_model("attendance", "AttendanceRecord")
+    try:
+        attendance_record_model = apps.get_model("attendance", "AttendanceRecord")
 
-    user_biometric_detail, user_id_from_device, timestamp, punch = (
-        process_biometric_data_from_device(attendance_data)
-    )
+        user_biometric_detail, user_id_from_device, timestamp, punch = (
+            process_biometric_data_from_device(attendance_data)
+        )
 
-    attendane_record = attendance_record_model.objects.create(
-        user_id_from_device=user_id_from_device,
-        punch=punch,
-        timestamp=timestamp,
-        user_biometric_detail=user_biometric_detail,
-    )
+        attendane_record = attendance_record_model.objects.create(
+            user_id_from_device=user_id_from_device,
+            punch=punch,
+            timestamp=timestamp,
+            user_biometric_detail=user_biometric_detail,
+        )
+    except Exception:
+        logger.error(
+            "An error occurred while adding user attendance record", exc_info=True
+        )
+        raise
 
 
 @transaction.atomic
@@ -117,42 +133,50 @@ def manually_set_user_clocked_time(user, selected_date, clock_in_time, clock_out
     Manually sets or updates the clock-in and clock-out times for a user on a specific date.
     If provided, updates the clock-in and/or clock-out times in the attendance records.
     """
-    attendance_record_model = apps.get_model("attendance", "AttendanceRecord")
-    clock_in_punch = attendance_record_model.Punch.TIME_IN.value
-    clock_out_punch = attendance_record_model.Punch.TIME_OUT.value
+    try:
+        attendance_record_model = apps.get_model("attendance", "AttendanceRecord")
+        clock_in_punch = attendance_record_model.Punch.TIME_IN.value
+        clock_out_punch = attendance_record_model.Punch.TIME_OUT.value
 
-    biometric_detail_model = apps.get_model("core", "BiometricDetail")
-    user_biometric_detail = biometric_detail_model.objects.get(user=user)
+        biometric_detail_model = apps.get_model("core", "BiometricDetail")
+        user_biometric_detail = biometric_detail_model.objects.get(user=user)
 
-    current_modified_clock_in_record, current_modified_clock_in_record_created = (
-        attendance_record_model.objects.get_or_create(
-            user_biometric_detail=user_biometric_detail,
-            user_id_from_device=user_biometric_detail.user_id_in_device,
-            timestamp__date=selected_date,
-            punch=clock_in_punch,
+        current_modified_clock_in_record, current_modified_clock_in_record_created = (
+            attendance_record_model.objects.get_or_create(
+                user_biometric_detail=user_biometric_detail,
+                user_id_from_device=user_biometric_detail.user_id_in_device,
+                timestamp__date=selected_date,
+                punch=clock_in_punch,
+            )
         )
-    )
 
-    if clock_in_time:
-        clock_in_time = get_time_object(clock_in_time)
-        clock_in_datetime = datetime.datetime.combine(selected_date, clock_in_time)
-        current_modified_clock_in_record.timestamp = clock_in_datetime
-        current_modified_clock_in_record.save()
+        if clock_in_time:
+            clock_in_time = get_time_object(clock_in_time)
+            clock_in_datetime = datetime.datetime.combine(selected_date, clock_in_time)
+            current_modified_clock_in_record.timestamp = clock_in_datetime
+            current_modified_clock_in_record.save()
 
-    current_modified_clock_out_record, current_modified_clock_out_record_created = (
-        attendance_record_model.objects.get_or_create(
-            user_biometric_detail=user_biometric_detail,
-            user_id_from_device=user_biometric_detail.user_id_in_device,
-            timestamp__date=selected_date,
-            punch=clock_out_punch,
+        current_modified_clock_out_record, current_modified_clock_out_record_created = (
+            attendance_record_model.objects.get_or_create(
+                user_biometric_detail=user_biometric_detail,
+                user_id_from_device=user_biometric_detail.user_id_in_device,
+                timestamp__date=selected_date,
+                punch=clock_out_punch,
+            )
         )
-    )
 
-    if clock_out_time:
-        clock_out_time = get_time_object(clock_out_time)
-        clock_out_datetime = datetime.datetime.combine(selected_date, clock_out_time)
-        current_modified_clock_out_record.timestamp = clock_out_datetime
-        current_modified_clock_out_record.save()
+        if clock_out_time:
+            clock_out_time = get_time_object(clock_out_time)
+            clock_out_datetime = datetime.datetime.combine(
+                selected_date, clock_out_time
+            )
+            current_modified_clock_out_record.timestamp = clock_out_datetime
+            current_modified_clock_out_record.save()
+    except Exception:
+        logger.error(
+            "An error occurred while manually setting user clocked time", exc_info=True
+        )
+        raise
 
 
 @transaction.atomic
@@ -173,8 +197,9 @@ def process_add_holiday(payload):
         )
 
         return holiday
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error("An error occurred while adding a holiday", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -184,8 +209,9 @@ def process_delete_holiday(payload):
         holiday_id = payload.get("holiday")
         holiday = HolidayModel.objects.get(id=holiday_id)
         holiday.delete()
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error("An error occurred while deleting a holiday", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -206,8 +232,11 @@ def process_create_overtime_request(user, payload):
             status=pending_status,
         )
         return overtime
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error(
+            "An error occurred while creating an overtime request", exc_info=True
+        )
+        raise
 
 
 @transaction.atomic
@@ -236,8 +265,11 @@ def process_respond_to_overtime_request(user, payload):
         overtime_request.save()
 
         return overtime_request
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error(
+            "An error occurred while responding to an overtime request", exc_info=True
+        )
+        raise
 
 
 @transaction.atomic
@@ -247,8 +279,11 @@ def process_deleting_overtime_request(payload):
         overtime_request_id = payload.get("overtime_request")
         overtime_request = OvertimeModel.objects.get(id=overtime_request_id)
         overtime_request.delete()
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error(
+            "An error occurred while deleting an overtime request", exc_info=True
+        )
+        raise
 
 
 @transaction.atomic
@@ -265,8 +300,9 @@ def process_create_new_shift(payload):
         )
 
         return shift_model
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error("An error occurred while creating a new shift", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -276,8 +312,9 @@ def process_removing_shift(payload):
         shift_id = payload.get("shift")
         shift = ShiftModel.objects.get(id=shift_id)
         shift.delete()
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error("An error occurred while removing a shift", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -298,5 +335,8 @@ def process_modify_department_shift(payload):
             shift.departments.remove(department)
 
         return shift, department
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error(
+            "An error occurred while modifying department shift", exc_info=True
+        )
+        raise

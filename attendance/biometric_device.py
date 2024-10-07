@@ -1,8 +1,12 @@
+import logging
+
 from django.conf import settings
 from zk import ZK
 
 from attendance.actions import add_user_attendance_record
 
+# Configure logging
+logger = logging.getLogger(__name__)
 DEVICE_IP = settings.BIOMETRIC_DEVICE_IP
 
 
@@ -13,7 +17,7 @@ def get_biometric_data():
         port=4370,
         password=0,
         force_udp=False,
-        ommit_ping=False,
+        omit_ping=False,
     )
     try:
         # Connect to device
@@ -29,18 +33,18 @@ def get_biometric_data():
             for attendance in conn.live_capture():
                 if attendance is None:
                     # Implement timeout logic here if any
-                    pass
+                    continue  # No attendance, continue looping
                 else:
                     add_user_attendance_record(attendance_data=attendance)
                     break
         except Exception as error:
-            print("Live capture operation timed out. {}".format(error))
+            logger.error("Live capture operation timed out: {}".format(error))
 
         # Re-enable device
         conn.enable_device()
 
-    except Exception as e:
-        print("Process terminated: {}".format(e))
+    except Exception as error:
+        logger.error("Process terminated: {}".format(error))
     finally:
         if conn:
             conn.disconnect()

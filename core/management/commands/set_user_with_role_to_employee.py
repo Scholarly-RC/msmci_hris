@@ -11,8 +11,10 @@ class Command(BaseCommand):
             employee_role = UserDetails.Role.EMPLOYEE.value
             UserDetails.objects.filter(role__isnull=True).update(role=employee_role)
         except Exception as error:
-            self.stdout.write(f"{error}")
+            self.stdout.write(self.style.ERROR(f"Error: {error}"))
         else:
             self.stdout.write(
-                "Users without roles have been successfully assigned the Employee role."
+                self.style.SUCCESS(
+                    "Users without roles have been successfully assigned the Employee role."
+                )
             )

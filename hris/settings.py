@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from pathlib import Path
 
 import dj_database_url
@@ -167,3 +168,34 @@ BASIC_SALARY_MULTIPLIER = 1.2
 BASIC_SALARY_STEP_MULTIPLIER = 1.03
 BASIC_SALARY_STEPS = 5
 MAX_JOB_RANK = 5
+
+
+def get_log_filename():
+    now = datetime.now()
+    return os.path.join(BASE_DIR, "logs", f"log_{now.strftime('%B_%Y')}.log")
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": get_log_filename(),
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "WARNING",
+            "propagate": True,
+        },
+    },
+}

@@ -1,3 +1,5 @@
+import logging
+
 from django.apps import apps
 from django.db import transaction
 
@@ -5,6 +7,8 @@ from core.utils import string_to_date
 from hris.exceptions import InvalidLeaveRequestAction, UserNotApprover
 from leave.enums import LeaveRequestAction
 from leave.utils import get_approvers_per_user
+
+logger = logging.getLogger(__name__)
 
 
 @transaction.atomic
@@ -43,8 +47,11 @@ def process_set_department_approver(payload):
             leave_approver.save()
 
         return leave_approver
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error(
+            "An error occurred while setting department approvers", exc_info=True
+        )
+        raise
 
 
 @transaction.atomic
@@ -65,8 +72,11 @@ def process_set_user_leave_credit(payload):
             leave_credit.save()
 
         return leave_credit, user
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error(
+            "An error occurred while setting leave credit for user", exc_info=True
+        )
+        raise
 
 
 @transaction.atomic
@@ -89,8 +99,11 @@ def process_create_leave_request(user, payload):
         )
 
         return new_leave
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error(
+            "An error occurred while creating a leave request for user", exc_info=True
+        )
+        raise
 
 
 @transaction.atomic
@@ -122,16 +135,21 @@ def process_submit_leave_request_response(user, payload):
             )
         leave.save()
         return leave
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error(
+            "An error occurred while submitting leave request response for user",
+            exc_info=True,
+        )
+        raise
 
 
 @transaction.atomic
 def process_delete_submit_leave_request(leave):
     try:
         leave.delete()
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error("An error occurred while deleting leave request", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -142,8 +160,12 @@ def process_add_user_used_leave_credits(user):
         else:
             user.leavecredit.used_credits += 1
         user.leavecredit.save()
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error(
+            "An error occurred while updating used leave credits for user",
+            exc_info=True,
+        )
+        raise
 
 
 @transaction.atomic
@@ -155,5 +177,8 @@ def process_reset_user_leave_credits(user_id):
 
         leave_credit.reset_used_credits()
         return leave_credit, leave_credit.user
-    except Exception as error:
-        raise error
+    except Exception:
+        logger.error(
+            "An error occurred while resetting leave credits for user ID", exc_info=True
+        )
+        raise
