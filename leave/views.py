@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpResponse, QueryDict
 from django.shortcuts import render
@@ -9,6 +10,7 @@ from django_htmx.http import reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
 
 from attendance.utils.date_utils import get_list_of_months
+from core.decorators import hr_required
 from core.notification import create_notification
 from core.utils import get_users_sorted_by_department
 from hris.utils import create_global_alert_instance
@@ -38,6 +40,7 @@ from performance.utils import get_user_with_hr_role
 
 
 # Create your views here.
+@login_required(login_url="/login")
 def user_leave(request):
     context = {}
     user = request.user
@@ -53,6 +56,7 @@ def user_leave(request):
     return render(request, "leave/user_leave.html", context)
 
 
+@login_required(login_url="/login")
 def user_leave_request(request):
     context = {}
     if request.htmx:
@@ -120,6 +124,7 @@ def user_leave_request(request):
                 return response
 
 
+@login_required(login_url="/login")
 def user_review_leave_request(request):
     context = {}
     if request.htmx:
@@ -191,6 +196,8 @@ def user_review_leave_request(request):
                 return response
 
 
+@login_required(login_url="/login")
+@hr_required("/")
 def leave_management(request):
     context = {}
     user = request.user
@@ -232,6 +239,7 @@ def leave_management(request):
     return render(request, "leave/leave_management.html", context)
 
 
+@login_required(login_url="/login")
 def review_leave_request(request):
     context = {}
     if request.htmx:
@@ -277,6 +285,7 @@ def review_leave_request(request):
                 return response
 
 
+@login_required(login_url="/login")
 def delete_leave_request(request, leave_id=""):
     context = {}
     if request.htmx:
@@ -322,6 +331,7 @@ def delete_leave_request(request, leave_id=""):
         return response
 
 
+@login_required(login_url="/login")
 def approver_settings(request):
     context = {}
     if request.htmx:
@@ -382,6 +392,7 @@ def approver_settings(request):
                 return response
 
 
+@login_required(login_url="/login")
 def leave_credit_settings(request):
     context = {}
     if request.htmx:
@@ -402,6 +413,7 @@ def leave_credit_settings(request):
             return response
 
 
+@login_required(login_url="/login")
 def update_leave_credit_settings_list(request):
     context = {}
     if request.htmx:
@@ -419,6 +431,7 @@ def update_leave_credit_settings_list(request):
             return response
 
 
+@login_required(login_url="/login")
 def edit_leave_credit_settings(request):
     context = {}
     if request.htmx:
@@ -485,6 +498,7 @@ def edit_leave_credit_settings(request):
                 return response
 
 
+@login_required(login_url="/login")
 def reset_used_leave_credits(request):
     context = {}
     if request.htmx:

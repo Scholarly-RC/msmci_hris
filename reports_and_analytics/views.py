@@ -1,12 +1,12 @@
 from datetime import datetime
 
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django_htmx.http import reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
 
-from reports_and_analytics.enums import PayrollReports
 from reports_and_analytics.utils import (
     get_age_demographics_report_data,
     get_education_level_report_data,
@@ -23,7 +23,7 @@ from reports_and_analytics.utils import (
 )
 
 
-# Create your views here.
+@login_required(login_url="/login")
 def reports_and_analytics(request):
     context = {}
     user = request.user
@@ -61,6 +61,7 @@ def reports_and_analytics(request):
 
 
 ### Attendance Reports Views ###
+@login_required(login_url="/login")
 def view_employee_punctuality_report(
     request, selected_user="", from_date="", to_date=""
 ):
@@ -96,6 +97,7 @@ def view_employee_punctuality_report(
     )
 
 
+@login_required(login_url="/login")
 def popup_employee_punctuality_report(request):
     if request.htmx and request.method == "POST":
         data = request.POST
@@ -124,6 +126,7 @@ def popup_employee_punctuality_report(request):
 
 
 ### Performance and Learning Reports Views ###
+@login_required(login_url="/login")
 def view_employee_performance_evaluation_summary(
     request, selected_user="", selected_year=""
 ):
@@ -158,6 +161,7 @@ def view_employee_performance_evaluation_summary(
     )
 
 
+@login_required(login_url="/login")
 def popup_employee_performance_evaluation_summary(request):
     if request.htmx and request.method == "POST":
         data = request.POST
@@ -183,6 +187,7 @@ def popup_employee_performance_evaluation_summary(request):
 
 
 ### Payroll Reports Views ###
+@login_required(login_url="/login")
 def view_yearly_salary_expense_report(request, selected_year=""):
     context = {}
     selected_year = request.POST.get("selected_year") or selected_year
@@ -205,6 +210,7 @@ def view_yearly_salary_expense_report(request, selected_year=""):
     )
 
 
+@login_required(login_url="/login")
 def popup_yearly_salary_expense_report(request):
     if request.htmx and request.method == "POST":
         data = request.POST
@@ -225,6 +231,7 @@ def popup_yearly_salary_expense_report(request):
         return response
 
 
+@login_required(login_url="/login")
 def view_employee_yearly_salary_summary_report(
     request, selected_user="", selected_year=""
 ):
@@ -259,6 +266,7 @@ def view_employee_yearly_salary_summary_report(
     )
 
 
+@login_required(login_url="/login")
 def popup_employee_yearly_salary_summary_report(request):
     if request.htmx and request.method == "POST":
         data = request.POST
@@ -284,6 +292,7 @@ def popup_employee_yearly_salary_summary_report(request):
 
 
 ### Leave Reports Views ###
+@login_required(login_url="/login")
 def view_employee_leave_summary_report(
     request, selected_user="", from_date="", to_date=""
 ):
@@ -320,6 +329,7 @@ def view_employee_leave_summary_report(
     )
 
 
+@login_required(login_url="/login")
 def popup_employee_leave_summary_report(request):
     if request.htmx and request.method == "POST":
         data = request.POST
@@ -347,6 +357,7 @@ def popup_employee_leave_summary_report(request):
 
 
 ### Users Reports Views ###
+@login_required(login_url="/login")
 def view_age_demographics_report(request, as_of_date=""):
     context = {}
     as_of_date = (
@@ -374,6 +385,7 @@ def view_age_demographics_report(request, as_of_date=""):
     )
 
 
+@login_required(login_url="/login")
 def popup_age_demographics_report(request):
     if request.htmx and request.method == "POST":
         data = request.POST
@@ -394,6 +406,7 @@ def popup_age_demographics_report(request):
         return response
 
 
+@login_required(login_url="/login")
 def view_gender_demographics_report(request, as_of_date=""):
     context = {}
     as_of_date = (
@@ -421,6 +434,7 @@ def view_gender_demographics_report(request, as_of_date=""):
     )
 
 
+@login_required(login_url="/login")
 def popup_gender_demographics_report(request):
     if request.htmx and request.method == "POST":
         data = request.POST
@@ -441,6 +455,7 @@ def popup_gender_demographics_report(request):
         return response
 
 
+@login_required(login_url="/login")
 def view_years_of_experience_report(request, as_of_date=""):
     context = {}
     as_of_date = (
@@ -468,6 +483,7 @@ def view_years_of_experience_report(request, as_of_date=""):
     )
 
 
+@login_required(login_url="/login")
 def popup_years_of_experience_report(request):
     if request.htmx and request.method == "POST":
         data = request.POST
@@ -488,6 +504,7 @@ def popup_years_of_experience_report(request):
         return response
 
 
+@login_required(login_url="/login")
 def view_education_level_report(request, as_of_date=""):
     context = {}
     as_of_date = (
@@ -515,6 +532,7 @@ def view_education_level_report(request, as_of_date=""):
     )
 
 
+@login_required(login_url="/login")
 def popup_education_level_report(request):
     if request.htmx and request.method == "POST":
         data = request.POST
