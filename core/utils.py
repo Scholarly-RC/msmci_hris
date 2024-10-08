@@ -113,7 +113,6 @@ def get_users_sorted_by_department(user_query: str = "", selected_department: in
 
     users = (
         User.objects.exclude(userdetails__role=hr_role)
-        .exclude(userdetails__rank__isnull=True)
         .order_by("userdetails__department__name", "first_name")
     )
 

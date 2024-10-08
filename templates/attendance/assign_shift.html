@@ -117,6 +117,12 @@
                                         </div>
                                     </div>
                                 </div>
+                            {% empty %}
+                                <div></div>
+                                <div class="w-full text-center">
+                                    <h2 class="text-2xl font-extrabold dark:text-white">No shifts currently assigned for this department.</h2>
+                                </div>
+                                <div></div>
                             {% endfor %}
                         </div>
                     {% endblock %}
