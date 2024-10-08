@@ -1,4 +1,4 @@
-{% load static %}
+{% load static tailwind_tags %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -7,114 +7,15 @@
         <title>
             {% block title %}{% endblock %}
         </title>
-        <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css"
+        <link href="{% static "assets/css/flowbite.min.css" %}"
               rel="stylesheet" />
         <link href="{% static "assets/css/global.css" %}" rel="stylesheet" />
-        <script src="https://cdn.tailwindcss.com"></script>
-        <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-        <script>
-            tailwind.config = {
-                content: [
-                    "./layouts/**/*.html",
-                    "./content/**/*.md",
-                    "./content/**/*.html",
-                    "./src/*.js",
-                    "./node_modules/flowbite/**/*.js",
-                ],
-                safelist: [
-                    "w-64",
-                    "w-1/2",
-                    "rounded-l-lg",
-                    "rounded-r-lg",
-                    "bg-gray-200",
-                    "grid-cols-4",
-                    "grid-cols-7",
-                    "h-6",
-                    "leading-6",
-                    "h-9",
-                    "leading-9",
-                    "shadow-lg",
-                    "bg-opacity-50",
-                    "dark:bg-opacity-80",
-                ],
-                darkMode: "class",
-                theme: {
-                    extend: {
-                        colors: {
-                            primary: {
-                                50: "#eff6ff",
-                                100: "#dbeafe",
-                                200: "#bfdbfe",
-                                300: "#93c5fd",
-                                400: "#60a5fa",
-                                500: "#3b82f6",
-                                600: "#2563eb",
-                                700: "#1d4ed8",
-                                800: "#1e40af",
-                                900: "#1e3a8a",
-                            },
-                        },
-                        fontFamily: {
-                            sans: [
-                                "Inter",
-                                "ui-sans-serif",
-                                "system-ui",
-                                "-apple-system",
-                                "system-ui",
-                                "Segoe UI",
-                                "Roboto",
-                                "Helvetica Neue",
-                                "Arial",
-                                "Noto Sans",
-                                "sans-serif",
-                                "Apple Color Emoji",
-                                "Segoe UI Emoji",
-                                "Segoe UI Symbol",
-                                "Noto Color Emoji",
-                            ],
-                            body: [
-                                "Inter",
-                                "ui-sans-serif",
-                                "system-ui",
-                                "-apple-system",
-                                "system-ui",
-                                "Segoe UI",
-                                "Roboto",
-                                "Helvetica Neue",
-                                "Arial",
-                                "Noto Sans",
-                                "sans-serif",
-                                "Apple Color Emoji",
-                                "Segoe UI Emoji",
-                                "Segoe UI Symbol",
-                                "Noto Color Emoji",
-                            ],
-                            mono: [
-                                "ui-monospace",
-                                "SFMono-Regular",
-                                "Menlo",
-                                "Monaco",
-                                "Consolas",
-                                "Liberation Mono",
-                                "Courier New",
-                                "monospace",
-                            ],
-                        },
-                        transitionProperty: {
-                            width: "width",
-                        },
-                        textDecoration: ["active"],
-                        minWidth: {
-                            kanban: "28rem",
-                        },
-                    },
-                },
-            };
-        </script>
+        {% tailwind_css %}
+        <script src="{% static 'assets/js/apexcharts.js' %}"></script>
         <link rel="stylesheet"
-              href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css" />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.js"></script>
+              href="{% static "assets/css/pdf_viewer.min.css" %}" />
+        <script src="{% static 'assets/js/pdf.min.js' %}"></script>
+        <script src="{% static 'assets/js/pdf_viewer.min.js' %}"></script>
     </head>
     <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
           class="bg-gray-50 dark:bg-gray-800">
@@ -122,7 +23,7 @@
         <div id="global_alert_container"
              class="fixed top-20 right-4 flex flex-col items-end max-w-lg z-50">
             <div id="chat_container"></div>
-            <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+            <script src="{% static 'assets/js/flowbite.min.js' %}"></script>
             <script src="{% static 'assets/js/dark-mode.js' %}"></script>
             <script src="{% static 'assets/js/htmx.min.js' %}"></script>
             <script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
