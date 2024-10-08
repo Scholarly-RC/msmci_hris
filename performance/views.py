@@ -2,6 +2,7 @@ import mimetypes
 import os
 from datetime import datetime
 
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import FileResponse, HttpResponse
@@ -17,6 +18,7 @@ from django_htmx.http import (
 )
 from render_block import render_block_to_string
 
+from core.decorators import hr_required
 from core.notification import create_notification
 from performance.actions import (
     add_poll_choice,
@@ -55,13 +57,14 @@ from performance.utils import (
     redirect_user,
 )
 
+
 # Performance Evaluation Section Views
-
-
+@login_required(login_url="/login")
 def performance_management(request):
     return redirect(reverse("performance:performance_evaluation"))
 
 
+@login_required(login_url="/login")
 def performance_evaluation(request):
     context = {"evaluation_section": "self"}
     current_user = request.user
@@ -130,6 +133,7 @@ def performance_evaluation(request):
     return render(request, "performance/performance_management.html", context)
 
 
+@login_required(login_url="/login")
 def performance_peer_evaluation(request, evaluation_id=""):
     context = {"evaluation_section": "peer"}
     current_user = request.user
@@ -190,6 +194,7 @@ def performance_peer_evaluation(request, evaluation_id=""):
     return render(request, "performance/performance_management.html", context)
 
 
+@login_required(login_url="/login")
 def switch_performance_evalution(request):
     if request.htmx and request.method == "POST":
         data = request.POST
@@ -240,6 +245,7 @@ def submit_evaluation_rating(request, for_peer=""):
         return response
 
 
+@login_required(login_url="/login")
 def submit_self_evaluation(request):
     context = {"evaluation_section": "self"}
 
@@ -282,6 +288,7 @@ def submit_self_evaluation(request):
         return response
 
 
+@login_required(login_url="/login")
 def submit_peer_evaluation(request):
     context = {"evaluation_section": "peer"}
 
@@ -325,6 +332,7 @@ def submit_peer_evaluation(request):
 # Performance and Learning Management Section Switch View
 
 
+@login_required(login_url="/login")
 def switch_performance_management_section(request):
     if request.htmx and request.method == "POST":
         data = request.POST
@@ -333,8 +341,8 @@ def switch_performance_management_section(request):
 
 
 # User Evaluation Management View
-
-
+@login_required(login_url="/login")
+@hr_required("/")
 def user_evaluation_management(request, year=""):
     context = {}
 
@@ -397,6 +405,7 @@ def user_evaluation_management(request, year=""):
     return render(request, "performance/user_evaluation_management.html", context)
 
 
+@login_required(login_url="/login")
 def modify_user_evaluation(request, pk, quarter, year=""):
     context = {}
     selected_user = User.objects.get(id=pk)
@@ -455,6 +464,7 @@ def modify_user_evaluation(request, pk, quarter, year=""):
     return render(request, "performance/modify_user_evaluation.html", context)
 
 
+@login_required(login_url="/login")
 def finalize_user_evaluation_toggle(request, user_evaluation_id):
     context = {}
     user = request.user
@@ -508,6 +518,7 @@ def finalize_user_evaluation_toggle(request, user_evaluation_id):
         return response
 
 
+@login_required(login_url="/login")
 def modify_user_evaluation_evaluators(request, user_evaluation_id):
     context = {}
     user_evaluation = UserEvaluation.objects.get(id=user_evaluation_id)
@@ -569,6 +580,7 @@ def modify_user_evaluation_evaluators(request, user_evaluation_id):
         return response
 
 
+@login_required(login_url="/login")
 def reset_evaluation(request):
     context = {}
     if request.htmx and request.method == "POST":
@@ -595,6 +607,7 @@ def reset_evaluation(request):
 # Poll and Post Section Views
 
 
+@login_required(login_url="/login")
 def poll_and_post_section(request):
     context = {}
     date_filter = request.POST.get("date_filter") or request.GET.get("date_filter")
@@ -634,6 +647,7 @@ def poll_and_post_section(request):
     return render(request, "performance/poll_and_post_section.html", context)
 
 
+@login_required(login_url="/login")
 def select_poll_content(request, content_id=""):
     context = {}
     user = request.user
@@ -660,6 +674,7 @@ def select_poll_content(request, content_id=""):
         return response
 
 
+@login_required(login_url="/login")
 def select_post_content(request, content_id=""):
     context = {}
     user = request.user
@@ -684,6 +699,7 @@ def select_post_content(request, content_id=""):
         return response
 
 
+@login_required(login_url="/login")
 def submit_poll_vote(request, poll_id=""):
     context = {}
     user = request.user
@@ -707,6 +723,7 @@ def submit_poll_vote(request, poll_id=""):
         return response
 
 
+@login_required(login_url="/login")
 def view_poll_result(request, poll_id=""):
     context = {}
     poll = Poll.objects.get(id=poll_id)
@@ -725,8 +742,8 @@ def view_poll_result(request, poll_id=""):
 
 
 # Poll and Post Management Views
-
-
+@login_required(login_url="/login")
+@hr_required("/")
 def poll_management(request, poll_id=""):
     context = {}
     poll_and_post_combined_list = get_poll_and_post_combined_list()
@@ -792,6 +809,7 @@ def poll_management(request, poll_id=""):
     return render(request, "performance/poll_and_post_management.html", context)
 
 
+@login_required(login_url="/login")
 def post_management(request, post_id=""):
     context = {}
     poll_and_post_combined_list = get_poll_and_post_combined_list()
@@ -877,6 +895,7 @@ def post_management(request, post_id=""):
     return render(request, "performance/poll_and_post_management.html", context)
 
 
+@login_required(login_url="/login")
 def poll_statistics(request, poll_id=""):
     context = {"show_poll_stats": True}
     poll_and_post_combined_list = get_poll_and_post_combined_list()
@@ -904,6 +923,7 @@ def poll_statistics(request, poll_id=""):
     return render(request, "performance/poll_and_post_management.html", context)
 
 
+@login_required(login_url="/login")
 def modify_poll_choices(request, poll_id=""):
     context = {}
     current_poll = Poll.objects.get(id=poll_id)
@@ -960,6 +980,7 @@ def modify_poll_choices(request, poll_id=""):
         return response
 
 
+@login_required(login_url="/login")
 def delete_selected_poll(request, poll_id=""):
     context = {}
     current_poll = Poll.objects.get(id=poll_id)
@@ -1004,6 +1025,7 @@ def delete_selected_poll(request, poll_id=""):
         return response
 
 
+@login_required(login_url="/login")
 def delete_selected_post(request, post_id=""):
     context = {"for_post": True}
     current_post = Post.objects.get(id=post_id)
@@ -1050,6 +1072,7 @@ def delete_selected_post(request, post_id=""):
         return response
 
 
+@login_required(login_url="/login")
 def toggle_poll_status(request, poll_id=""):
     context = {}
 
@@ -1073,6 +1096,7 @@ def toggle_poll_status(request, poll_id=""):
 # Shared Resources Section Views
 
 
+@login_required(login_url="/login")
 def shared_resources(request, user_id=""):
     context = {}
     user = request.user
@@ -1124,6 +1148,7 @@ def shared_resources(request, user_id=""):
     return render(request, "performance/shared_resources_section.html", context)
 
 
+@login_required(login_url="/login")
 def upload_resources(request):
     context = {}
     user = request.user
@@ -1153,6 +1178,7 @@ def upload_resources(request):
         return response
 
 
+@login_required(login_url="/login")
 def download_resource(request, resource_id=""):
     context = {}
     user = request.user
@@ -1192,6 +1218,7 @@ def download_resource(request, resource_id=""):
     return response
 
 
+@login_required(login_url="/login")
 def delete_resource(request, resource_id=""):
     context = {}
     user = request.user
@@ -1241,6 +1268,7 @@ def delete_resource(request, resource_id=""):
         return response
 
 
+@login_required(login_url="/login")
 def resource_share_access(request, resource_id=""):
     context = {}
     user = request.user
@@ -1269,6 +1297,7 @@ def resource_share_access(request, resource_id=""):
         return response
 
 
+@login_required(login_url="/login")
 def resource_modify_users_with_share_access(request, resource_id=""):
     context = {}
     user = request.user
@@ -1308,6 +1337,7 @@ def resource_modify_users_with_share_access(request, resource_id=""):
         return response
 
 
+@login_required(login_url="/login")
 def resource_update_file_list_after_modifying_share_access(request):
     context = {}
     user = request.user
@@ -1333,6 +1363,7 @@ def resource_update_file_list_after_modifying_share_access(request):
         return response
 
 
+@login_required(login_url="/login")
 def preview_resource(request, resource_id=""):
     context = {}
     user = request.user
@@ -1366,6 +1397,8 @@ def preview_resource(request, resource_id=""):
 
 
 # Shared Resources Management Views
+@login_required(login_url="/login")
+@hr_required("/")
 def shared_resources_management(request, user_id=""):
     context = {}
     user = request.user
@@ -1417,6 +1450,7 @@ def shared_resources_management(request, user_id=""):
     return render(request, "performance/shared_resources_management.html", context)
 
 
+@login_required(login_url="/login")
 def shared_resources_management_upload(request):
     context = {}
     user = request.user
@@ -1448,6 +1482,7 @@ def shared_resources_management_upload(request):
         return response
 
 
+@login_required(login_url="/login")
 def shared_resources_management_preview_resource(request, resource_id=""):
     context = {}
     if request.htmx and request.method == "POST":
@@ -1470,6 +1505,7 @@ def shared_resources_management_preview_resource(request, resource_id=""):
         return response
 
 
+@login_required(login_url="/login")
 def shared_resource_management_delete(request, resource_id=""):
     context = {}
     user = request.user
@@ -1521,6 +1557,7 @@ def shared_resource_management_delete(request, resource_id=""):
         return response
 
 
+@login_required(login_url="/login")
 def shared_resource_management_share_access(request, resource_id=""):
     context = {}
     user = request.user
@@ -1549,6 +1586,7 @@ def shared_resource_management_share_access(request, resource_id=""):
         return response
 
 
+@login_required(login_url="/login")
 def shared_resource_management_confidential_state_toggle(request, resource_id=""):
     context = {}
     user = request.user
@@ -1582,6 +1620,7 @@ def shared_resource_management_confidential_state_toggle(request, resource_id=""
         return response
 
 
+@login_required(login_url="/login")
 def shared_resource_management_modify_user_confidential_access(request):
     context = {}
     if request.htmx and request.method == "POST":
@@ -1603,6 +1642,7 @@ def shared_resource_management_modify_user_confidential_access(request):
         return response
 
 
+@login_required(login_url="/login")
 def shared_resource_management_modify_users_with_share_access(request, resource_id=""):
     context = {}
     user = request.user
@@ -1643,6 +1683,7 @@ def shared_resource_management_modify_users_with_share_access(request, resource_
         return response
 
 
+@login_required(login_url="/login")
 def shared_resource_management_update_file_list_after_modifying_share_access(request):
     context = {}
     user = request.user

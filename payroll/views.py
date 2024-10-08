@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse
 from django.http.request import QueryDict
@@ -11,6 +12,7 @@ from render_block import render_block_to_string
 
 from attendance.enums import Months
 from attendance.utils.date_utils import get_list_of_months, get_months_dict
+from core.decorators import hr_required
 from core.notification import create_notification
 from core.utils import get_users_sorted_by_department
 from hris.utils import create_global_alert_instance
@@ -66,9 +68,10 @@ from payroll.validations import (
 )
 from performance.utils import get_user_with_hr_role
 
+
 ### Salary and Rank Management Views
-
-
+@login_required(login_url="/login")
+@hr_required("/")
 def salary_and_rank_management(request):
     context = {}
 
@@ -105,6 +108,7 @@ def salary_and_rank_management(request):
     return render(request, "payroll/salary_and_rank_management.html", context)
 
 
+@login_required(login_url="/login")
 def add_job(request):
     context = {}
     if request.htmx:
@@ -147,6 +151,7 @@ def add_job(request):
                 return response
 
 
+@login_required(login_url="/login")
 def update_job_list(request):
     context = {}
     if request.method == "POST" and request.htmx:
@@ -165,6 +170,7 @@ def update_job_list(request):
         return response
 
 
+@login_required(login_url="/login")
 def view_job(request):
     context = {}
     if request.method == "POST" and request.htmx:
@@ -185,6 +191,7 @@ def view_job(request):
         return response
 
 
+@login_required(login_url="/login")
 def modify_job(request):
     context = {}
     if request.htmx:
@@ -229,6 +236,7 @@ def modify_job(request):
                 return response
 
 
+@login_required(login_url="/login")
 def delete_job(request):
     context = {}
     if request.htmx:
@@ -273,6 +281,7 @@ def delete_job(request):
                 return response
 
 
+@login_required(login_url="/login")
 def minimum_wage_settings(request):
     context = {}
     if request.htmx:
@@ -314,6 +323,7 @@ def minimum_wage_settings(request):
             return response
 
 
+@login_required(login_url="/login")
 def deductions_settings(request):
     context = {}
     if request.htmx:
@@ -356,6 +366,7 @@ def deductions_settings(request):
                 return response
 
 
+@login_required(login_url="/login")
 def mp2_settings(request):
     context = {}
     if request.htmx:
@@ -411,6 +422,7 @@ def mp2_settings(request):
             return response
 
 
+@login_required(login_url="/login")
 def mp2_amount_settings(request):
     context = {}
     if request.htmx:
@@ -469,6 +481,7 @@ def mp2_amount_settings(request):
                 return response
 
 
+@login_required(login_url="/login")
 def toggle_user_mp2_status(request):
     context = {}
     if request.htmx and request.method == "POST":
@@ -499,6 +512,7 @@ def toggle_user_mp2_status(request):
             return response
 
 
+@login_required(login_url="/login")
 def fixed_compensations_settings(request):
     context = {}
     if request.htmx:
@@ -545,6 +559,7 @@ def fixed_compensations_settings(request):
             return response
 
 
+@login_required(login_url="/login")
 def modify_fixed_compensation(request):
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -573,6 +588,7 @@ def modify_fixed_compensation(request):
             return response
 
 
+@login_required(login_url="/login")
 def add_fixed_compensation(request):
     context = {}
     if request.htmx and request.method == "POST":
@@ -646,6 +662,7 @@ def add_fixed_compensation(request):
             return response
 
 
+@login_required(login_url="/login")
 def remove_fixed_compensation(request):
     context = {}
     if request.htmx and request.method == "POST":
@@ -693,6 +710,7 @@ def remove_fixed_compensation(request):
             return response
 
 
+@login_required(login_url="/login")
 def toggle_fixed_compensation_users_view(request):
     context = {}
     if request.htmx and request.method == "POST":
@@ -716,6 +734,7 @@ def toggle_fixed_compensation_users_view(request):
         return response
 
 
+@login_required(login_url="/login")
 def modify_fixed_compensation_users(request):
     context = {}
     if request.htmx and request.method == "POST":
@@ -775,6 +794,8 @@ def modify_fixed_compensation_users(request):
             return response
 
 
+@login_required(login_url="/login")
+@hr_required("/")
 def payslip_management(request):
     context = {}
     current_month, current_year = get_current_month_and_year()
@@ -814,6 +835,7 @@ def payslip_management(request):
     return render(request, "payroll/payslip_management.html", context)
 
 
+@login_required(login_url="/login")
 def access_payslip(request):
     context = {}
     if request.htmx:
@@ -854,6 +876,7 @@ def access_payslip(request):
             return response
 
 
+@login_required(login_url="/login")
 def add_variable_payslip_deduction(request):
     context = {}
     if request.htmx:
@@ -926,6 +949,7 @@ def add_variable_payslip_deduction(request):
             return response
 
 
+@login_required(login_url="/login")
 def remove_variable_payslip_deduction(request):
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -947,6 +971,7 @@ def remove_variable_payslip_deduction(request):
             return response
 
 
+@login_required(login_url="/login")
 def add_variable_payslip_compensation(request):
     context = {}
     if request.htmx:
@@ -1021,6 +1046,7 @@ def add_variable_payslip_compensation(request):
             return response
 
 
+@login_required(login_url="/login")
 def remove_variable_payslip_compensation(request):
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -1044,6 +1070,7 @@ def remove_variable_payslip_compensation(request):
             return response
 
 
+@login_required(login_url="/login")
 def toggle_payslip_release_status(request):
     context = {}
     if request.htmx and request.method == "POST":
@@ -1085,6 +1112,7 @@ def toggle_payslip_release_status(request):
             return response
 
 
+@login_required(login_url="/login")
 def update_payslip_data(request):
     context = {}
     if request.htmx and request.method == "POST":
@@ -1102,6 +1130,7 @@ def update_payslip_data(request):
         return response
 
 
+@login_required(login_url="/login")
 def thirteenth_month_pay(request):
     context = {}
     if request.htmx:
@@ -1136,6 +1165,7 @@ def thirteenth_month_pay(request):
             return response
 
 
+@login_required(login_url="/login")
 def user_thirteenth_month_pay(request):
     context = {}
     if request.htmx:
@@ -1199,6 +1229,7 @@ def user_thirteenth_month_pay(request):
                 return response
 
 
+@login_required(login_url="/login")
 def create_thirteenth_month_pay(request):
     context = {}
     if request.htmx:
@@ -1257,6 +1288,7 @@ def create_thirteenth_month_pay(request):
                 return response
 
 
+@login_required(login_url="/login")
 def update_user_thirteenth_month_pay_list(request):
     context = {}
     if request.htmx and request.method == "POST":
@@ -1279,6 +1311,7 @@ def update_user_thirteenth_month_pay_list(request):
         return response
 
 
+@login_required(login_url="/login")
 def view_specific_thirteenth_month_pay(request):
     context = {}
     if request.htmx:
@@ -1325,6 +1358,7 @@ def view_specific_thirteenth_month_pay(request):
             return response
 
 
+@login_required(login_url="/login")
 def update_specific_thirteenth_month_pay(request):
     context = {}
     if request.htmx:
@@ -1350,6 +1384,7 @@ def update_specific_thirteenth_month_pay(request):
                 return response
 
 
+@login_required(login_url="/login")
 def toggle_specific_thirteenth_month_pay_release(request):
     context = {}
     if request.htmx:
@@ -1403,6 +1438,7 @@ def toggle_specific_thirteenth_month_pay_release(request):
                 return response
 
 
+@login_required(login_url="/login")
 def delete_specific_thirteenth_month_pay_release(request):
     context = {}
     if request.htmx:
@@ -1453,6 +1489,7 @@ def delete_specific_thirteenth_month_pay_release(request):
             return response
 
 
+@login_required(login_url="/login")
 def add_thirteenth_month_pay_variable_deduction(request):
     context = {}
     if request.htmx:
@@ -1549,6 +1586,7 @@ def add_thirteenth_month_pay_variable_deduction(request):
             return response
 
 
+@login_required(login_url="/login")
 def remove_thirteenth_month_pay_variable_deduction(request):
     context = {}
     if request.htmx and request.method == "POST":
@@ -1590,6 +1628,7 @@ def remove_thirteenth_month_pay_variable_deduction(request):
             return response
 
 
+@login_required(login_url="/login")
 def payroll_management(request):
     context = {}
     user = request.user
@@ -1624,6 +1663,7 @@ def payroll_management(request):
     return render(request, "payroll/payroll_management.html", context)
 
 
+@login_required(login_url="/login")
 def view_user_payslip(request):
     context = {}
     if request.htmx:
@@ -1646,6 +1686,7 @@ def view_user_payslip(request):
             return response
 
 
+@login_required(login_url="/login")
 def access_user_payslip(request, payslip_id):
     context = {}
     payslip = Payslip.objects.get(id=payslip_id)
@@ -1654,6 +1695,7 @@ def access_user_payslip(request, payslip_id):
     return render(request, "payroll/components/payslip_view.html", context)
 
 
+@login_required(login_url="/login")
 def view_user_thirteenth_month_pay_payslip(request):
     context = {}
     if request.htmx:
@@ -1676,6 +1718,7 @@ def view_user_thirteenth_month_pay_payslip(request):
             return response
 
 
+@login_required(login_url="/login")
 def access_user_thirteenth_month_pay_payslip(request, thirteenth_month_pay_id):
     context = {}
     payslip = ThirteenthMonthPay.objects.get(id=thirteenth_month_pay_id)

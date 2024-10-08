@@ -18,6 +18,7 @@ from core.actions import (
     process_get_or_create_intial_user_one_to_one_fields,
     process_update_user_and_user_details,
 )
+from core.decorators import hr_required
 from core.models import Department, Notification
 from core.notification import mark_notification_read, user_has_unread_notification
 from core.utils import (
@@ -89,6 +90,7 @@ def user_login(request):
     return render(request, "core/login.html", context)
 
 
+@login_required(login_url="/login")
 def set_new_user_password(request):
     context = {}
     password = request.POST["password"]
@@ -349,6 +351,7 @@ def upload_user_profile_picture(request):
 
 ### USER MANAGEMENT ###
 @login_required(login_url="/login")
+@hr_required("/")
 def user_management(request):
     users = get_users_sorted_by_department()
     context = {"users": users}
@@ -533,6 +536,7 @@ def modify_user_biometric_details(request, pk):
         return response
 
 
+@login_required(login_url="/login")
 def bulk_add_new_users(request):
     context = {}
     if request.htmx and request.method == "POST" and request.FILES:

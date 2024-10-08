@@ -1,6 +1,7 @@
 import calendar
 from datetime import datetime
 
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponse
@@ -63,6 +64,7 @@ from attendance.utils.overtime_utils import (
 )
 from attendance.utils.shift_utils import get_all_shifts
 from attendance.validations import add_holiday_validation, create_new_shift_validation
+from core.decorators import hr_required
 from core.models import BiometricDetail, Department
 from core.notification import create_notification
 from hris.utils import create_global_alert_instance
@@ -71,6 +73,7 @@ from payroll.utils import get_department_list
 
 
 ### Attendance Management ###
+@login_required(login_url="/login")
 def attendance_management(request, year="", month=""):
     context = {"list_of_months": get_list_of_months()}
     current_user = request.user
@@ -142,6 +145,7 @@ def attendance_management(request, year="", month=""):
     return render(request, "attendance/attendance_management.html", context)
 
 
+@login_required(login_url="/login")
 def sync_user_attendance(request, year="", month=""):
     context = {"list_of_months": get_list_of_months()}
     current_user = request.user
@@ -223,6 +227,7 @@ def sync_user_attendance(request, year="", month=""):
         return response
 
 
+@login_required(login_url="/login")
 def request_overtime(request):
     context = {}
     if request.htmx:
@@ -271,6 +276,7 @@ def request_overtime(request):
             return response
 
 
+@login_required(login_url="/login")
 def submit_overtime_request(request):
     context = {}
     if request.htmx:
@@ -315,6 +321,7 @@ def submit_overtime_request(request):
             return response
 
 
+@login_required(login_url="/login")
 def view_overtime_request_to_approve(request):
     context = {}
     if request.htmx and request.method == "GET":
@@ -371,6 +378,7 @@ def view_overtime_request_to_approve(request):
         return response
 
 
+@login_required(login_url="/login")
 def respond_to_overtime_request(request):
     context = {}
     if request.htmx and request.method == "POST":
@@ -410,6 +418,8 @@ def respond_to_overtime_request(request):
             return response
 
 
+@login_required(login_url="/login")
+@hr_required("/")
 def overtime_management(request):
     context = {}
 
@@ -448,6 +458,7 @@ def overtime_management(request):
     return render(request, "attendance/overtime_management.html", context)
 
 
+@login_required(login_url="/login")
 def overtime_management_respond_to_request(request):
     context = {}
     if request.htmx and request.method == "POST":
@@ -487,6 +498,7 @@ def overtime_management_respond_to_request(request):
             return response
 
 
+@login_required(login_url="/login")
 def delete_overtime_request(request):
     context = {}
     if request.htmx:
@@ -531,6 +543,8 @@ def delete_overtime_request(request):
             return response
 
 
+@login_required(login_url="/login")
+@hr_required("/")
 def user_attendance_management(request, user_id="", year="", month=""):
     context = {}
     users = get_employees_list_per_department()
@@ -622,6 +636,7 @@ def user_attendance_management(request, user_id="", year="", month=""):
     return render(request, "attendance/user_attendance_management.html", context)
 
 
+@login_required(login_url="/login")
 def toggle_user_management_record_edit(request):
     context = {}
     if request.htmx and request.POST:
@@ -677,16 +692,11 @@ def toggle_user_management_record_edit(request):
         )
         response = reswap(response, "outerHTML")
         return response
-        # selected_user_id = data.get("selected_user")
-        # attendance_year = data.get("attendance_year")
-        # attendance_month = data.get("attendance_month")
-        # attendance_day = data.get("selected_day")
-        # attendance_year = int(attendance_year)
-        # attendance_month = int(attendance_month)
-        # attendance_day = int(attendance_day)
 
 
 ### Shift Management ###
+@login_required(login_url="/login")
+@hr_required("/")
 def shift_management(request, department="", year="", month=""):
     context = {"list_of_months": get_list_of_months()}
     now = datetime.now()
@@ -744,6 +754,7 @@ def shift_management(request, department="", year="", month=""):
     return render(request, "attendance/shift_management.html", context)
 
 
+@login_required(login_url="/login")
 def update_shift_calendar(request):
     context = {}
     if request.htmx and request.method == "POST":
@@ -774,6 +785,7 @@ def update_shift_calendar(request):
         return response
 
 
+@login_required(login_url="/login")
 def assign_shift(request, department="", year="", month="", day=""):
     shift_year = year
     shift_month = month
@@ -839,6 +851,7 @@ def assign_shift(request, department="", year="", month="", day=""):
     return render(request, "attendance/assign_shift.html", context)
 
 
+@login_required(login_url="/login")
 def assign_user_to_shift(request, department="", year="", month="", day=""):
     if request.htmx and request.POST:
         data = request.POST
@@ -940,6 +953,7 @@ def assign_user_to_shift(request, department="", year="", month="", day=""):
         return response
 
 
+@login_required(login_url="/login")
 def shift_settings(request):
     context = {}
     if request.htmx:
@@ -963,6 +977,7 @@ def shift_settings(request):
             pass
 
 
+@login_required(login_url="/login")
 def create_new_shift(request):
     context = {}
     if request.htmx and request.POST:
@@ -1002,6 +1017,7 @@ def create_new_shift(request):
             return response
 
 
+@login_required(login_url="/login")
 def remove_selected_shift(request):
     context = {}
     if request.htmx and request.POST:
@@ -1034,6 +1050,7 @@ def remove_selected_shift(request):
             return response
 
 
+@login_required(login_url="/login")
 def modify_department_shift(request):
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -1059,6 +1076,7 @@ def modify_department_shift(request):
 
 
 ### Holiday Views ##
+@login_required(login_url="/login")
 def holiday_settings(request):
     context = {}
     if request.htmx:
@@ -1142,6 +1160,7 @@ def holiday_settings(request):
                 return response
 
 
+@login_required(login_url="/login")
 def remove_holiday(request):
     context = {}
     if request.htmx:
