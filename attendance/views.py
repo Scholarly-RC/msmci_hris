@@ -828,7 +828,6 @@ def assign_shift(request, department="", year="", month="", day=""):
 
     if request.htmx:
         response = HttpResponse()
-
         response.content = render_block_to_string(
             "attendance/assign_shift.html", "assign_shift_content", context
         )
@@ -873,7 +872,7 @@ def assign_user_to_shift(request, department="", year="", month="", day=""):
             )
             employees = employees.filter(search_params)
 
-        shifts = Shift.objects.filter(is_active=True)
+        shifts = selected_department.shifts.order_by("start_time")
 
         if not for_search:
             shift_id = data.get("shift_id")

@@ -147,16 +147,6 @@ def get_user_clocked_time(user, year: int, month: int, day: int, shift):
         else None
     )
 
-    def _format_time_difference(hours, minutes):
-        if hours == 0 and minutes == 0:
-            return "On time"
-        formatted_time = ""
-        if hours:
-            formatted_time += f"{hours}h "
-        if minutes:
-            formatted_time += f"{minutes}m"
-        return formatted_time.strip()
-
     clock_in_time_str = (
         get_twenty_four_hour_time_str_from_time_object(clock_in_timestamp)
         if clock_in_timestamp
