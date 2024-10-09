@@ -11,6 +11,7 @@ from django.urls import reverse
 from django.utils.timezone import make_aware
 from django.views.decorators.csrf import csrf_exempt
 from django_htmx.http import push_url, reswap, retarget, trigger_client_event
+from django_q.tasks import async_task
 from render_block import render_block_to_string
 
 from attendance.actions import (
@@ -26,7 +27,6 @@ from attendance.actions import (
     process_removing_shift,
     process_respond_to_overtime_request,
 )
-from attendance.biometric_device import get_biometric_data
 from attendance.models import (
     AttendanceRecord,
     DailyShiftRecord,
@@ -587,6 +587,7 @@ def user_attendance_management(request, user_id="", year="", month=""):
                 day=day,
                 shift=current_shift,
             )
+
             monthly_record_data.append(
                 {
                     "day": day,
@@ -1216,14 +1217,12 @@ def remove_holiday(request):
 ### Biometric ###
 @csrf_exempt
 def get_attendance_request(request):
+    async_task("attendance.tasks.get_biometric_data", save=False)
     return HttpResponse("OK")
 
 
 @csrf_exempt
 def attendance_cdata(request):
-    if request.method == "POST":
-        get_biometric_data()
-
     return HttpResponse("OK")
 
 

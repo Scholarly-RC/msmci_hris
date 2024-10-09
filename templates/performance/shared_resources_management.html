@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% load static %}
 {% block content %}
     {% include "navbar.html" %}
     <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
@@ -529,7 +530,7 @@
             const initializePdfViewer = async () => {
                 const pdfUrl = document.getElementById('resource_to_preview_url').value;
 
-                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                pdfjsLib.GlobalWorkerOptions.workerSrc = "{% static 'assets/js/pdf.worker.min.js' %}";
 
                 try {
                     const pdf = await pdfjsLib.getDocument(pdfUrl).promise;

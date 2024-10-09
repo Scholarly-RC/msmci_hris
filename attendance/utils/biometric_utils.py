@@ -32,7 +32,7 @@ def get_biometric_detail_from_user_id(user_id):
     Retrieves biometric detail for a user based on their user ID.
     """
     biometric_detail_model = apps.get_model("core", "BiometricDetail")
-    return biometric_detail_model.objects.filter(id=user_id).first()
+    return biometric_detail_model.objects.filter(user__id=user_id).first()
 
 
 def _get_biometric_detail_from_device_user_id(device_user_id):

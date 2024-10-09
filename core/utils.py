@@ -111,9 +111,8 @@ def get_users_sorted_by_department(user_query: str = "", selected_department: in
     user_details_model = apps.get_model("core", "UserDetails")
     hr_role = user_details_model.Role.HR.value
 
-    users = (
-        User.objects.exclude(userdetails__role=hr_role)
-        .order_by("userdetails__department__name", "first_name")
+    users = User.objects.exclude(userdetails__role=hr_role).order_by(
+        "userdetails__department__name", "first_name"
     )
 
     if selected_department:

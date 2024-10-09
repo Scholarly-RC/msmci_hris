@@ -260,16 +260,26 @@ def change_user_password(request):
     user = request.user
     if request.method == "POST":
         try:
-            current_password = request.POST["current_password"].strip()
+            current_password = request.POST.get("current_password", "").strip()
             new_password = request.POST["new_password"].strip()
             confirm_password = request.POST["confirm_password"].strip()
 
             response = HttpResponse()
             response = retarget(response, "#password_information_section")
             response = reswap(response, "outerHTML")
-            response.content = render_block_to_string(
-                "core/user_profile.html", "password_information_section", context
-            )
+
+            modify_selected_user = "modify_selected_user" in request.POST
+            if modify_selected_user:
+                user = User.objects.get(id=request.POST["modify_selected_user"])
+                response.content = render_block_to_string(
+                    "core/modify_user_profile.html",
+                    "password_information_section",
+                    context,
+                )
+            else:
+                response.content = render_block_to_string(
+                    "core/user_profile.html", "password_information_section", context
+                )
 
             if new_password != confirm_password:
                 response = create_global_alert_instance(
@@ -277,10 +287,13 @@ def change_user_password(request):
                 )
                 return response
 
-            correct_password = user.check_password(current_password)
+            if modify_selected_user:
+                correct_password = True
+            else:
+                correct_password = user.check_password(current_password)
 
             if correct_password:
-                if current_password == new_password:
+                if current_password == new_password and not modify_selected_user:
                     response = create_global_alert_instance(
                         response,
                         "New password cannot be the same as your old password.",
@@ -292,7 +305,11 @@ def change_user_password(request):
                     user.save()
                     response = create_global_alert_instance(
                         response,
-                        "Your passwords have been successfully changed. You will now be logged out of the site. Please refresh the page and log in again to continue.",
+                        (
+                            "Your password have been successfully changed. You will now be logged out of the site. Please refresh the page and log in again to continue."
+                            if not modify_selected_user
+                            else "Selected user's password have been successfully changed."
+                        ),
                         "SUCCESS",
                     )
                     return response
@@ -528,9 +545,17 @@ def modify_user_biometric_details(request, pk):
                 "Provided Biometric UID is already in use by another user.",
                 "WARNING",
             )
-        response.content = render_block_to_string(
-            "core/modify_user_profile.html", "biometric_configuration_section", context
-        )
+        if "user_profile" in data:
+            context["current_user"] = user
+            response.content = render_block_to_string(
+                "core/user_profile.html", "biometric_configuration_section", context
+            )
+        else:
+            response.content = render_block_to_string(
+                "core/modify_user_profile.html",
+                "biometric_configuration_section",
+                context,
+            )
         response = retarget(response, "#biometric_configuration_section")
         response = reswap(response, "outerHTML")
         return response
