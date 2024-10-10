@@ -268,7 +268,7 @@ def validate_file_size(file):
     return None
 
 
-def get_users_shared_resources(uploader_id, shared_to_id):
+def get_users_shared_resources(uploader_id, shared_to_id=""):
     """
     Retrieves documents shared with a specific user or uploaded by them.
     If `shared_to_id` is provided, it returns documents where the uploader is either `uploader_id` or `shared_to_id`,

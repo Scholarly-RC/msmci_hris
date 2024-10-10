@@ -33,7 +33,8 @@ def convert_document_to_pdf(uploaded_file_instance, file_name):
         output_pdf_path = document_path.replace(document_extension, ".pdf")
 
         if os.path.exists(output_pdf_path):
-            uploaded_file_instance.resource_pdf.name = output_pdf_path
+            converted_file_path = output_pdf_path.split('media\\', 1)[-1]
+            uploaded_file_instance.resource_pdf.name = converted_file_path
             uploaded_file_instance.save()
             print("PDF conversion successful.")
         else:
