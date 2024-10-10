@@ -12,3 +12,4 @@ venv
 fixtures/
 media/
 staticfiles/
+node_modules/

@@ -89,21 +89,21 @@
                     {% for data in payslip.get_data_for_template.row_data %}
                         <tr>
                             <td>{{ data.0 }}</td>
-                            <td class="amount">{{ data.1|floatformat:2 }}</td>
+                            <td class="amount">{{ data.1|floatformat:"2g" }}</td>
                             <td>{{ data.2 }}</td>
-                            <td class="amount">{{ data.3|floatformat:2 }}</td>
+                            <td class="amount">{{ data.3|floatformat:"2g" }}</td>
                         </tr>
                     {% endfor %}
                     <tr class="total">
                         <td>Total Earnings</td>
-                        <td class="amount">{{ payslip.get_data_for_template.total_earnings|floatformat:2 }}</td>
+                        <td class="amount">{{ payslip.get_data_for_template.total_earnings|floatformat:"2g" }}</td>
                         <td>Total Deductions</td>
-                        <td class="amount">{{ payslip.get_data_for_template.total_deductions|floatformat:2 }}</td>
+                        <td class="amount">{{ payslip.get_data_for_template.total_deductions|floatformat:"2g" }}</td>
                     </tr>
                 </tbody>
             </table>
         </div>
-        <h3 style="text-align: right">Net Pay: {{ payslip.get_data_for_template.net_salary|floatformat:2 }}</h3>
+        <h3 style="text-align: right">Net Pay: {{ payslip.get_data_for_template.net_salary|floatformat:"2g" }}</h3>
         <div class="signature">
             <p>{{ hr.userdetails.get_user_fullname|upper }}</p>
             <div class="signature-line"></div>

@@ -2,18 +2,7 @@ import datetime
 
 from django.apps import apps
 from django.contrib.auth.models import User
-from django.db.models import (
-    BooleanField,
-    Case,
-    DurationField,
-    ExpressionWrapper,
-    F,
-    Q,
-    Value,
-    When,
-)
-from django.db.models.functions import Abs
-from django.utils.timezone import make_aware
+from django.db.models import BooleanField, Case, Q, Value, When
 
 from attendance.utils.biometric_utils import get_biometric_detail_from_user_id
 from attendance.utils.date_utils import (
@@ -70,26 +59,7 @@ def get_user_clocked_time(user, year: int, month: int, day: int, shift):
 
     def _get_timestamp_time(punch, base_time):
         records_with_punch = punch_records[punch]
-        if records_with_punch.count() > 1 and base_time:
-            current_target_datetime = datetime.datetime.combine(
-                selected_date, base_time
-            )
-            current_target_datetime = make_aware(current_target_datetime)
-            record = (
-                records_with_punch.annotate(
-                    time_diff=Abs(
-                        ExpressionWrapper(
-                            F("timestamp") - Value(current_target_datetime),
-                            output_field=DurationField(),
-                        )
-                    )
-                )
-                .order_by("time_diff")
-                .first()
-            )
-            records_with_punch.exclude(id=record.id).delete()
-        else:
-            record = current_attendance_record.filter(punch=punch).first()
+        record = records_with_punch.first()
         return record.get_timestamp_localtime().time() if record else None
 
     clock_in_timestamp = (

@@ -163,6 +163,7 @@ Q_CLUSTER = {
     "attempt_count": 1,
 }
 
+
 SOFFICE_PATH = os.getenv("SOFFICE_PATH")
 
 
@@ -187,21 +188,26 @@ LOGGING = {
         },
     },
     "handlers": {
-        "file": {
+        "info_console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+        "warning_file": {
             "class": "logging.FileHandler",
             "filename": get_log_filename(),
             "formatter": "verbose",
         },
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-        },
     },
     "loggers": {
-        "django": {
-            "handlers": ["file", "console"],
+        "info_logger": {
+            "handlers": ["info_console"],
             "level": "INFO",
-            "propagate": True,
+            "propagate": False,
+        },
+        "warning_logger": {
+            "handlers": ["warning_file"],
+            "level": "WARNING",
+            "propagate": False,
         },
     },
 }
