@@ -57,6 +57,12 @@ module.exports = {
                     900: "#1e3a8a",
                 },
             },
+            backgroundImage: {
+                'custom-scholarly-gradient': 'linear-gradient(to right, #005c47, #f5df59, #b3be55, #739c51, #387f4e)',
+            },
+            dropShadow: {
+                'custom-scholarly': '0 1.2px 1.2px rgba(0, 0, 0, 0.8)',
+            },
             fontFamily: {
                 sans: [
                     "Inter",
