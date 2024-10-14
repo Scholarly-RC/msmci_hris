@@ -1,8 +1,9 @@
-import datetime
+from datetime import datetime, time
 
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.db.models import BooleanField, Case, Q, Value, When
+from django.utils.timezone import make_aware
 
 from attendance.utils.biometric_utils import get_biometric_detail_from_user_id
 from attendance.utils.date_utils import (
@@ -41,39 +42,30 @@ def get_user_clocked_time(user, year: int, month: int, day: int, shift):
     Retrieves and calculates the clock-in and clock-out times for a user on a specific date,
     including their time differences from the expected shift times.
     """
-    attendance_record_model = apps.get_model("attendance", "AttendanceRecord")
-
     selected_date = get_date_object(year=year, month=month, day=day)
-    user_biometric_detail = get_biometric_detail_from_user_id(user_id=user.id)
-    clock_in_punch = attendance_record_model.Punch.TIME_IN.value
-    clock_out_punch = attendance_record_model.Punch.TIME_OUT.value
 
-    current_attendance_record = attendance_record_model.objects.filter(
-        user_biometric_detail=user_biometric_detail, timestamp__date=selected_date
-    )
-
-    punch_records = {
-        clock_in_punch: current_attendance_record.filter(punch=clock_in_punch),
-        clock_out_punch: current_attendance_record.filter(punch=clock_out_punch),
-    }
-
-    def _get_timestamp_time(punch, base_time):
-        records_with_punch = punch_records[punch]
-        record = records_with_punch.first()
-        return record.get_timestamp_localtime().time() if record else None
+    DailyShiftSchedule = apps.get_model("attendance", "DailyShiftSchedule")
+    selected_daily_shift_schedule = DailyShiftSchedule.objects.filter(
+        user=user, shift=shift
+    ).first()
 
     clock_in_timestamp = (
-        _get_timestamp_time(clock_in_punch, shift.start_time) if shift else None
+        selected_daily_shift_schedule.get_clock_in_localtime()
+        if selected_daily_shift_schedule
+        else None
     )
 
     clock_out_timestamp = (
-        _get_timestamp_time(clock_out_punch, shift.end_time) if shift else None
+        selected_daily_shift_schedule.get_clock_out_localtime()
+        if selected_daily_shift_schedule
+        else None
     )
 
     def _get_time_difference(from_time, to_time):
-        # Combine the time with the selected date
-        from_time = datetime.datetime.combine(selected_date, from_time)
-        to_time = datetime.datetime.combine(selected_date, to_time)
+        if isinstance(from_time, time):
+            from_time = make_aware(datetime.combine(selected_date, from_time))
+        if isinstance(to_time, time):
+            to_time = make_aware(datetime.combine(selected_date, to_time))
 
         # Calculate the difference between the two datetime objects
         time_difference = to_time - from_time
@@ -111,6 +103,7 @@ def get_user_clocked_time(user, year: int, month: int, day: int, shift):
         if clock_in_timestamp
         else None
     )
+
     clock_out_time_difference = (
         _get_time_difference(shift.end_time, clock_out_timestamp)
         if clock_out_timestamp

@@ -641,6 +641,7 @@ def user_attendance_management(request, user_id="", year="", month=""):
 def toggle_user_management_record_edit(request):
     context = {}
     if request.htmx and request.POST:
+        response = HttpResponse()
         data = request.POST
         selected_year = request.POST.get("attendance_year")
         selected_month = request.POST.get("attendance_month")
@@ -660,6 +661,11 @@ def toggle_user_management_record_edit(request):
             selected_date = get_date_object(selected_year, selected_month, selected_day)
             manually_set_user_clocked_time(
                 selected_user, selected_date, clock_in_time, clock_out_time
+            )
+            response = create_global_alert_instance(
+                response,
+                "The clock in/out data for the selected date has been successfully updated.",
+                "SUCCESS",
             )
 
         daily_user_shift = get_user_daily_shift_record_shifts(
@@ -685,7 +691,6 @@ def toggle_user_management_record_edit(request):
 
         context.update({"user_shift_data": user_shift_data})
 
-        response = HttpResponse()
         response.content = render_block_to_string(
             "attendance/user_attendance_management.html",
             "user_table_record",

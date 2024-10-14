@@ -1,3 +1,4 @@
+from datetime import timedelta
 import logging
 import time
 
@@ -46,35 +47,32 @@ def add_user_attendance_record(attendance_data):
     Creates a new attendance record for a user based on the provided biometric data from the device.
     """
     try:
-        attendance_record_model = apps.get_model("attendance", "AttendanceRecord")
-
-        user_biometric_detail, user_id_from_device, timestamp, punch = (
-            process_biometric_data_from_device(attendance_data)
+        user_biometric_detail, _, timestamp, punch = process_biometric_data_from_device(
+            attendance_data
         )
 
-        in_punch = attendance_record_model.Punch.TIME_IN.value
-        out_punch = attendance_record_model.Punch.TIME_OUT.value
+        user = user_biometric_detail.user
 
-        if punch in [in_punch, out_punch]:
-            attendane_record, attendane_record_created = (
-                attendance_record_model.objects.get_or_create(
-                    user_id_from_device=user_id_from_device,
-                    punch=punch,
-                    timestamp__year=timestamp.year,
-                    timestamp__month=timestamp.month,
-                    timestamp__day=timestamp.day,
-                    user_biometric_detail=user_biometric_detail,
-                    defaults={"timestamp": timestamp},
-                )
-            )
-
+        user_daily_shift_schedule = user.daily_shift_schedules.filter(
+            daily_shift_records__date=timestamp.date()
+        ).first()
+        if punch == "IN" and not user_daily_shift_schedule.clock_in:
+            user_daily_shift_schedule.clock_in = timestamp
+            user_daily_shift_schedule.save()
+        elif punch == "OUT":
+            yesterday_shift_schedule = user.daily_shift_schedules.filter(
+                daily_shift_records__date=timestamp.date() - timedelta(days=1)
+            ).first()
             if (
-                punch == out_punch
-                and not attendane_record_created
-                and attendane_record.get_timestamp_localtime() < timestamp
+                yesterday_shift_schedule
+                and yesterday_shift_schedule.shift.is_next_day_clock_out()
+                and not yesterday_shift_schedule.clock_out
             ):
-                attendane_record.timestamp = timestamp
-                attendane_record.save()
+                yesterday_shift_schedule.clock_out = timestamp - timedelta(days=1)
+                yesterday_shift_schedule.save()
+            elif user_daily_shift_schedule.clock_out:
+                user_daily_shift_schedule.clock_out = timestamp
+                user_daily_shift_schedule.save()
 
     except Exception:
         logger.error(
