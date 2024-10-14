@@ -26,7 +26,7 @@
                                             {% for user in user_choices %}
                                                 <option value="{{ user.id }}"
                                                         {% if selected_user == user.id %}selected{% endif %}>
-                                                    {{ user.userdetails.get_user_fullname }}
+                                                    {{ user.userdetails.get_user_fullname|title }}
                                                 </option>
                                             {% endfor %}
                                         </select>
@@ -380,23 +380,7 @@
                                             </div>
                                             <div class="z-10 block w-full p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700">
                                                 {% if user_choices %}
-                                                    <div class="p-3">
-                                                        <div class="relative">
-                                                            <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                                                                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400"
-                                                                     aria-hidden="true"
-                                                                     xmlns="http://www.w3.org/2000/svg"
-                                                                     fill="none"
-                                                                     viewBox="0 0 20 20">
-                                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                                                                </svg>
-                                                            </div>
-                                                            <input type="text"
-                                                                   id="input-group-search"
-                                                                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                                   placeholder="Search user">
-                                                        </div>
-                                                    </div>
+                                                    <div class="p-3"></div>
                                                 {% else %}
                                                     <div class="p-3">
                                                         <h2 class="text-xl font-extrabold dark:text-white">User List Empty</h2>
@@ -415,7 +399,7 @@
                                                                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500 cursor-pointer">
                                                                 <label for="user-checkbox-item-{{ user.id }}"
                                                                        class="w-full ms-2 text-sm text-start font-medium text-gray-900 rounded dark:text-gray-300 cursor-pointer">
-                                                                    {{ user.userdetails.get_user_fullname }}
+                                                                    {{ user.userdetails.get_user_fullname|title }}
                                                                     <br>
                                                                     ({% if not user.userdetails.is_employee %}{{ user.userdetails.get_user_full_user_role }} -{% endif %}
                                                                     {{ user.userdetails.department }})
@@ -442,7 +426,7 @@
                                                             <div class="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
                                                                 <label for="user-selected-checkbox-item-{{ user.id }}"
                                                                        class="w-full ms-2 text-sm text-start font-medium text-gray-900 rounded dark:text-gray-300">
-                                                                    {{ user.userdetails.get_user_fullname }}
+                                                                    {{ user.userdetails.get_user_fullname|title }}
                                                                     <br>
                                                                     ({% if not user.userdetails.is_employee %}{{ user.userdetails.get_user_full_user_role }} -{% endif %}
                                                                     {{ user.userdetails.department }})

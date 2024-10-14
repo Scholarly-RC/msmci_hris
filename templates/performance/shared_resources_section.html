@@ -26,7 +26,7 @@
                                             {% for user in user_choices %}
                                                 <option value="{{ user.id }}"
                                                         {% if selected_user == user.id %}selected{% endif %}>
-                                                    {{ user.userdetails.get_user_fullname }}
+                                                    {{ user.userdetails.get_user_fullname|title }}
                                                 </option>
                                             {% endfor %}
                                         </select>
@@ -129,10 +129,19 @@
                                                                     </button>
                                                                 </li>
                                                             {% endif %}
-                                                            <li>
-                                                                <a href="{% url "performance:download_resource" file.id %}"
-                                                                   class="block px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Download</a>
-                                                            </li>
+                                                            {% if not file.is_confidential %}
+                                                                <li>
+                                                                    <a href="{% url "performance:download_resource" file.id %}"
+                                                                       class="block px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Download</a>
+                                                                </li>
+                                                            {% else %}
+                                                                {% if request.user in file.confidential_access_users.all %}
+                                                                    <li>
+                                                                        <a href="{% url "performance:download_resource" file.id %}"
+                                                                           class="block px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Download</a>
+                                                                    </li>
+                                                                {% endif %}
+                                                            {% endif %}
                                                             {% if current_user == file.uploader %}
                                                                 <li>
                                                                     <button type="submit"
@@ -400,7 +409,7 @@
                                                                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
                                                                 <label for="user-checkbox-item-{{ user.id }}"
                                                                        class="w-full ms-2 text-sm text-start font-medium text-gray-900 rounded dark:text-gray-300">
-                                                                    {{ user.userdetails.get_user_fullname }}
+                                                                    {{ user.userdetails.get_user_fullname|title }}
                                                                     <br>
                                                                     ({% if not user.userdetails.is_employee %}{{ user.userdetails.get_user_full_user_role }} -{% endif %}
                                                                     {{ user.userdetails.department }})
@@ -436,7 +445,7 @@
                                                                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
                                                                 <label for="user-selected-checkbox-item-{{ user.id }}"
                                                                        class="w-full ms-2 text-sm text-start font-medium text-gray-900 rounded dark:text-gray-300">
-                                                                    {{ user.userdetails.get_user_fullname }}
+                                                                    {{ user.userdetails.get_user_fullname|title }}
                                                                     <br>
                                                                     ({% if not user.userdetails.is_employee %}{{ user.userdetails.get_user_full_user_role }} -{% endif %}
                                                                     {{ user.userdetails.department }})

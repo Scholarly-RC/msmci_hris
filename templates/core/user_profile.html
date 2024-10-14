@@ -561,8 +561,8 @@
 
             function updateIconVisibility(input, button) {
                 const isPassword = input.type === "password";
-                button.querySelector('svg:nth-child(1)').classList.toggle("hidden", !isPassword); 
-                button.querySelector('svg:nth-child(2)').classList.toggle("hidden", isPassword); 
+                button.querySelector('svg:nth-child(1)').classList.toggle("hidden", !isPassword);
+                button.querySelector('svg:nth-child(2)').classList.toggle("hidden", isPassword);
             }
 
             [toggleCurrentPasswordButton, toggleNewPasswordButton, toggleConfirmPasswordButton].forEach((button, index) => {
