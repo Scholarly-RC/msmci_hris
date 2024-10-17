@@ -96,47 +96,43 @@ def get_attendancee_reports(for_hr: bool = False):
 
 def get_employee_punctuality_report_data(selected_user, from_date, to_date):
     UserModel = apps.get_model("auth", "User")
-    AttendanceRecordModel = apps.get_model("attendance", "AttendanceRecord")
-    in_punch = AttendanceRecordModel.Punch.TIME_IN.value
     user = UserModel.objects.get(id=selected_user)
     from_date = get_date_object_from_date_str(from_date)
     to_date = get_date_object_from_date_str(to_date)
-    attendance_records = user.biometricdetail.attendance_records.filter(
-        Q(timestamp__gte=from_date) & Q(timestamp__lte=to_date) & Q(punch=in_punch)
+
+    daily_shift_schedules = user.daily_shift_schedules.filter(
+        shift__isnull=False, clock_in__isnull=False
     )
     on_time_or_early = 0
     late = 0
-    for attendance_record in attendance_records:
-        timestamp = attendance_record.get_timestamp_localtime()
-        daily_shift = get_user_daily_shift_record_shifts(
-            user,
-            timestamp.year,
-            timestamp.month,
-            timestamp.day,
-        )
 
-        if daily_shift:
-            clocked_time = get_user_clocked_time(
-                user,
-                timestamp.year,
-                timestamp.month,
-                timestamp.day,
-                daily_shift.shift if daily_shift else None,
-            )
-            if "-" in clocked_time["clock_in_time_diff_formatted"]:
-                late += 1
-            else:
-                on_time_or_early += 1
+    for daily_shift_schedule in daily_shift_schedules:
+        clock_in = daily_shift_schedule.get_clock_in_localtime()
+        clocked_time = get_user_clocked_time(
+            user,
+            clock_in.year,
+            clock_in.month,
+            clock_in.day,
+            daily_shift_schedule.shift,
+        )
+        if "-" in clocked_time["clock_in_time_diff_formatted"]:
+            late += 1
+        else:
+            on_time_or_early += 1
+
     attendance_status = ["On Time / Early", "Late"]
     attendance_values = [on_time_or_early, late]
 
+    employee_punctuality_data = {
+        "attendance_status": attendance_status,
+        "attendance_values": attendance_values,
+    }
+
+    employee_punctuality_table_data = [(on_time_or_early, late)]
+
     return {
-        "chart_option_data": json.dumps(
-            {
-                "attendance_status": attendance_status,
-                "attendance_values": attendance_values,
-            }
-        ),
+        "chart_option_data": json.dumps(employee_punctuality_data),
+        "employee_punctuality_table_data": employee_punctuality_table_data,
         "from_date": str(from_date),
         "to_date": str(to_date),
         "from_date_display": get_readable_date_from_date_object(from_date),
@@ -182,14 +178,20 @@ def get_employee_performance_evaluation_summary_data(selected_year, selected_use
             self_rating_value_list.append(0)
             peer_rating_value_list.append(0)
 
+    employee_performance_evaluation_data = {
+        "quarters_list": quarters_list,
+        "self_rating_value_list": self_rating_value_list,
+        "peer_rating_value_list": peer_rating_value_list,
+    }
+
+    employee_performance_evaluation_table_data = [
+        ("First Quarter", self_rating_value_list[0], peer_rating_value_list[0]),
+        ("Second Quarter", self_rating_value_list[1], peer_rating_value_list[1]),
+    ]
+
     return {
-        "chart_option_data": json.dumps(
-            {
-                "quarters_list": quarters_list,
-                "self_rating_value_list": self_rating_value_list,
-                "peer_rating_value_list": peer_rating_value_list,
-            }
-        ),
+        "chart_option_data": json.dumps(employee_performance_evaluation_data),
+        "employee_performance_evaluation_table_data": employee_performance_evaluation_table_data,
         "selected_year": selected_year,
         "selected_user": user,
     }
@@ -226,10 +228,24 @@ def get_yearly_salary_expense_report_data(selected_year):
 
     total_per_month_list, total_expenses = _get_total_net_income(months_value, payslips)
 
+    yearly_salary_expense_data = {
+        "months": months_name,
+        "total_amounts": total_per_month_list,
+    }
+
+    yearly_salary_expense_table_data = []
+
+    for month_count in range(months_value.count()):
+        yearly_salary_expense_table_data.append(
+            (
+                Months(months_value[month_count]).name.title(),
+                total_per_month_list[month_count],
+            )
+        )
+
     return {
-        "chart_option_data": json.dumps(
-            {"months": months_name, "total_amounts": total_per_month_list}
-        ),
+        "chart_option_data": json.dumps(yearly_salary_expense_data),
+        "yearly_salary_expense_table_data": yearly_salary_expense_table_data,
         "total_expenses": total_expenses,
         "selected_year": selected_year,
     }
@@ -254,12 +270,25 @@ def get_employee_yearly_salary_salary_report_data(selected_year, selected_user):
 
     total_amount_list = [str(amount) for amount in total_amount]
 
-    total_salary = str(round(sum(total_amount)))
+    total_salary = str(round(sum(total_amount), 2))
+
+    employee_yearly_salary_expense_data = {
+        "months": months_list,
+        "total_amount_list": total_amount_list,
+    }
+
+    employee_yearly_salary_expense_table_data = []
+    for month_count in range(months.count()):
+        employee_yearly_salary_expense_table_data.append(
+            (
+                Months(months[month_count]).name.title(),
+                total_amount_list[month_count],
+            )
+        )
 
     return {
-        "chart_option_data": json.dumps(
-            {"months": months_list, "total_amount_list": total_amount_list}
-        ),
+        "chart_option_data": json.dumps(employee_yearly_salary_expense_data),
+        "employee_yearly_salary_expense_table_data": employee_yearly_salary_expense_table_data,
         "total_salary": total_salary,
         "selected_year": selected_year,
         "selected_user": user,

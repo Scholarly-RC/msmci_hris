@@ -155,8 +155,7 @@ def get_employees_list_per_department():
 def get_employees_with_attendance_record():
     return (
         User.objects.filter(
-            Q(biometricdetail__user_id_in_device__isnull=False)
-            & Q(biometricdetail__attendance_records__isnull=False)
+            daily_shift_schedules__clock_in__isnull=False
         )
         .distinct()
         .order_by("first_name")

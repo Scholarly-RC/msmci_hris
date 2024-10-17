@@ -63,7 +63,7 @@ def reports_and_analytics(request):
 ### Attendance Reports Views ###
 @login_required(login_url="/login")
 def view_employee_punctuality_report(
-    request, selected_user="", from_date="", to_date=""
+    request, selected_user="", from_date="", to_date="", option="all"
 ):
     context = {}
     user = request.user
@@ -75,7 +75,7 @@ def view_employee_punctuality_report(
     selected_user = request.POST.get("selected_user") or selected_user
     from_date = request.POST.get("from_date") or from_date
     to_date = request.POST.get("to_date") or to_date
-
+    context["option"] = option
     context.update(
         get_employee_punctuality_report_data(selected_user, from_date, to_date)
     )
@@ -104,6 +104,7 @@ def popup_employee_punctuality_report(request):
         selected_user = data.get("selected_user")
         from_date = data.get("from_date")
         to_date = data.get("to_date")
+        option = data.get("option")
 
         response = HttpResponse()
         response = trigger_client_event(
@@ -116,6 +117,7 @@ def popup_employee_punctuality_report(request):
                         "selected_user": selected_user,
                         "from_date": from_date,
                         "to_date": to_date,
+                        "option": option,
                     },
                 )
             },
@@ -128,7 +130,7 @@ def popup_employee_punctuality_report(request):
 ### Performance and Learning Reports Views ###
 @login_required(login_url="/login")
 def view_employee_performance_evaluation_summary(
-    request, selected_user="", selected_year=""
+    request, selected_user="", selected_year="", option="all"
 ):
     context = {}
     user = request.user
@@ -139,7 +141,7 @@ def view_employee_performance_evaluation_summary(
 
     selected_user = request.POST.get("selected_user") or selected_user
     selected_year = request.POST.get("selected_year") or selected_year
-
+    context["option"] = option
     context.update(
         get_employee_performance_evaluation_summary_data(selected_year, selected_user)
     )
@@ -167,6 +169,7 @@ def popup_employee_performance_evaluation_summary(request):
         data = request.POST
         selected_year = data.get("selected_year")
         selected_user = data.get("selected_user")
+        option = data.get("option")
         response = HttpResponse()
         response = trigger_client_event(
             response,
@@ -177,6 +180,7 @@ def popup_employee_performance_evaluation_summary(request):
                     kwargs={
                         "selected_year": selected_year,
                         "selected_user": selected_user,
+                        "option": option,
                     },
                 )
             },
@@ -188,9 +192,10 @@ def popup_employee_performance_evaluation_summary(request):
 
 ### Payroll Reports Views ###
 @login_required(login_url="/login")
-def view_yearly_salary_expense_report(request, selected_year=""):
+def view_yearly_salary_expense_report(request, selected_year="", option="all"):
     context = {}
     selected_year = request.POST.get("selected_year") or selected_year
+    context["option"] = option
     context.update(get_yearly_salary_expense_report_data(selected_year))
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -215,6 +220,7 @@ def popup_yearly_salary_expense_report(request):
     if request.htmx and request.method == "POST":
         data = request.POST
         selected_year = data.get("selected_year")
+        option = data.get("option")
         response = HttpResponse()
         response = trigger_client_event(
             response,
@@ -222,7 +228,7 @@ def popup_yearly_salary_expense_report(request):
             {
                 "report_url_view": reverse(
                     "reports_and_analytics:view_yearly_salary_expense_report_with_data",
-                    kwargs={"selected_year": selected_year},
+                    kwargs={"selected_year": selected_year, "option": option},
                 )
             },
             after="swap",
@@ -233,7 +239,7 @@ def popup_yearly_salary_expense_report(request):
 
 @login_required(login_url="/login")
 def view_employee_yearly_salary_summary_report(
-    request, selected_user="", selected_year=""
+    request, selected_user="", selected_year="", option="all"
 ):
     context = {}
     user = request.user
@@ -244,7 +250,7 @@ def view_employee_yearly_salary_summary_report(
 
     selected_user = request.POST.get("selected_user") or selected_user
     selected_year = request.POST.get("selected_year") or selected_year
-
+    context["option"] = option
     context.update(
         get_employee_yearly_salary_salary_report_data(selected_year, selected_user)
     )
@@ -272,6 +278,7 @@ def popup_employee_yearly_salary_summary_report(request):
         data = request.POST
         selected_year = data.get("selected_year")
         selected_user = data.get("selected_user")
+        option = data.get("option")
         response = HttpResponse()
         response = trigger_client_event(
             response,
@@ -282,6 +289,7 @@ def popup_employee_yearly_salary_summary_report(request):
                     kwargs={
                         "selected_year": selected_year,
                         "selected_user": selected_user,
+                        "option": option,
                     },
                 )
             },

@@ -7,7 +7,7 @@ app_name = "reports_and_analytics"
 urlpatterns = [
     ### Attendance Reports Urls ###
     path(
-        "report/employee-punctuality/view/<str:selected_user>/<str:from_date>/<str:to_date>",
+        "report/employee-punctuality/view/<str:selected_user>/<str:from_date>/<str:to_date>/<str:option>",
         raa_views.view_employee_punctuality_report,
         name="view_employee_punctuality_report_with_data",
     ),
@@ -23,7 +23,7 @@ urlpatterns = [
     ),
     ### Performance and Learning Reports Urls ###
     path(
-        "report/employee-performance-summary/view/<str:selected_year>/<str:selected_user>",
+        "report/employee-performance-summary/view/<str:selected_year>/<str:selected_user>/<str:option>",
         raa_views.view_employee_performance_evaluation_summary,
         name="view_employee_performance_evaluation_summary_with_data",
     ),
@@ -39,7 +39,7 @@ urlpatterns = [
     ),
     ### Payroll Reports Urls ###
     path(
-        "report/employee-yearly-salary-summary-report/view/<str:selected_year>/<str:selected_user>",
+        "report/employee-yearly-salary-summary-report/view/<str:selected_year>/<str:selected_user>/<str:option>",
         raa_views.view_employee_yearly_salary_summary_report,
         name="view_employee_yearly_salary_summary_report_with_data",
     ),
@@ -54,7 +54,7 @@ urlpatterns = [
         name="view_employee_yearly_salary_summary_report",
     ),
     path(
-        "report/yearly-salary-expense-report/view/<str:selected_year>",
+        "report/yearly-salary-expense-report/view/<str:selected_year>/<str:option>",
         raa_views.view_yearly_salary_expense_report,
         name="view_yearly_salary_expense_report_with_data",
     ),
