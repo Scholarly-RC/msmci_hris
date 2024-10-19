@@ -1,6 +1,6 @@
-from datetime import timedelta
 import logging
 import time
+from datetime import timedelta
 
 from django.apps import apps
 from django.conf import settings

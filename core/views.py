@@ -466,6 +466,7 @@ def modify_user_details(request, pk):
     education_list = get_education_list()
     religion_list = get_religion_list()
     roles = get_role_list()
+    genders = get_gender_list()
     context = {
         "selected_user": user,
         "department_list": departments,
@@ -473,6 +474,7 @@ def modify_user_details(request, pk):
         "education_list": education_list,
         "religion_list": religion_list,
         "role_list": roles,
+        "genders_list": genders,
     }
 
     if user_department:

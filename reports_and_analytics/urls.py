@@ -70,7 +70,7 @@ urlpatterns = [
     ),
     ### Leave Reports Urls ###
     path(
-        "report/employee-leave-summary/view/<str:selected_user>/<str:from_date>/<str:to_date>",
+        "report/employee-leave-summary/view/<str:selected_user>/<str:from_date>/<str:to_date>/<str:option>",
         raa_views.view_employee_leave_summary_report,
         name="view_employee_leave_summary_report_with_data",
     ),
@@ -86,7 +86,7 @@ urlpatterns = [
     ),
     ### User Reports Urls ###
     path(
-        "report/education-level/view/<str:as_of_date>",
+        "report/education-level/view/<str:as_of_date>/<str:option>",
         raa_views.view_education_level_report,
         name="view_education_level_report_with_data",
     ),
@@ -101,7 +101,7 @@ urlpatterns = [
         name="view_education_level_report",
     ),
     path(
-        "report/years-of-experience/view/<str:as_of_date>",
+        "report/years-of-experience/view/<str:as_of_date>/<str:option>",
         raa_views.view_years_of_experience_report,
         name="view_years_of_experience_report_with_data",
     ),
@@ -116,7 +116,7 @@ urlpatterns = [
         name="view_years_of_experience_report",
     ),
     path(
-        "report/gender-demographics/view/<str:as_of_date>",
+        "report/gender-demographics/view/<str:as_of_date>/<str:option>",
         raa_views.view_gender_demographics_report,
         name="view_gender_demographics_report_with_data",
     ),
@@ -131,7 +131,7 @@ urlpatterns = [
         name="view_gender_demographics_report",
     ),
     path(
-        "report/age-demographics/view/<str:as_of_date>",
+        "report/age-demographics/view/<str:as_of_date>/<str:option>",
         raa_views.view_age_demographics_report,
         name="view_age_demographics_report_with_data",
     ),

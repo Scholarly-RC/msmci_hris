@@ -315,9 +315,11 @@ def get_employee_leave_summary_report_data(selected_user, from_date, to_date):
     from_date = get_date_object_from_date_str(from_date)
     to_date = get_date_object_from_date_str(to_date)
 
-    leaves = user.user_leaves.filter(date__gte=from_date, date__lte=to_date)
+    leaves = user.user_leaves.filter(date__gte=from_date, date__lte=to_date).order_by(
+        "date"
+    )
 
-    leave_data_list = [
+    employee_leave_data_list = [
         {"x": "Paid", "y": leaves.filter(type=paid_type).count()},
         {"x": "Unpaid", "y": leaves.filter(type=unpaid_type).count()},
         {
@@ -325,8 +327,12 @@ def get_employee_leave_summary_report_data(selected_user, from_date, to_date):
             "y": leaves.filter(type=work_related_trip_type).count(),
         },
     ]
+
+    employee_leave_table_data = leaves
+
     return {
-        "chart_option_data": json.dumps({"leave_data_list": leave_data_list}),
+        "chart_option_data": json.dumps({"leave_data_list": employee_leave_data_list}),
+        "employee_leave_table_data": employee_leave_table_data,
         "from_date_display": get_readable_date_from_date_object(from_date),
         "to_date_display": get_readable_date_from_date_object(to_date),
         "from_date": str(from_date),
@@ -365,9 +371,16 @@ def get_age_demographics_report_data(as_of_date=""):
 
     UserDetailsModel = apps.get_model("core", "UserDetails")
     age_list = []
-    for userdetail in UserDetailsModel.objects.exclude(
-        date_of_birth__isnull=True
-    ).filter(user__is_active=True, date_of_hiring__lte=as_of_date):
+    users = (
+        UserDetailsModel.objects.exclude(date_of_birth__isnull=True)
+        .filter(
+            user__is_active=True,
+            date_of_birth__isnull=False,
+            date_of_hiring__lte=as_of_date,
+        )
+        .order_by("-date_of_birth")
+    )
+    for userdetail in users:
         age = (
             as_of_date.year
             - userdetail.date_of_birth.year
@@ -382,10 +395,16 @@ def get_age_demographics_report_data(as_of_date=""):
     age_groups = ["18-24", "25-39", "40-54", "55-64", "65-Up"]
     age_group_count = _age_group_counter(age_list)
 
+    age_demographic_data = {
+        "age_groups": age_groups,
+        "age_group_count": age_group_count,
+    }
+
+    age_demographic_table_data = {"users": users}
+
     return {
-        "chart_option_data": json.dumps(
-            {"age_groups": age_groups, "age_group_count": age_group_count}
-        ),
+        "chart_option_data": json.dumps(age_demographic_data),
+        "age_demographic_table_data": age_demographic_table_data,
         "as_of_date": str(as_of_date),
     }
 
@@ -408,13 +427,19 @@ def get_gender_demographics_report_data(as_of_date=""):
     gender_group = ["Male", "Female"]
     gender_group_count = [male_count, female_count]
 
+    gender_demographic_data = {
+        "gender_group": gender_group,
+        "gender_group_count": gender_group_count,
+    }
+
+    gender_demographic_table_data = {
+        "male_count": male_count,
+        "female_count": female_count,
+    }
+
     return {
-        "chart_option_data": json.dumps(
-            {
-                "gender_group": gender_group,
-                "gender_group_count": gender_group_count,
-            }
-        ),
+        "chart_option_data": json.dumps(gender_demographic_data),
+        "gender_demographic_table_data": gender_demographic_table_data,
         "as_of_date": str(as_of_date),
     }
 
@@ -423,9 +448,11 @@ def get_years_of_experience_report_data(as_of_date=""):
     as_of_date = get_date_object_from_date_str(as_of_date)
     UserDetailsModel = apps.get_model("core", "UserDetails")
 
-    user_details_list = UserDetailsModel.objects.exclude(
-        date_of_hiring__isnull=True
-    ).filter(user__is_active=True, date_of_hiring__lte=as_of_date)
+    user_details_list = (
+        UserDetailsModel.objects.exclude(date_of_hiring__isnull=True)
+        .filter(user__is_active=True, date_of_hiring__lte=as_of_date)
+        .order_by("date_of_hiring")
+    )
 
     years_of_experience_list = []
     for user_detail in user_details_list:
@@ -442,13 +469,16 @@ def get_years_of_experience_report_data(as_of_date=""):
         else 0
     )
 
+    years_of_expernce_data = {
+        "years_of_experience_group_list": years_of_experience_group_list,
+        "years_of_experience_count_group_list": years_of_experience_count_group_list,
+    }
+
+    years_of_expernce_tabe_data = {"users": user_details_list}
+
     return {
-        "chart_option_data": json.dumps(
-            {
-                "years_of_experience_group_list": years_of_experience_group_list,
-                "years_of_experience_count_group_list": years_of_experience_count_group_list,
-            }
-        ),
+        "chart_option_data": json.dumps(years_of_expernce_data),
+        "years_of_expernce_tabe_data": years_of_expernce_tabe_data,
         "years_of_experience_average": round(years_of_experience_average, 2),
         "as_of_date": str(as_of_date),
     }
@@ -480,14 +510,23 @@ def get_education_level_report_data(as_of_date=""):
         str(EducationalAttainment(code).label) for code in education_attainment_list
     ]
 
+    education_level_data = {
+        "education_attainment_list": list(education_attainment_list),
+        "education_attainment_count_list": list(education_attainment_count_list),
+    }
+
+    education_level_table_data = []
+
+    for education_count in range(len(education_attainment_list)):
+        education_level_table_data.append(
+            (
+                education_attainment_list[education_count],
+                education_attainment_count_list[education_count],
+            )
+        )
+
     return {
-        "chart_option_data": json.dumps(
-            {
-                "education_attainment_list": list(education_attainment_list),
-                "education_attainment_count_list": list(
-                    education_attainment_count_list
-                ),
-            }
-        ),
+        "chart_option_data": json.dumps(education_level_data),
+        "education_level_table_data": education_level_table_data,
         "as_of_date": str(as_of_date),
     }

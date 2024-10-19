@@ -364,4 +364,8 @@ def get_finalized_user_evaluation_year_list():
 
 def get_user_evaluation_users():
     UserModel = apps.get_model("auth", "User")
-    return UserModel.objects.filter(evaluatee_evaluations__is_finalized=True)
+    return (
+        UserModel.objects.filter(evaluatee_evaluations__is_finalized=True)
+        .order_by("first_name")
+        .distinct()
+    )

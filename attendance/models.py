@@ -82,17 +82,18 @@ class Shift(models.Model):
         if start_time and end_time:
             return f"{start_time} to {end_time}"
         return None
-    
+
     def is_next_day_clock_out(self):
         return self.start_time > self.end_time
-            
 
 
 class DailyShiftSchedule(models.Model):
     shift = models.ForeignKey(
         Shift, on_delete=models.RESTRICT, related_name="daily_shift_schedules"
     )
-    user = models.ForeignKey(User, on_delete=models.RESTRICT, related_name="daily_shift_schedules")
+    user = models.ForeignKey(
+        User, on_delete=models.RESTRICT, related_name="daily_shift_schedules"
+    )
 
     clock_in = models.DateTimeField(_("Daily Shift Clock In"), null=True, blank=True)
     clock_out = models.DateTimeField(_("Daily Shift Clock Out"), null=True, blank=True)
@@ -105,12 +106,12 @@ class DailyShiftSchedule(models.Model):
 
     def __str__(self):
         return f"{self.shift} - {self.user.userdetails.get_user_fullname()}"
-    
+
     def get_clock_in_localtime(self):
         if not self.clock_in:
             return None
         return localtime(self.clock_in)
-    
+
     def get_clock_out_localtime(self):
         if not self.clock_out:
             return None

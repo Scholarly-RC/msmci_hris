@@ -231,9 +231,13 @@ def get_users_with_payslip():
     UserDetails = apps.get_model("core", "UserDetails")
     hr_role = UserDetails.Role.HR.value
 
-    return UserModel.objects.exclude(
-        Q(userdetails__role=hr_role) | Q(payslips__isnull=True)
-    ).order_by("first_name")
+    return (
+        UserModel.objects.exclude(
+            Q(userdetails__role=hr_role) | Q(payslips__isnull=True)
+        )
+        .order_by("first_name")
+        .distinct()
+    )
 
 
 def get_compensation_year_list() -> list:
