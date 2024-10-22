@@ -258,8 +258,13 @@ def process_create_new_shift(payload):
         start_time = get_time_object(payload.get("start_time"))
         end_time = get_time_object(payload.get("end_time"))
 
+        multi_day = "multi_day" in payload
+
         shift_model = ShiftModel.objects.create(
-            description=shift_description, start_time=start_time, end_time=end_time
+            description=shift_description,
+            start_time=start_time,
+            end_time=end_time,
+            multi_day=multi_day,
         )
 
         return shift_model
