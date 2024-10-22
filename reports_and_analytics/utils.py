@@ -1,17 +1,13 @@
 import json
 from collections import Counter
-from datetime import datetime
-from decimal import Decimal
 
 from django.apps import apps
 from django.db.models import Q
-from django.utils.timezone import make_aware
 
 from attendance.enums import Months
 from attendance.utils.attendance_utils import (
     get_employees_with_attendance_record,
     get_user_clocked_time,
-    get_user_daily_shift_record_shifts,
 )
 from attendance.utils.date_utils import (
     get_date_object_from_date_str,
@@ -528,5 +524,49 @@ def get_education_level_report_data(as_of_date=""):
     return {
         "chart_option_data": json.dumps(education_level_data),
         "education_level_table_data": education_level_table_data,
+        "as_of_date": str(as_of_date),
+    }
+
+
+def get_religion_report_data(as_of_date=""):
+    as_of_date = get_date_object_from_date_str(as_of_date)
+    UserDetailsModel = apps.get_model("core", "UserDetails")
+    Religion = UserDetailsModel.Religion
+
+    user_details_list = UserDetailsModel.objects.exclude(
+        Q(religion__isnull=True) | Q(religion="")
+    ).filter(user__is_active=True, date_of_hiring__lte=as_of_date)
+
+    religion_list = (
+        user_details_list.values_list("religion", flat=True)
+        .order_by("religion")
+        .distinct()
+    )
+
+    religion_count_list = [
+        user_details_list.filter(religion=religion).count()
+        for religion in religion_list
+    ]
+
+    religion_list = [str(Religion(code).label) for code in religion_list]
+
+    religion_data = {
+        "education_attainment_list": list(religion_list),
+        "education_attainment_count_list": list(religion_count_list),
+    }
+
+    religion_data_table_data = []
+
+    for religion_count in range(len(religion_list)):
+        religion_data_table_data.append(
+            (
+                religion_list[religion_count],
+                religion_count_list[religion_count],
+            )
+        )
+
+    return {
+        "chart_option_data": json.dumps(religion_data),
+        "religion_data_table_data": religion_data_table_data,
         "as_of_date": str(as_of_date),
     }

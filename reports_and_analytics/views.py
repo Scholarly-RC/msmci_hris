@@ -17,6 +17,7 @@ from reports_and_analytics.utils import (
     get_filter_contexts_for_specific_report,
     get_gender_demographics_report_data,
     get_list_of_modules,
+    get_religion_report_data,
     get_reports_for_specific_module,
     get_yearly_salary_expense_report_data,
     get_years_of_experience_report_data,
@@ -562,6 +563,57 @@ def popup_education_level_report(request):
             {
                 "report_url_view": reverse(
                     "reports_and_analytics:view_education_level_report_with_data",
+                    kwargs={"as_of_date": as_of_date, "option": option},
+                )
+            },
+            after="swap",
+        )
+        response = reswap(response, "none")
+        return response
+
+
+@login_required(login_url="/login")
+def view_religion_report(request, as_of_date="", option="all"):
+    context = {}
+    as_of_date = (
+        request.POST.get("selected_as_of_date")
+        or as_of_date
+        or str(datetime.now().date())
+    )
+    context["option"] = option
+    context.update(get_religion_report_data(as_of_date))
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "reports_and_analytics/components/religion_report.html",
+            "content",
+            context,
+        )
+        response = retarget(response, "#report_content_display")
+        response = reswap(response, "innerHTML")
+        return response
+
+    context["for_print_download"] = True
+    return render(
+        request,
+        "reports_and_analytics/components/religion_report.html",
+        context,
+    )
+
+
+@login_required(login_url="/login")
+def popup_religion_report(request):
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        as_of_date = data.get("as_of_date")
+        option = data.get("option")
+        response = HttpResponse()
+        response = trigger_client_event(
+            response,
+            "openSelectedReport",
+            {
+                "report_url_view": reverse(
+                    "reports_and_analytics:view_religion_report_with_data",
                     kwargs={"as_of_date": as_of_date, "option": option},
                 )
             },
