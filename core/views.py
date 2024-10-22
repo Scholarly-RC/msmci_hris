@@ -424,20 +424,14 @@ def add_new_user(request):
                 user_details[0].save()
                 response = HttpResponseClientRedirect(reverse("core:user_management"))
             else:
-                context.update({"add_user_error_message": "Email already exists."})
-                response.content = render_block_to_string(
-                    "core/user_management.html", "add_user_error_message", context
+                response = create_global_alert_instance(
+                    response, "Email already exists.", "INFO"
                 )
-                response = retarget(response, "#add_user_error_message")
-                response = reswap(response, "outerHTML")
+                response = reswap(response, "none")
         except IntegrityError:
-            context.update(
-                {"add_user_error_message": "User credentials already exists."}
+            response = create_global_alert_instance(
+                response, "User credentials already exists.", "INFO"
             )
-            response.content = render_block_to_string(
-                "core/user_management.html", "add_user_error_message", context
-            )
-            response = retarget(response, "#add_user_error_message")
             response = reswap(response, "outerHTML")
     return response
 

@@ -28,8 +28,8 @@ def get_all_holidays_list():
     """
     Retrieves a list of all holidays from the Holiday model.
     """
-    holiday_model = apps.get_model("attendance", "Holiday")
-    all_holidays = holiday_model.objects.all()
+    HolidayModel = apps.get_model("attendance", "Holiday")
+    all_holidays = HolidayModel.objects.all()
     return all_holidays
 
 

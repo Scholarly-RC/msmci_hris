@@ -16,9 +16,9 @@ def get_user_daily_shift_record(department, year: int, month: int, day: int):
     """
     Retrieves the daily shift record for a specific department on a given date.
     """
-    daily_shift_record_model = apps.get_model("attendance", "DailyShiftRecord")
+    DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
     selected_date = get_date_object(year=year, month=month, day=day)
-    selected_daily_shift_record = daily_shift_record_model.objects.filter(
+    selected_daily_shift_record = DailyShiftRecordModel.objects.filter(
         date=selected_date, department=department
     ).first()
 
@@ -44,8 +44,8 @@ def get_user_clocked_time(user, year: int, month: int, day: int, shift):
     """
     selected_date = get_date_object(year=year, month=month, day=day)
 
-    DailyShiftSchedule = apps.get_model("attendance", "DailyShiftSchedule")
-    selected_daily_shift_schedule = DailyShiftSchedule.objects.filter(
+    DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
+    selected_daily_shift_schedule = DailyShiftScheduleModel.objects.filter(
         user=user, shift=shift
     ).first()
 

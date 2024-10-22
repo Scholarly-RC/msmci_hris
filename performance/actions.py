@@ -17,8 +17,8 @@ def process_evaluator_modification(user_evaluation, evaluator_id, to_remove=""):
     - If `to_remove` is "ONE", it deletes evaluations by the specified evaluator.
     - Otherwise, it adds or updates an evaluation for the specified evaluator.
     """
-    evaluation_model = apps.get_model("performance", "Evaluation")
-    user_model = apps.get_model("auth", "User")
+    EvaluationModel = apps.get_model("performance", "Evaluation")
+    UserModel = apps.get_model("auth", "User")
 
     if to_remove == "ALL":
         user_evaluation.evaluations.all().delete()
@@ -28,11 +28,11 @@ def process_evaluator_modification(user_evaluation, evaluator_id, to_remove=""):
         user_evaluation.evaluations.filter(evaluator__id=evaluator_id).delete()
         return
 
-    selected_evaluator = user_model.objects.get(id=evaluator_id)
+    selected_evaluator = UserModel.objects.get(id=evaluator_id)
 
     questionnaire = get_user_questionnaire(user_evaluation.evaluatee)
 
-    new_evaluation, new_evaluation_created = evaluation_model.objects.get_or_create(
+    new_evaluation, new_evaluation_created = EvaluationModel.objects.get_or_create(
         evaluator=selected_evaluator,
         user_evaluation=user_evaluation,
         questionnaire=questionnaire,
@@ -46,13 +46,13 @@ def add_self_evaluation(user_evaluation):
     """
     Adds a self-evaluation for the user being evaluated, using their own questionnaire.
     """
-    evaluation_model = apps.get_model("performance", "Evaluation")
+    EvaluationModel = apps.get_model("performance", "Evaluation")
 
     self_user = user_evaluation.evaluatee
 
     questionnaire = get_user_questionnaire(self_user)
 
-    new_evaluation, new_evaluation_created = evaluation_model.objects.get_or_create(
+    new_evaluation, new_evaluation_created = EvaluationModel.objects.get_or_create(
         evaluator=self_user,
         user_evaluation=user_evaluation,
         questionnaire=questionnaire,
@@ -65,13 +65,13 @@ def modify_content_data_rating(data):
     """
     Updates the content data rating for an existing evaluation based on provided data.
     """
-    evaluation_model = apps.get_model("performance", "Evaluation")
+    EvaluationModel = apps.get_model("performance", "Evaluation")
     domain = data.get("domain_number")
     indicator = data.get("indicator_number")
     str_id = domain + "_" + indicator
     value = data.get(str_id)
     current_evaluation_id = data.get("current_evaluation")
-    current_evaluation = evaluation_model.objects.get(id=current_evaluation_id)
+    current_evaluation = EvaluationModel.objects.get(id=current_evaluation_id)
 
     current_content_data = current_evaluation.content_data
 
@@ -99,8 +99,8 @@ def modify_qualitative_content_data(current_evaluation_id: str, key: str, value:
     Updates qualitative feedback fields (positive feedback or improvement suggestion)
     for a specific evaluation.
     """
-    evaluation_model = apps.get_model("performance", "Evaluation")
-    current_evaluation = evaluation_model.objects.get(id=current_evaluation_id)
+    EvaluationModel = apps.get_model("performance", "Evaluation")
+    current_evaluation = EvaluationModel.objects.get(id=current_evaluation_id)
     value = value.strip()
 
     if key == "positive_feedback":
@@ -168,7 +168,7 @@ def process_upload_resources(user, file_data):
     Validates file sizes and creates shared resources entries for valid files.
     If the file is not a media file or a PDF, initiates an asynchronous task to convert it to PDF.
     """
-    shared_resources_model = apps.get_model("performance", "SharedResource")
+    SharedResourceModel = apps.get_model("performance", "SharedResource")
     errors = []
     files = file_data.getlist("uploaded_resources")
     for file in files:
@@ -178,7 +178,7 @@ def process_upload_resources(user, file_data):
             errors.append(f"Error: {file_name}{ext} - {file_size_error}")
             break
 
-        new_shared_resource = shared_resources_model.objects.create(
+        new_shared_resource = SharedResourceModel.objects.create(
             uploader=user, resource=file, resource_name=file_name
         )
 
@@ -192,7 +192,7 @@ def process_upload_resources(user, file_data):
                 file_name,
             )
 
-    user_shared_resources = shared_resources_model.objects.filter(uploader=user)
+    user_shared_resources = SharedResourceModel.objects.filter(uploader=user)
     return user_shared_resources, errors
 
 
@@ -203,9 +203,9 @@ def share_resource_to_user(resource, selected_user_id, remove=False):
     If `remove` is False, adds the user to the list of users with access to the resource.
     If `remove` is True, removes the user from the list and from confidential access users.
     """
-    user_model = apps.get_model("auth", "User")
+    UserModel = apps.get_model("auth", "User")
 
-    selected_user = user_model.objects.get(id=selected_user_id)
+    selected_user = UserModel.objects.get(id=selected_user_id)
     if not remove:
         resource.shared_to.add(selected_user)
     else:
@@ -221,11 +221,11 @@ def modify_user_file_confidentiality(resource_id, selected_user_id):
     Toggles a user's confidential access status to a specific resource.
     Adds the user to confidential access if not already present; removes if present.
     """
-    user_model = apps.get_model("auth", "User")
-    shared_resources_model = apps.get_model("performance", "SharedResource")
+    UserModel = apps.get_model("auth", "User")
+    SharedResourceModel = apps.get_model("performance", "SharedResource")
 
-    selected_user = user_model.objects.get(id=selected_user_id)
-    resource = shared_resources_model.objects.get(id=resource_id)
+    selected_user = UserModel.objects.get(id=selected_user_id)
+    resource = SharedResourceModel.objects.get(id=resource_id)
 
     if selected_user in resource.confidential_access_users.all():
         resource.confidential_access_users.remove(selected_user)
