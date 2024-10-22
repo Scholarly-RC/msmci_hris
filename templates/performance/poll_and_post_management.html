@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% block title %}Poll & Post Management{% endblock %}
 {% block content %}
     {% include "navbar.html" %}
     <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
@@ -7,7 +8,7 @@
             {% block poll_management_section %}
                 <div id="poll_management_section"
                      class="w-full min-h-[45rem] flex flex-col gap-6 p-4 mb-10 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                    <div class="w-full flex flex-col flex-col-reverse lg:flex-row gap-5">
+                    <div class="w-full flex flex-col-reverse lg:flex-row gap-5">
                         <div class="w-full flex flex-col gap-2">
                             <div class="ms-auto flex flex-row gap-2">
                                 <button type="button"
@@ -66,18 +67,18 @@
                                             </button>
                                         {% else %}
                                             {% if poll_or_post.has_choices %}
-                                            <button type="button"
-                                                    hx-post="{% url "performance:poll_statistics" poll_or_post.id %}"
-                                                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                                Stats
-                                                <svg class="w-3.5 h-3.5 ms-2"
-                                                     aria-hidden="true"
-                                                     xmlns="http://www.w3.org/2000/svg"
-                                                     fill="none"
-                                                     viewBox="0 0 14 10">
-                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9" />
-                                                </svg>
-                                            </button>
+                                                <button type="button"
+                                                        hx-post="{% url "performance:poll_statistics" poll_or_post.id %}"
+                                                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                    Stats
+                                                    <svg class="w-3.5 h-3.5 ms-2"
+                                                         aria-hidden="true"
+                                                         xmlns="http://www.w3.org/2000/svg"
+                                                         fill="none"
+                                                         viewBox="0 0 14 10">
+                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9" />
+                                                    </svg>
+                                                </button>
                                             {% endif %}
                                             <button type="button"
                                                     hx-post="{% url "performance:poll_management_with_selected_poll" poll_or_post.id %}"
@@ -121,8 +122,7 @@
                                             <form class="w-full"
                                                   hx-post="{% if for_post %}{% url "performance:post_management" %}{% else %}{% url "performance:poll_management" %}{% endif %}"
                                                   hx-encoding='multipart/form-data'
-                                                  enctype="multipart/form-data" 
-                                                >
+                                                  enctype="multipart/form-data">
                                                 <div class="max-w-md">
                                                     {% if for_post %}
                                                         <div class="mb-5">
@@ -358,46 +358,44 @@
 </div>
 {% endblock %}
 {% block javascript %}
-<script>    
-    function insertCsrfTokenHiddenInput() {
-        // This function will insert a csrf hidden input on the target div
-        const bodyElement = document.querySelector('body');
-        const headersAttribute = bodyElement.getAttribute('hx-headers');
-        const headers = JSON.parse(headersAttribute);
-        const csrfToken = headers['X-CSRFToken'];
+    <script>
+        function insertCsrfTokenHiddenInput() {
+            // This function will insert a csrf hidden input on the target div
+            const bodyElement = document.querySelector('body');
+            const headersAttribute = bodyElement.getAttribute('hx-headers');
+            const headers = JSON.parse(headersAttribute);
+            const csrfToken = headers['X-CSRFToken'];
 
-        const inputElement = document.createElement('input');
-        inputElement.type = 'hidden';
-        inputElement.name = 'csrfmiddlewaretoken';
-        inputElement.value = csrfToken;
+            const inputElement = document.createElement('input');
+            inputElement.type = 'hidden';
+            inputElement.name = 'csrfmiddlewaretoken';
+            inputElement.value = csrfToken;
 
-        const targetDiv = document.getElementById('prose_editor');
-        if (targetDiv) {
-            targetDiv.appendChild(inputElement);
+            const targetDiv = document.getElementById('prose_editor');
+            if (targetDiv) {
+                targetDiv.appendChild(inputElement);
+            }
         }
-    }
 
-    function initializeEditors() {
-        // This is a copy of the function present in the editor.js
-        const editors = document.querySelectorAll(".django-prose-editor:not(.initialized)");
-      
-        editors.forEach((editor) => {
-          editor.addEventListener("trix-attachment-add", function (event) {
-            uploadAttachment(editor.dataset.uploadAttachmentUrl, event.attachment);
-          });
-          editor.classList.add("initialized");
+        function initializeEditors() {
+            // This is a copy of the function present in the editor.js
+            const editors = document.querySelectorAll(".django-prose-editor:not(.initialized)");
+
+            editors.forEach((editor) => {
+                editor.addEventListener("trix-attachment-add", function(event) {
+                    uploadAttachment(editor.dataset.uploadAttachmentUrl, event.attachment);
+                });
+                editor.classList.add("initialized");
+            });
+        }
+
+        // This will reinsert the csrf hidden input and reinitialize the editor after the htmx swap
+        // This will fix the issue of file upload error after htmx swaps
+        document.body.addEventListener("htmx:afterSwap", (event) => {
+            insertCsrfTokenHiddenInput();
+            initializeEditors()
         });
-      }
-
-    // This will reinsert the csrf hidden input and reinitialize the editor after the htmx swap
-    // This will fix the issue of file upload error after htmx swaps
-    document.body.addEventListener("htmx:afterSwap", (event) => {
-        insertCsrfTokenHiddenInput();
-        initializeEditors()
-    });
-
-    
-</script>
+    </script>
     <script>
         let chartInstance = null;
 
@@ -551,7 +549,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             insertCsrfTokenHiddenInput();
             initializeDescriptionPopovers();
-            initializeStatsChart(); 
+            initializeStatsChart();
         });
     </script>
 {% endblock %}

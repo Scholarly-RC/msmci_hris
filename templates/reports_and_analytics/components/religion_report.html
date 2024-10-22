@@ -1,18 +1,18 @@
 {% extends "layout.html" %}
 {% block title %}
-    Age Demographics Report - ({{ as_of_date }})
+    Religion Report - ({{ as_of_date }})
 {% endblock title %}
 {% block content %}
     <div class="w-full md:w-[65rem] mx-auto p-6">
         <div>
             <input type="hidden"
-                   id="age_demographics_report_data"
+                   id="education_level_report_data"
                    value="{{ chart_option_data }}">
             <div class="w-full bg-white rounded-lg border shadow dark:bg-gray-800 p-4 md:p-6">
                 <div class="flex justify-between items-start w-full">
                     <dl>
                         <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
-                            Age Demographics Report as of <b>{{ as_of_date }}</b>
+                            Religion Report as of <b>{{ as_of_date }}</b>
                         </dt>
                     </dl>
                 </div>
@@ -21,15 +21,15 @@
                         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3 text-start">Name</th>
-                                    <th scope="col" class="px-6 py-3 text-center">Age</th>
+                                    <th scope="col" class="px-6 py-3 text-center">Religion</th>
+                                    <th scope="col" class="px-6 py-3 text-center">Count</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for data in age_demographic_table_data.users %}
+                                {% for data in religion_data_table_data %}
                                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                        <td class="px-6 py-4 text-start">{{ data.get_user_fullname|title }}</td>
-                                        <td class="px-6 py-4 text-center">{{ data.get_age }}</td>
+                                        <td class="px-6 py-4 text-center">{{ data.0 }}</td>
+                                        <td class="px-6 py-4 text-center">{{ data.1 }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -39,8 +39,8 @@
                 {% if option == "all" or option == "chart" %}
                     <div class="py-6" id="pie-chart"></div>
                     <script>
-                        var ageDemographicsReportChartOptions = () => {
-                            const inputElement = document.getElementById('age_demographics_report_data');
+                        var educationLevelReportChartOptions = () => {
+                            const inputElement = document.getElementById('education_level_report_data');
                             const inputValue = inputElement.value;
                             let parsedArray = {};
 
@@ -48,12 +48,12 @@
                                 parsedArray = JSON.parse(inputValue);
                             }
 
-                            const age_groups = parsedArray.age_groups;
-                            const age_group_count = parsedArray.age_group_count;
+                            const education_attainment_list = parsedArray.education_attainment_list;
+                            const education_attainment_count_list = parsedArray.education_attainment_count_list;
 
                             return {
-                                series: age_group_count,
-                                colors: ["#1C64F2", "#16BDCA", "#9061F9", "#FF6F61", "#D4AF37"],
+                                series: education_attainment_count_list,
+                                colors: ["#1C64F2", "#16BDCA", "#9061F9", "#FF6F61", "#D4AF37", "#FFB74D", "#4CAF50", "#FF4081", "#3F51B5", "#FFAB40"],
                                 chart: {
                                     height: 420,
                                     width: "100%",
@@ -74,7 +74,7 @@
                                         }
                                     },
                                 },
-                                labels: age_groups,
+                                labels: education_attainment_list,
                                 dataLabels: {
                                     enabled: true,
                                     style: {
@@ -114,11 +114,11 @@
                         }
 
                         if (document.getElementById("pie-chart") && typeof ApexCharts !== 'undefined') {
-                            if (window.ageDemographicReportChart) {
-                                window.ageDemographicReportChart.destroy()
+                            if (window.educationLevelReportChart) {
+                                window.educationLevelReportChart.destroy()
                             }
-                            window.ageDemographicReportChart = new ApexCharts(document.getElementById("pie-chart"), ageDemographicsReportChartOptions());
-                            window.ageDemographicReportChart.render();
+                            window.educationLevelReportChart = new ApexCharts(document.getElementById("pie-chart"), educationLevelReportChartOptions());
+                            window.educationLevelReportChart.render();
                         }
                     </script>
                 {% endif %}
@@ -128,19 +128,19 @@
                     <p class="text-xl text-gray-900 whitespace-nowrap dark:text-white">Print/Download</p>
                     <div class="inline-flex rounded-md shadow-sm" role="group">
                         <button type="button"
-                                hx-post="{% url "reports_and_analytics:popup_age_demographics_report" %}"
+                                hx-post="{% url "reports_and_analytics:popup_religion_report" %}"
                                 hx-vals='{"as_of_date": "{{ as_of_date }}", "option": "all"}'
                                 class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-s-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
                             All
                         </button>
                         <button type="button"
-                                hx-post="{% url "reports_and_analytics:popup_age_demographics_report" %}"
+                                hx-post="{% url "reports_and_analytics:popup_religion_report" %}"
                                 hx-vals='{"as_of_date": "{{ as_of_date }}", "option": "table"}'
                                 class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border-t border-b border-gray-900 hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
                             Table
                         </button>
                         <button type="button"
-                                hx-post="{% url "reports_and_analytics:popup_age_demographics_report" %}"
+                                hx-post="{% url "reports_and_analytics:popup_religion_report" %}"
                                 hx-vals='{"as_of_date": "{{ as_of_date }}", "option": "chart"}'
                                 class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-e-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
                             Chart

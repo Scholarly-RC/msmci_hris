@@ -1,5 +1,5 @@
-import datetime
 import logging
+from datetime import datetime
 
 from django.apps import apps
 from django.db import transaction
@@ -103,75 +103,38 @@ def process_bulk_daily_shift_schedule(
 
 
 @transaction.atomic
-def add_user_attendance_record(attendance_data):
-    """
-    Creates a new attendance record for a user based on the provided biometric data from the device.
-    """
-    try:
-        attendance_record_model = apps.get_model("attendance", "AttendanceRecord")
-
-        user_biometric_detail, user_id_from_device, timestamp, punch = (
-            process_biometric_data_from_device(attendance_data)
-        )
-
-        attendane_record = attendance_record_model.objects.create(
-            user_id_from_device=user_id_from_device,
-            punch=punch,
-            timestamp=timestamp,
-            user_biometric_detail=user_biometric_detail,
-        )
-    except Exception:
-        logger.error(
-            "An error occurred while adding user attendance record", exc_info=True
-        )
-        raise
-
-
-@transaction.atomic
 def manually_set_user_clocked_time(user, selected_date, clock_in_time, clock_out_time):
     """
     Manually sets or updates the clock-in and clock-out times for a user on a specific date.
     If provided, updates the clock-in and/or clock-out times in the attendance records.
     """
     try:
-        attendance_record_model = apps.get_model("attendance", "AttendanceRecord")
-        clock_in_punch = attendance_record_model.Punch.TIME_IN.value
-        clock_out_punch = attendance_record_model.Punch.TIME_OUT.value
+        DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
 
-        biometric_detail_model = apps.get_model("core", "BiometricDetail")
-        user_biometric_detail = biometric_detail_model.objects.get(user=user)
-
-        current_modified_clock_in_record, current_modified_clock_in_record_created = (
-            attendance_record_model.objects.get_or_create(
-                user_biometric_detail=user_biometric_detail,
-                user_id_from_device=user_biometric_detail.user_id_in_device,
-                timestamp__date=selected_date,
-                punch=clock_in_punch,
-            )
+        daily_shift_records = DailyShiftRecordModel.objects.get(
+            date=selected_date, department=user.userdetails.department
         )
+
+        daily_clocked_time_shift = daily_shift_records.shifts.get(user=user)
 
         if clock_in_time:
             clock_in_time = get_time_object(clock_in_time)
-            clock_in_datetime = datetime.datetime.combine(selected_date, clock_in_time)
-            current_modified_clock_in_record.timestamp = clock_in_datetime
-            current_modified_clock_in_record.save()
-
-        current_modified_clock_out_record, current_modified_clock_out_record_created = (
-            attendance_record_model.objects.get_or_create(
-                user_biometric_detail=user_biometric_detail,
-                user_id_from_device=user_biometric_detail.user_id_in_device,
-                timestamp__date=selected_date,
-                punch=clock_out_punch,
+            daily_clocked_time_shift.clock_in = datetime.combine(
+                selected_date, clock_in_time
             )
-        )
+        else:
+            daily_clocked_time_shift.clock_in = None
 
         if clock_out_time:
             clock_out_time = get_time_object(clock_out_time)
-            clock_out_datetime = datetime.datetime.combine(
+            daily_clocked_time_shift.clock_out = datetime.combine(
                 selected_date, clock_out_time
             )
-            current_modified_clock_out_record.timestamp = clock_out_datetime
-            current_modified_clock_out_record.save()
+        else:
+            daily_clocked_time_shift.clock_out = None
+
+        daily_clocked_time_shift.save()
+
     except Exception:
         logger.error(
             "An error occurred while manually setting user clocked time", exc_info=True

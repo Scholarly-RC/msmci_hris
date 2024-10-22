@@ -1152,11 +1152,18 @@ def shared_resources(request, user_id=""):
 def upload_resources(request):
     context = {}
     user = request.user
+    user_choices = get_users_for_shared_resources(user)
+    context["user_choices"] = user_choices
     if request.htmx and request.method == "POST":
         shared_files, errors = process_upload_resources(user, request.FILES)
         response = HttpResponse()
         if errors:
-            context.update({"current_user": user, "file_upload_errors": errors})
+            context.update(
+                {
+                    "current_user": user,
+                    "file_upload_errors": errors,
+                }
+            )
             response.content = render_block_to_string(
                 "performance/shared_resources_section.html",
                 "file_upload_error_section",
@@ -1222,6 +1229,8 @@ def download_resource(request, resource_id=""):
 def delete_resource(request, resource_id=""):
     context = {}
     user = request.user
+    user_choices = get_users_for_shared_resources(user)
+    context["user_choices"] = user_choices
     if request.htmx and request.method == "DELETE":
         resource_to_delete = SharedResource.objects.get(id=resource_id)
         resource_to_delete.resource.delete()
@@ -1456,6 +1465,8 @@ def shared_resources_management_upload(request):
     user = request.user
     if request.htmx and request.method == "POST":
         shared_files, errors = process_upload_resources(user, request.FILES)
+        user_choices = get_users_for_shared_resources(user)
+        context["user_choices"] = user_choices
         response = HttpResponse()
         if errors:
             context.update({"current_user": user, "file_upload_errors": errors})
@@ -1510,6 +1521,8 @@ def shared_resource_management_delete(request, resource_id=""):
     context = {}
     user = request.user
     if request.htmx and request.method == "DELETE":
+        user_choices = get_users_for_shared_resources(user)
+        context["user_choices"] = user_choices
         resource_to_delete = SharedResource.objects.get(id=resource_id)
         resource_to_delete.resource.delete()
         resource_to_delete.resource_pdf.delete()

@@ -301,11 +301,28 @@ def get_users_for_shared_resources(user):
     department_head_role = user_details_model.Role.DEPARTMENT_HEAD.value
     employee_role = user_details_model.Role.EMPLOYEE.value
 
-    users = user_model.objects.filter(
-        Q(userdetails__role=hr_role)
-        | Q(userdetails__role=department_head_role)
-        | Q(userdetails__role=employee_role)
-    ).exclude(pk=user.id)
+    if user.userdetails.role == employee_role:
+        users = user_model.objects.filter(
+            Q(userdetails__role=hr_role)
+            | Q(
+                userdetails__department=user.userdetails.department,
+                userdetails__role__in=department_head_role,
+            )
+        ).exclude(pk=user.id)
+    elif user.userdetails.role == department_head_role:
+        users = user_model.objects.filter(
+            Q(userdetails__role=hr_role)
+            | Q(
+                userdetails__department=user.userdetails.department,
+                userdetails__role__in=[department_head_role, employee_role],
+            )
+        ).exclude(pk=user.id)
+    else:
+        users = user_model.objects.filter(
+            Q(userdetails__role=hr_role)
+            | Q(userdetails__role=department_head_role)
+            | Q(userdetails__role=employee_role)
+        ).exclude(pk=user.id)
 
     return users
 
@@ -347,4 +364,8 @@ def get_finalized_user_evaluation_year_list():
 
 def get_user_evaluation_users():
     UserModel = apps.get_model("auth", "User")
-    return UserModel.objects.filter(evaluatee_evaluations__is_finalized=True)
+    return (
+        UserModel.objects.filter(evaluatee_evaluations__is_finalized=True)
+        .order_by("first_name")
+        .distinct()
+    )

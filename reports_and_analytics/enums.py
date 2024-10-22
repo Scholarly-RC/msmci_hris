@@ -61,6 +61,7 @@ class UsersReports(Enum):
     GENDER = "GENDER"
     YEARS_OF_EXPERIENCE = "YEARS_OF_EXPERIENCE"
     EDUCATION_LEVEL = "EDUCATION_LEVEL"
+    RELIGION = "RELIGION"
 
     def get_display_name(self):
         if self.value == UsersReports.YEARS_OF_EXPERIENCE.value:

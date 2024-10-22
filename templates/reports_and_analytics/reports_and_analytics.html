@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% block title %}Reports and Analytics Mangement{% endblock %}
 {% block content %}
     {% include "navbar.html" %}
     <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
@@ -12,8 +13,8 @@
             {% block leave_management_section %}
                 <div id="leave_management_section"
                      class="h-[48rem] overflow-y-auto flex flex-col gap-6 p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                    <div class="flex flex-row gap-4 h-full">
-                        <div class="w-1/3 flex flex-col justify-between p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                    <div class="flex flex-col md:flex-row gap-4 h-full">
+                        <div class="w-full md:w-1/2 flex flex-col justify-between p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                             {% block reports_and_analytics_filter_section %}
                                 <div id="reports_and_analytics_filter_section"
                                      class="w-full flex flex-col gap-2">
@@ -78,35 +79,35 @@
                                                         {% endfor %}
                                                     </select>
                                                 </div>
+                                                <div>
+                                                    <label for="date_from_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        From
+                                                    </label>
+                                                    <input type="date"
+                                                           id="date_from_id"
+                                                           name="from_date"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           required />
+                                                </div>
+                                                <div>
+                                                    <label for="date_to_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        To
+                                                    </label>
+                                                    <input type="date"
+                                                           id="date_to_id"
+                                                           name="to_date"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           required />
+                                                </div>
+                                                <div class="flex justify-center mt-4">
+                                                    <button type="submit"
+                                                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                                        View
+                                                    </button>
+                                                </div>
                                             {% endif %}
-                                            <div>
-                                                <label for="date_from_id"
-                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                                    From
-                                                </label>
-                                                <input type="date"
-                                                       id="date_from_id"
-                                                       name="from_date"
-                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                       required />
-                                            </div>
-                                            <div>
-                                                <label for="date_to_id"
-                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                                    To
-                                                </label>
-                                                <input type="date"
-                                                       id="date_to_id"
-                                                       name="to_date"
-                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                       required />
-                                            </div>
-                                            <div class="flex justify-center mt-4">
-                                                <button type="submit"
-                                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-                                                    View
-                                                </button>
-                                            </div>
                                         </form>
                                         <!-- PERFORMANCE REPORTS -->
                                     {% elif selected_report == "EMPLOYEE_PERFORMANCE_SUMMARY" %}
@@ -127,26 +128,26 @@
                                                         {% endfor %}
                                                     </select>
                                                 </div>
+                                                <div class="mb-1">
+                                                    <label for="selected_year_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Year
+                                                    </label>
+                                                    <select id="selected_year_id"
+                                                            name="selected_year"
+                                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                            required>
+                                                        <option selected value="">Choose a Year</option>
+                                                        {% for year in years %}<option value="{{ year }}">{{ year }}</option>{% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="flex justify-center mt-4">
+                                                    <button type="submit"
+                                                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                                        View
+                                                    </button>
+                                                </div>
                                             {% endif %}
-                                            <div class="mb-1">
-                                                <label for="selected_year_id"
-                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                                    Year
-                                                </label>
-                                                <select id="selected_year_id"
-                                                        name="selected_year"
-                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                        required>
-                                                    <option selected value="">Choose a Year</option>
-                                                    {% for year in years %}<option value="{{ year }}">{{ year }}</option>{% endfor %}
-                                                </select>
-                                            </div>
-                                            <div class="flex justify-center mt-4">
-                                                <button type="submit"
-                                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-                                                    View
-                                                </button>
-                                            </div>
                                         </form>
                                         <!-- PAYROLL REPORTS -->
                                     {% elif selected_report == "YEARLY_SALARY_EXPENSE" %}
@@ -189,26 +190,26 @@
                                                         {% endfor %}
                                                     </select>
                                                 </div>
+                                                <div>
+                                                    <label for="selected_year_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Year
+                                                    </label>
+                                                    <select id="selected_year_id"
+                                                            name="selected_year"
+                                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                            required>
+                                                        <option selected value="">Choose a Year</option>
+                                                        {% for year in years %}<option value="{{ year }}">{{ year }}</option>{% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="flex justify-center mt-4">
+                                                    <button type="submit"
+                                                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                                        View
+                                                    </button>
+                                                </div>
                                             {% endif %}
-                                            <div>
-                                                <label for="selected_year_id"
-                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                                    Year
-                                                </label>
-                                                <select id="selected_year_id"
-                                                        name="selected_year"
-                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                        required>
-                                                    <option selected value="">Choose a Year</option>
-                                                    {% for year in years %}<option value="{{ year }}">{{ year }}</option>{% endfor %}
-                                                </select>
-                                            </div>
-                                            <div class="flex justify-center mt-4">
-                                                <button type="submit"
-                                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-                                                    View
-                                                </button>
-                                            </div>
                                         </form>
                                         <!-- LEAVE REPORTS -->
                                     {% elif selected_report == "EMPLOYEE_LEAVE_SUMMARY" %}
@@ -229,35 +230,35 @@
                                                         {% endfor %}
                                                     </select>
                                                 </div>
+                                                <div>
+                                                    <label for="date_from_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        From
+                                                    </label>
+                                                    <input type="date"
+                                                           id="date_from_id"
+                                                           name="from_date"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           required />
+                                                </div>
+                                                <div>
+                                                    <label for="date_to_id"
+                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        To
+                                                    </label>
+                                                    <input type="date"
+                                                           id="date_to_id"
+                                                           name="to_date"
+                                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           required />
+                                                </div>
+                                                <div class="flex justify-center mt-4">
+                                                    <button type="submit"
+                                                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                                        View
+                                                    </button>
+                                                </div>
                                             {% endif %}
-                                            <div>
-                                                <label for="date_from_id"
-                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                                    From
-                                                </label>
-                                                <input type="date"
-                                                       id="date_from_id"
-                                                       name="from_date"
-                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                       required />
-                                            </div>
-                                            <div>
-                                                <label for="date_to_id"
-                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                                    To
-                                                </label>
-                                                <input type="date"
-                                                       id="date_to_id"
-                                                       name="to_date"
-                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                       required />
-                                            </div>
-                                            <div class="flex justify-center mt-4">
-                                                <button type="submit"
-                                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-                                                    View
-                                                </button>
-                                            </div>
                                         </form>
                                         <!-- USERS REPORTS -->
                                     {% elif selected_report == "AGE" %}
@@ -344,13 +345,33 @@
                                                 </button>
                                             </div>
                                         </form>
+                                    {% elif selected_report == "RELIGION" %}
+                                        <form hx-post="{% url "reports_and_analytics:view_religion_report" %}">
+                                            <div>
+                                                <label for="selected_as_of_date_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    As of Date
+                                                </label>
+                                                <input type="date"
+                                                       id="selected_as_of_date_id"
+                                                       name="selected_as_of_date"
+                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                       required
+                                                       onfocus="this.max = new Date().toISOString().split('T')[0];" />
+                                            </div>
+                                            <div class="flex justify-center mt-4">
+                                                <button type="submit"
+                                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                                    View
+                                                </button>
+                                            </div>
+                                        </form>
                                     {% endif %}
                                 </div>
                             {% endblock %}
                         </div>
                         <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                            <div id="report_content_display"
-                                 class="w-full flex items-center justify-center h-full"></div>
+                            <div id="report_content_display" class="w-full h-[42rem] overflow-y-auto"></div>
                         </div>
                     </div>
                 </div>

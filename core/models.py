@@ -46,7 +46,7 @@ class UserDetails(models.Model):
 
     class Gender(models.TextChoices):
         MALE = "M", _("Male")
-        FEMALE = "F", _("Femane")
+        FEMALE = "F", _("Female")
 
     user = models.OneToOneField(User, on_delete=models.RESTRICT, primary_key=True)
     middle_name = models.CharField(

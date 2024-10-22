@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% block title %}User Leave{% endblock %}
 {% block content %}
     {% include "navbar.html" %}
     <div class="flex flex-col items-center px-4 2xl:px-0 pt-6 xl:gap-4 dark:bg-gray-900">
@@ -9,8 +10,8 @@
             {% block leave_management_section %}
                 <div id="leave_management_section"
                      class="h-[48rem] overflow-y-auto flex flex-col gap-6 p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                    <div class="flex flex-row gap-4 h-full">
-                        <div class="w-1/3 flex flex-col justify-between p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                    <div class="flex flex-col md:flex-row gap-4 h-full">
+                        <div class="w-full md:w-1/2 flex flex-col justify-between p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                             <div>
                                 <button type="button"
                                         hx-get="{% url "leave:user_leave_request" %}"
@@ -52,7 +53,7 @@
                                             </div>
                                             <time class="mb-1 text-sm font-normal leading-none text-gray-400 dark:text-gray-500">{{ data.date }}</time>
                                             {% for leave in data.leave %}
-                                                <div class="my-1 flex flex-row justify-between w-full p-4 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                                <div class="my-1 flex flex-col md:flex-row justify-between w-full p-4 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                                                     <div>
                                                         <h5 class="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">{{ leave.date }}</h5>
                                                         <p class="mb-2 font-bold text-gray-700 dark:text-gray-400">Type: {{ leave.get_type_display }}</p>
@@ -108,7 +109,6 @@
                                          viewBox="0 0 14 14">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                                     </svg>
-                                    <span class="sr-only">Close modal</span>
                                 </button>
                             </div>
                             <div class="p-4 md:p-5 space-y-4">
@@ -189,7 +189,6 @@
                                          viewBox="0 0 14 14">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                                     </svg>
-                                    <span class="sr-only">Close modal</span>
                                 </button>
                             </div>
                             <div class="p-4 md:p-5 space-y-4">
@@ -297,7 +296,7 @@
 {% block javascript %}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            
+
             // Initialize specific modals
             const initializeCreateLeaveRequestModal = () => initializeModal('create_leave_request_modal');
             const closeCreateLeaveRequestModal = () => closeModal('create_leave_request_modal');

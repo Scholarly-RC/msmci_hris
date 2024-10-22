@@ -114,11 +114,19 @@ def get_user_leave(user: User):
 
 def get_users_with_leave():
 
-    return User.objects.filter(
-        Q(is_active=True)
-        & Q(user_leaves__isnull=False)
-        & Q(user_leaves__first_approver_data__status=LeaveRequestAction.APPROVED.value)
-        & Q(user_leaves__second_approver_data__status=LeaveRequestAction.APPROVED.value)
+    return (
+        User.objects.filter(
+            Q(is_active=True)
+            & Q(user_leaves__isnull=False)
+            & Q(
+                user_leaves__first_approver_data__status=LeaveRequestAction.APPROVED.value
+            )
+            & Q(
+                user_leaves__second_approver_data__status=LeaveRequestAction.APPROVED.value
+            )
+        )
+        .order_by("first_name")
+        .distinct()
     )
 
 

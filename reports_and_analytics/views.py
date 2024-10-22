@@ -17,6 +17,7 @@ from reports_and_analytics.utils import (
     get_filter_contexts_for_specific_report,
     get_gender_demographics_report_data,
     get_list_of_modules,
+    get_religion_report_data,
     get_reports_for_specific_module,
     get_yearly_salary_expense_report_data,
     get_years_of_experience_report_data,
@@ -63,7 +64,7 @@ def reports_and_analytics(request):
 ### Attendance Reports Views ###
 @login_required(login_url="/login")
 def view_employee_punctuality_report(
-    request, selected_user="", from_date="", to_date=""
+    request, selected_user="", from_date="", to_date="", option="all"
 ):
     context = {}
     user = request.user
@@ -75,7 +76,7 @@ def view_employee_punctuality_report(
     selected_user = request.POST.get("selected_user") or selected_user
     from_date = request.POST.get("from_date") or from_date
     to_date = request.POST.get("to_date") or to_date
-
+    context["option"] = option
     context.update(
         get_employee_punctuality_report_data(selected_user, from_date, to_date)
     )
@@ -104,6 +105,7 @@ def popup_employee_punctuality_report(request):
         selected_user = data.get("selected_user")
         from_date = data.get("from_date")
         to_date = data.get("to_date")
+        option = data.get("option")
 
         response = HttpResponse()
         response = trigger_client_event(
@@ -116,6 +118,7 @@ def popup_employee_punctuality_report(request):
                         "selected_user": selected_user,
                         "from_date": from_date,
                         "to_date": to_date,
+                        "option": option,
                     },
                 )
             },
@@ -128,7 +131,7 @@ def popup_employee_punctuality_report(request):
 ### Performance and Learning Reports Views ###
 @login_required(login_url="/login")
 def view_employee_performance_evaluation_summary(
-    request, selected_user="", selected_year=""
+    request, selected_user="", selected_year="", option="all"
 ):
     context = {}
     user = request.user
@@ -139,7 +142,7 @@ def view_employee_performance_evaluation_summary(
 
     selected_user = request.POST.get("selected_user") or selected_user
     selected_year = request.POST.get("selected_year") or selected_year
-
+    context["option"] = option
     context.update(
         get_employee_performance_evaluation_summary_data(selected_year, selected_user)
     )
@@ -167,6 +170,7 @@ def popup_employee_performance_evaluation_summary(request):
         data = request.POST
         selected_year = data.get("selected_year")
         selected_user = data.get("selected_user")
+        option = data.get("option")
         response = HttpResponse()
         response = trigger_client_event(
             response,
@@ -177,6 +181,7 @@ def popup_employee_performance_evaluation_summary(request):
                     kwargs={
                         "selected_year": selected_year,
                         "selected_user": selected_user,
+                        "option": option,
                     },
                 )
             },
@@ -188,9 +193,10 @@ def popup_employee_performance_evaluation_summary(request):
 
 ### Payroll Reports Views ###
 @login_required(login_url="/login")
-def view_yearly_salary_expense_report(request, selected_year=""):
+def view_yearly_salary_expense_report(request, selected_year="", option="all"):
     context = {}
     selected_year = request.POST.get("selected_year") or selected_year
+    context["option"] = option
     context.update(get_yearly_salary_expense_report_data(selected_year))
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -215,6 +221,7 @@ def popup_yearly_salary_expense_report(request):
     if request.htmx and request.method == "POST":
         data = request.POST
         selected_year = data.get("selected_year")
+        option = data.get("option")
         response = HttpResponse()
         response = trigger_client_event(
             response,
@@ -222,7 +229,7 @@ def popup_yearly_salary_expense_report(request):
             {
                 "report_url_view": reverse(
                     "reports_and_analytics:view_yearly_salary_expense_report_with_data",
-                    kwargs={"selected_year": selected_year},
+                    kwargs={"selected_year": selected_year, "option": option},
                 )
             },
             after="swap",
@@ -233,7 +240,7 @@ def popup_yearly_salary_expense_report(request):
 
 @login_required(login_url="/login")
 def view_employee_yearly_salary_summary_report(
-    request, selected_user="", selected_year=""
+    request, selected_user="", selected_year="", option="all"
 ):
     context = {}
     user = request.user
@@ -244,7 +251,7 @@ def view_employee_yearly_salary_summary_report(
 
     selected_user = request.POST.get("selected_user") or selected_user
     selected_year = request.POST.get("selected_year") or selected_year
-
+    context["option"] = option
     context.update(
         get_employee_yearly_salary_salary_report_data(selected_year, selected_user)
     )
@@ -272,6 +279,7 @@ def popup_employee_yearly_salary_summary_report(request):
         data = request.POST
         selected_year = data.get("selected_year")
         selected_user = data.get("selected_user")
+        option = data.get("option")
         response = HttpResponse()
         response = trigger_client_event(
             response,
@@ -282,6 +290,7 @@ def popup_employee_yearly_salary_summary_report(request):
                     kwargs={
                         "selected_year": selected_year,
                         "selected_user": selected_user,
+                        "option": option,
                     },
                 )
             },
@@ -294,7 +303,7 @@ def popup_employee_yearly_salary_summary_report(request):
 ### Leave Reports Views ###
 @login_required(login_url="/login")
 def view_employee_leave_summary_report(
-    request, selected_user="", from_date="", to_date=""
+    request, selected_user="", from_date="", to_date="", option="all"
 ):
     context = {}
     user = request.user
@@ -306,7 +315,7 @@ def view_employee_leave_summary_report(
     selected_user = request.POST.get("selected_user") or selected_user
     from_date = request.POST.get("from_date") or from_date
     to_date = request.POST.get("to_date") or to_date
-
+    context["option"] = option
     context.update(
         get_employee_leave_summary_report_data(selected_user, from_date, to_date)
     )
@@ -336,6 +345,7 @@ def popup_employee_leave_summary_report(request):
         selected_user = data.get("selected_user")
         from_date = data.get("from_date")
         to_date = data.get("to_date")
+        option = data.get("option")
         response = HttpResponse()
         response = trigger_client_event(
             response,
@@ -347,6 +357,7 @@ def popup_employee_leave_summary_report(request):
                         "selected_user": selected_user,
                         "from_date": from_date,
                         "to_date": to_date,
+                        "option": option,
                     },
                 )
             },
@@ -358,13 +369,14 @@ def popup_employee_leave_summary_report(request):
 
 ### Users Reports Views ###
 @login_required(login_url="/login")
-def view_age_demographics_report(request, as_of_date=""):
+def view_age_demographics_report(request, as_of_date="", option="all"):
     context = {}
     as_of_date = (
         request.POST.get("selected_as_of_date")
         or as_of_date
         or str(datetime.now().date())
     )
+    context["option"] = option
     context.update(get_age_demographics_report_data(as_of_date))
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -390,6 +402,7 @@ def popup_age_demographics_report(request):
     if request.htmx and request.method == "POST":
         data = request.POST
         as_of_date = data.get("as_of_date")
+        option = data.get("option")
         response = HttpResponse()
         response = trigger_client_event(
             response,
@@ -397,7 +410,7 @@ def popup_age_demographics_report(request):
             {
                 "report_url_view": reverse(
                     "reports_and_analytics:view_age_demographics_report_with_data",
-                    kwargs={"as_of_date": as_of_date},
+                    kwargs={"as_of_date": as_of_date, "option": option},
                 )
             },
             after="swap",
@@ -407,13 +420,14 @@ def popup_age_demographics_report(request):
 
 
 @login_required(login_url="/login")
-def view_gender_demographics_report(request, as_of_date=""):
+def view_gender_demographics_report(request, as_of_date="", option="all"):
     context = {}
     as_of_date = (
         request.POST.get("selected_as_of_date")
         or as_of_date
         or str(datetime.now().date())
     )
+    context["option"] = option
     context.update(get_gender_demographics_report_data(as_of_date))
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -439,6 +453,7 @@ def popup_gender_demographics_report(request):
     if request.htmx and request.method == "POST":
         data = request.POST
         as_of_date = data.get("as_of_date")
+        option = data.get("option")
         response = HttpResponse()
         response = trigger_client_event(
             response,
@@ -446,7 +461,7 @@ def popup_gender_demographics_report(request):
             {
                 "report_url_view": reverse(
                     "reports_and_analytics:view_gender_demographics_report_with_data",
-                    kwargs={"as_of_date": as_of_date},
+                    kwargs={"as_of_date": as_of_date, "option": option},
                 )
             },
             after="swap",
@@ -456,13 +471,14 @@ def popup_gender_demographics_report(request):
 
 
 @login_required(login_url="/login")
-def view_years_of_experience_report(request, as_of_date=""):
+def view_years_of_experience_report(request, as_of_date="", option="all"):
     context = {}
     as_of_date = (
         request.POST.get("selected_as_of_date")
         or as_of_date
         or str(datetime.now().date())
     )
+    context["option"] = option
     context.update(get_years_of_experience_report_data(as_of_date))
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -488,6 +504,7 @@ def popup_years_of_experience_report(request):
     if request.htmx and request.method == "POST":
         data = request.POST
         as_of_date = data.get("as_of_date")
+        option = data.get("option")
         response = HttpResponse()
         response = trigger_client_event(
             response,
@@ -495,7 +512,7 @@ def popup_years_of_experience_report(request):
             {
                 "report_url_view": reverse(
                     "reports_and_analytics:view_years_of_experience_report_with_data",
-                    kwargs={"as_of_date": as_of_date},
+                    kwargs={"as_of_date": as_of_date, "option": option},
                 )
             },
             after="swap",
@@ -505,13 +522,14 @@ def popup_years_of_experience_report(request):
 
 
 @login_required(login_url="/login")
-def view_education_level_report(request, as_of_date=""):
+def view_education_level_report(request, as_of_date="", option="all"):
     context = {}
     as_of_date = (
         request.POST.get("selected_as_of_date")
         or as_of_date
         or str(datetime.now().date())
     )
+    context["option"] = option
     context.update(get_education_level_report_data(as_of_date))
     if request.htmx and request.method == "POST":
         response = HttpResponse()
@@ -537,6 +555,7 @@ def popup_education_level_report(request):
     if request.htmx and request.method == "POST":
         data = request.POST
         as_of_date = data.get("as_of_date")
+        option = data.get("option")
         response = HttpResponse()
         response = trigger_client_event(
             response,
@@ -544,7 +563,58 @@ def popup_education_level_report(request):
             {
                 "report_url_view": reverse(
                     "reports_and_analytics:view_education_level_report_with_data",
-                    kwargs={"as_of_date": as_of_date},
+                    kwargs={"as_of_date": as_of_date, "option": option},
+                )
+            },
+            after="swap",
+        )
+        response = reswap(response, "none")
+        return response
+
+
+@login_required(login_url="/login")
+def view_religion_report(request, as_of_date="", option="all"):
+    context = {}
+    as_of_date = (
+        request.POST.get("selected_as_of_date")
+        or as_of_date
+        or str(datetime.now().date())
+    )
+    context["option"] = option
+    context.update(get_religion_report_data(as_of_date))
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "reports_and_analytics/components/religion_report.html",
+            "content",
+            context,
+        )
+        response = retarget(response, "#report_content_display")
+        response = reswap(response, "innerHTML")
+        return response
+
+    context["for_print_download"] = True
+    return render(
+        request,
+        "reports_and_analytics/components/religion_report.html",
+        context,
+    )
+
+
+@login_required(login_url="/login")
+def popup_religion_report(request):
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        as_of_date = data.get("as_of_date")
+        option = data.get("option")
+        response = HttpResponse()
+        response = trigger_client_event(
+            response,
+            "openSelectedReport",
+            {
+                "report_url_view": reverse(
+                    "reports_and_analytics:view_religion_report_with_data",
+                    kwargs={"as_of_date": as_of_date, "option": option},
                 )
             },
             after="swap",

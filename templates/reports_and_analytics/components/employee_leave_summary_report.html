@@ -3,7 +3,7 @@
     {{ selected_user.userdetails.get_user_fullname }} Employee Leave Summary ({{ from_date_display }} - {{ to_date_display }})
 {% endblock title %}
 {% block content %}
-    <div class="w-[65rem] mx-auto p-6">
+    <div class="w-full md:w-[65rem] mx-auto p-6">
         <div>
             <input type="hidden"
                    id="employee_leave_summary_report_data"
@@ -19,124 +19,170 @@
                         </dt>
                     </dl>
                 </div>
-                <!-- Line Chart -->
-                <div id="column-chart" class="py-6"></div>
+                {% if option == "all" or option == "table" %}
+                    <div class="relative overflow-x-auto border-b-2">
+                        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-center">Day</th>
+                                    <th scope="col" class="px-6 py-3 text-center">Paid</th>
+                                    <th scope="col" class="px-6 py-3 text-center">Unpaid</th>
+                                    <th scope="col" class="px-6 py-3 text-center">Work Related Trip</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for data in employee_leave_table_data %}
+                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                        <td class="px-6 py-4 text-center">{{ data.date }}</td>
+                                        <td class="px-6 py-4 text-center">
+                                            {% if data.type == "PA" %}✔{% endif %}
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            {% if data.type == "UN" %}✔{% endif %}
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            {% if data.type == "WR" %}✔{% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+                {% if option == "all" or option == "chart" %}
+                    <div id="column-chart" class="py-6"></div>
+                    <script>
+                        var employeeLeaveSummaryReportChartOptions = () => {
+                            const inputElement = document.getElementById('employee_leave_summary_report_data');
+                            const inputValue = inputElement.value;
+                            let parsedArray = {};
+
+                            if (inputValue) {
+                                parsedArray = JSON.parse(inputValue);
+                            }
+
+                            const leave_data_list = parsedArray.leave_data_list;
+
+                            console.log(inputValue)
+
+                            return {
+                                colors: ["#1A56DB", "#FDBA8C"],
+                                series: [{
+                                    name: "Leave",
+                                    color: "#1A56DB",
+                                    data: leave_data_list,
+                                }],
+                                chart: {
+                                    type: "bar",
+                                    height: "320px",
+                                    fontFamily: "Inter, sans-serif",
+                                    toolbar: {
+                                        show: false,
+                                    },
+                                },
+                                plotOptions: {
+                                    bar: {
+                                        horizontal: false,
+                                        columnWidth: "70%",
+                                        borderRadiusApplication: "end",
+                                        borderRadius: 8,
+                                    },
+                                },
+                                tooltip: {
+                                    shared: true,
+                                    intersect: false,
+                                    style: {
+                                        fontFamily: "Inter, sans-serif",
+                                    },
+                                },
+                                states: {
+                                    hover: {
+                                        filter: {
+                                            type: "darken",
+                                            value: 1,
+                                        },
+                                    },
+                                },
+                                stroke: {
+                                    show: true,
+                                    width: 0,
+                                    colors: ["transparent"],
+                                },
+                                grid: {
+                                    show: false,
+                                    strokeDashArray: 4,
+                                    padding: {
+                                        left: 2,
+                                        right: 2,
+                                        top: -14
+                                    },
+                                },
+                                dataLabels: {
+                                    enabled: false,
+                                },
+                                legend: {
+                                    show: false,
+                                },
+                                xaxis: {
+                                    floating: false,
+                                    labels: {
+                                        show: true,
+                                        style: {
+                                            fontFamily: "Inter, sans-serif",
+                                            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                                        }
+                                    },
+                                    axisBorder: {
+                                        show: false,
+                                    },
+                                    axisTicks: {
+                                        show: false,
+                                    },
+                                },
+                                yaxis: {
+                                    show: false,
+                                },
+                                fill: {
+                                    opacity: 1,
+                                },
+                            }
+                        }
+
+                        if (document.getElementById("column-chart") && typeof ApexCharts !== 'undefined') {
+                            if (window.employeeLeaveSummaryReportChart) {
+                                window.employeeLeaveSummaryReportChart.destroy()
+                            }
+                            window.employeeLeaveSummaryReportChart = new ApexCharts(document.getElementById("column-chart"), employeeLeaveSummaryReportChartOptions());
+                            window.employeeLeaveSummaryReportChart.render();
+                        }
+                    </script>
+                {% endif %}
             </div>
-            <div class="w-full flex justify-center mt-2">
+            <div class="w-full flex flex-col items-center justify-center mt-2 gap-2">
                 {% if not hide_print_download_button and not for_print_download %}
-                    <button type="button"
-                            hx-post="{% url "reports_and_analytics:popup_employee_leave_summary_report" %}"
-                            hx-vals='{"selected_user": {{ selected_user.id }}, "from_date": "{{ from_date }}", "to_date": "{{ to_date }}"}'
-                            class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                        Print/Download
-                    </button>
+                    <p class="text-xl text-gray-900 whitespace-nowrap dark:text-white">Print/Download</p>
+                    <div class="inline-flex rounded-md shadow-sm" role="group">
+                        <button type="button"
+                                hx-post="{% url "reports_and_analytics:popup_employee_leave_summary_report" %}"
+                                hx-vals='{"selected_user": {{ selected_user.id }}, "from_date": "{{ from_date }}", "to_date": "{{ to_date }}", "option": "all"}'
+                                class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-s-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
+                            All
+                        </button>
+                        <button type="button"
+                                hx-post="{% url "reports_and_analytics:popup_employee_leave_summary_report" %}"
+                                hx-vals='{"selected_user": {{ selected_user.id }}, "from_date": "{{ from_date }}", "to_date": "{{ to_date }}", "option": "table"}'
+                                class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border-t border-b border-gray-900 hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
+                            Table
+                        </button>
+                        <button type="button"
+                                hx-post="{% url "reports_and_analytics:popup_employee_leave_summary_report" %}"
+                                hx-vals='{"selected_user": {{ selected_user.id }}, "from_date": "{{ from_date }}", "to_date": "{{ to_date }}", "option": "chart"}'
+                                class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-e-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
+                            Chart
+                        </button>
+                    </div>
                 {% endif %}
             </div>
         </div>
     </div>
-    <script>
-        var employeeLeaveSummaryReportChartOptions = () => {
-            const inputElement = document.getElementById('employee_leave_summary_report_data');
-            const inputValue = inputElement.value;
-            let parsedArray = {};
-
-            if (inputValue) {
-                parsedArray = JSON.parse(inputValue);
-            }
-
-            const leave_data_list = parsedArray.leave_data_list;
-
-            console.log(inputValue)
-
-            return {
-                colors: ["#1A56DB", "#FDBA8C"],
-                series: [{
-                    name: "Leave",
-                    color: "#1A56DB",
-                    data: leave_data_list,
-                }],
-                chart: {
-                    type: "bar",
-                    height: "320px",
-                    fontFamily: "Inter, sans-serif",
-                    toolbar: {
-                        show: false,
-                    },
-                },
-                plotOptions: {
-                    bar: {
-                        horizontal: false,
-                        columnWidth: "70%",
-                        borderRadiusApplication: "end",
-                        borderRadius: 8,
-                    },
-                },
-                tooltip: {
-                    shared: true,
-                    intersect: false,
-                    style: {
-                        fontFamily: "Inter, sans-serif",
-                    },
-                },
-                states: {
-                    hover: {
-                        filter: {
-                            type: "darken",
-                            value: 1,
-                        },
-                    },
-                },
-                stroke: {
-                    show: true,
-                    width: 0,
-                    colors: ["transparent"],
-                },
-                grid: {
-                    show: false,
-                    strokeDashArray: 4,
-                    padding: {
-                        left: 2,
-                        right: 2,
-                        top: -14
-                    },
-                },
-                dataLabels: {
-                    enabled: false,
-                },
-                legend: {
-                    show: false,
-                },
-                xaxis: {
-                    floating: false,
-                    labels: {
-                        show: true,
-                        style: {
-                            fontFamily: "Inter, sans-serif",
-                            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
-                        }
-                    },
-                    axisBorder: {
-                        show: false,
-                    },
-                    axisTicks: {
-                        show: false,
-                    },
-                },
-                yaxis: {
-                    show: false,
-                },
-                fill: {
-                    opacity: 1,
-                },
-            }
-        }
-
-        if (document.getElementById("column-chart") && typeof ApexCharts !== 'undefined') {
-            if (window.employeeLeaveSummaryReportChart) {
-                window.employeeLeaveSummaryReportChart.destroy()
-            }
-            window.employeeLeaveSummaryReportChart = new ApexCharts(document.getElementById("column-chart"), employeeLeaveSummaryReportChartOptions());
-            window.employeeLeaveSummaryReportChart.render();
-        }
-    </script>
 {% endblock %}

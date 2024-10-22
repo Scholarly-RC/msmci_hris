@@ -3,12 +3,12 @@
     {{ selected_user.userdetails.get_user_fullname }} Performance Evaluation Summary Report - {{ selected_year }}
 {% endblock title %}
 {% block content %}
-    <div class="w-[65rem] mx-auto p-6">
+    <div class="w-full md:w-[65rem] mx-auto p-6">
         <div>
             <input type="hidden"
                    id="employee_performance_evaluation_summary_report_data"
                    value="{{ chart_option_data }}">
-            <div class="w-full bg-white rounded-lg border shadow dark:bg-gray-800 p-3 md:p-4">
+            <div class="w-full rounded-lg border shadow dark:bg-gray-800 p-3 md:p-4">
                 <div class="flex justify-between border-gray-200 border-b dark:border-gray-700 pb-3">
                     <dl>
                         <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
@@ -19,132 +19,174 @@
                         </dt>
                     </dl>
                 </div>
-                <div id="bar-chart"></div>
+                {% if option == "all" or option == "table" %}
+                    <div class="relative overflow-x-auto border-b-2">
+                        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">Quarter</th>
+                                    <th scope="col" class="px-6 py-3">Self</th>
+                                    <th scope="col" class="px-6 py-3">Peer</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for data in employee_performance_evaluation_table_data %}
+                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                        <th scope="row"
+                                            class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                            {{ data.0 }}
+                                        </th>
+                                        <td class="px-6 py-4">{{ data.1 }}</td>
+                                        <td class="px-6 py-4">{{ data.2 }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+                {% if option == "all" or option == "chart" %}
+                    <div id="bar-chart"></div>
+                    <script>
+                        var employeePerformanceEvaluationSummaryReportChartOptions = () => {
+                            const inputElement = document.getElementById('employee_performance_evaluation_summary_report_data');
+                            const inputValue = inputElement.value;
+                            let parsedArray = {};
+
+                            if (inputValue) {
+                                parsedArray = JSON.parse(inputValue);
+                            }
+
+                            const quarters_list = parsedArray.quarters_list;
+                            const self_rating_value_list = parsedArray.self_rating_value_list;
+                            const peer_rating_value_list = parsedArray.peer_rating_value_list;
+
+                            return {
+                                series: [{
+                                    name: "Self Rating",
+                                    data: self_rating_value_list,
+                                    color: "#31C48D",
+                                }, {
+                                    name: "Peer Rating",
+                                    data: peer_rating_value_list,
+                                    color: "#002D5D",
+                                }],
+                                chart: {
+                                    sparkline: {
+                                        enabled: false,
+                                    },
+                                    type: "bar",
+                                    width: "100%",
+                                    height: 400,
+                                    toolbar: {
+                                        show: false,
+                                    }
+                                },
+                                fill: {
+                                    opacity: 1,
+                                },
+                                plotOptions: {
+                                    bar: {
+                                        horizontal: true,
+                                        columnWidth: "100%",
+                                        borderRadiusApplication: "end",
+                                        borderRadius: 6,
+                                        dataLabels: {
+                                            position: "top",
+                                        },
+                                    },
+                                },
+                                legend: {
+                                    show: true,
+                                    position: "bottom",
+                                },
+                                dataLabels: {
+                                    enabled: true,
+                                    formatter: function(val) {
+                                        return val;
+                                    },
+                                    offsetX: -50,
+                                },
+                                tooltip: {
+                                    enabled: false,
+                                },
+                                xaxis: {
+                                    labels: {
+                                        show: true,
+                                        style: {
+                                            fontFamily: "Inter, sans-serif",
+                                            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                                        },
+                                        formatter: function(value) {
+                                            return value
+                                        }
+                                    },
+                                    categories: quarters_list,
+                                    axisTicks: {
+                                        show: false,
+                                    },
+                                    axisBorder: {
+                                        show: false,
+                                    },
+                                },
+                                yaxis: {
+                                    labels: {
+                                        show: true,
+                                        style: {
+                                            fontFamily: "Inter, sans-serif",
+                                            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                                        }
+                                    }
+                                },
+                                grid: {
+                                    show: true,
+                                    strokeDashArray: 4,
+                                    padding: {
+                                        left: 2,
+                                        right: 2,
+                                        top: -20
+                                    },
+                                },
+                                fill: {
+                                    opacity: 1,
+                                }
+                            }
+                        }
+
+                        if (document.getElementById("bar-chart") && typeof ApexCharts !== 'undefined') {
+                            if (window.employeePerformanceEvaluationSummaryReportChart) {
+                                window.employeePerformanceEvaluationSummaryReportChart.destroy();
+                            }
+                            window.employeePerformanceEvaluationSummaryReportChart = new ApexCharts(document.getElementById("bar-chart"), employeePerformanceEvaluationSummaryReportChartOptions());
+                            window.employeePerformanceEvaluationSummaryReportChart.render();
+                        }
+                    </script>
+                {% endif %}
             </div>
-            <div class="w-full flex justify-center mt-2">
+            <div class="w-full flex flex-col items-center justify-center mt-2 gap-2">
                 {% if not hide_print_download_button and not for_print_download %}
-                    <button type="button"
-                            hx-post="{% url "reports_and_analytics:popup_employee_performance_evaluation_summary" %}"
-                            hx-vals='{"selected_year": {{ selected_year }},"selected_user": {{ selected_user.id }}}'
-                            class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                        Print/Download
-                    </button>
+                    <p class="text-xl text-gray-900 whitespace-nowrap dark:text-white">Print/Download</p>
+                    <div class="inline-flex rounded-md shadow-sm" role="group">
+                        <button type="button"
+                                hx-post="{% url 'reports_and_analytics:popup_employee_performance_evaluation_summary' %}"
+                                hx-vals='{"selected_year": {{ selected_year }},"selected_user": {{ selected_user.id }}, "option": "all"}'
+                                class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-s-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
+                            All
+                        </button>
+                        <button type="button"
+                                hx-post="{% url 'reports_and_analytics:popup_employee_performance_evaluation_summary' %}"
+                                hx-vals='{"selected_year": {{ selected_year }},"selected_user": {{ selected_user.id }}, "option": "table"}'
+                                class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border-t border-b border-gray-900 hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
+                            Table
+                        </button>
+                        <button type="button"
+                                hx-post="{% url 'reports_and_analytics:popup_employee_performance_evaluation_summary' %}"
+                                hx-vals='{"selected_year": {{ selected_year }},"selected_user": {{ selected_user.id }}, "option": "chart"}'
+                                class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-e-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
+                            Chart
+                        </button>
+                    </div>
                 {% endif %}
             </div>
         </div>
     </div>
-    <script>
-        var employeePerformanceEvaluationSummaryReportChartOptions = () => {
-            const inputElement = document.getElementById('employee_performance_evaluation_summary_report_data');
-            const inputValue = inputElement.value;
-            let parsedArray = {};
-
-            if (inputValue) {
-                parsedArray = JSON.parse(inputValue);
-            }
-
-            const quarters_list = parsedArray.quarters_list;
-            const self_rating_value_list = parsedArray.self_rating_value_list;
-            const peer_rating_value_list = parsedArray.peer_rating_value_list;
-
-            return {
-                series: [{
-                    name: "Self Rating",
-                    data: self_rating_value_list,
-                    color: "#31C48D",
-                }, {
-                    name: "Peer Rating",
-                    data: peer_rating_value_list,
-                    color: "#002D5D",
-                }],
-                chart: {
-                    sparkline: {
-                        enabled: false,
-                    },
-                    type: "bar",
-                    width: "100%",
-                    height: 400,
-                    toolbar: {
-                        show: false,
-                    }
-                },
-                fill: {
-                    opacity: 1,
-                },
-                plotOptions: {
-                    bar: {
-                        horizontal: true,
-                        columnWidth: "100%",
-                        borderRadiusApplication: "end",
-                        borderRadius: 6,
-                        dataLabels: {
-                            position: "top",
-                        },
-                    },
-                },
-                legend: {
-                    show: true,
-                    position: "bottom",
-                },
-                dataLabels: {
-                    enabled: true,
-                    formatter: function(val) {
-                        return val;
-                    },
-                    offsetX: -50,
-                },
-                tooltip: {
-                    enabled: false,
-                },
-                xaxis: {
-                    labels: {
-                        show: true,
-                        style: {
-                            fontFamily: "Inter, sans-serif",
-                            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
-                        },
-                        formatter: function(value) {
-                            return value
-                        }
-                    },
-                    categories: quarters_list,
-                    axisTicks: {
-                        show: false,
-                    },
-                    axisBorder: {
-                        show: false,
-                    },
-                },
-                yaxis: {
-                    labels: {
-                        show: true,
-                        style: {
-                            fontFamily: "Inter, sans-serif",
-                            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
-                        }
-                    }
-                },
-                grid: {
-                    show: true,
-                    strokeDashArray: 4,
-                    padding: {
-                        left: 2,
-                        right: 2,
-                        top: -20
-                    },
-                },
-                fill: {
-                    opacity: 1,
-                }
-            }
-        }
-
-        if (document.getElementById("bar-chart") && typeof ApexCharts !== 'undefined') {
-            if (window.employeePerformanceEvaluationSummaryReportChart) {
-                window.employeePerformanceEvaluationSummaryReportChart.destroy();
-            }
-            window.employeePerformanceEvaluationSummaryReportChart = new ApexCharts(document.getElementById("bar-chart"), employeePerformanceEvaluationSummaryReportChartOptions());
-            window.employeePerformanceEvaluationSummaryReportChart.render();
-        }
-    </script>
 {% endblock %}
