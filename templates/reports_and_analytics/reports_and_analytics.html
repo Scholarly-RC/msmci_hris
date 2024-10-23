@@ -63,7 +63,7 @@
                                     <!-- ATTENDANCE REPORTS -->
                                     {% if selected_report == "EMPLOYEE_PUNCTUALITY_RATE" %}
                                         <form hx-post="{% url "reports_and_analytics:view_employee_punctuality_report" %}">
-                                            {% if is_user_hr or users %}
+                                            {% if is_user_hr %}
                                                 <div class="mb-1">
                                                     <label for="selected_user_id"
                                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -112,7 +112,7 @@
                                         <!-- PERFORMANCE REPORTS -->
                                     {% elif selected_report == "EMPLOYEE_PERFORMANCE_SUMMARY" %}
                                         <form hx-post="{% url "reports_and_analytics:view_employee_performance_evaluation_summary" %}">
-                                            {% if is_user_hr or users %}
+                                            {% if is_user_hr %}
                                                 <div class="mb-1">
                                                     <label for="selected_user_id"
                                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -174,7 +174,7 @@
                                         </form>
                                     {% elif selected_report == "EMPLOYEE_YEARLY_SALARY_SUMMARY" %}
                                         <form hx-post="{% url "reports_and_analytics:view_employee_yearly_salary_summary_report" %}">
-                                            {% if is_user_hr or users %}
+                                            {% if is_user_hr %}
                                                 <div class="mb-1">
                                                     <label for="selected_user_id"
                                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -214,7 +214,7 @@
                                         <!-- LEAVE REPORTS -->
                                     {% elif selected_report == "EMPLOYEE_LEAVE_SUMMARY" %}
                                         <form hx-post="{% url "reports_and_analytics:view_employee_leave_summary_report" %}">
-                                            {% if is_user_hr or users %}
+                                            {% if is_user_hr %}
                                                 <div class="mb-1">
                                                     <label for="selected_user_id"
                                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
