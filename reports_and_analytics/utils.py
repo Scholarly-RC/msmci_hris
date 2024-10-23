@@ -30,6 +30,11 @@ from reports_and_analytics.enums import (
 
 
 def get_list_of_modules(for_hr: bool = False):
+    """
+    Retrieves a list of module display names and their corresponding values, excluding the USERS module 
+    unless the `for_hr` parameter is set to True. This function returns a list of tuples, where each tuple 
+    contains the display name and value of a module from the `Modules` enumeration.
+    """
     return [
         (module.get_display_name(), module.value)
         for module in Modules
@@ -38,6 +43,11 @@ def get_list_of_modules(for_hr: bool = False):
 
 
 def get_reports_for_specific_module(module: str = "", for_hr: bool = False):
+    """
+    Retrieves reports for a specified module based on the provided module name. 
+    Depending on the module, it calls the appropriate report generation function, 
+    returning the relevant reports. If the module is not recognized, it returns an empty list.
+    """
     if module == Modules.ATTENDANCE.value:
         return get_attendancee_reports(for_hr)
     if module == Modules.PERFORMANCE_AND_LEARNING.value:
@@ -54,6 +64,12 @@ def get_reports_for_specific_module(module: str = "", for_hr: bool = False):
 def get_filter_contexts_for_specific_report(
     report: str = "", for_hr: bool = False
 ) -> dict:
+    """
+    Retrieves filter contexts for a specified report type. Depending on the report, 
+    it constructs a context dictionary that may include user lists and year selections. 
+    The function checks the report type and, if applicable, adds relevant data based 
+    on the `for_hr` flag. If the report is not recognized, it returns an empty dictionary.
+    """
     if report == AttendanceReports.EMPLOYEE_PUNCTUALITY_RATE.value:
         context = {}
         if for_hr:
@@ -81,6 +97,10 @@ def get_filter_contexts_for_specific_report(
 
 ### Attendance Report Utils ###
 def get_attendancee_reports(for_hr: bool = False):
+    """
+    Retrieves a list of attendance reports, returning tuples containing the report value 
+    and its display name.
+    """
     return [
         (
             attendance_report.value,
@@ -91,6 +111,12 @@ def get_attendancee_reports(for_hr: bool = False):
 
 
 def get_employee_punctuality_report_data(selected_user, from_date, to_date):
+    """
+    Generates punctuality report data for a specific employee within a date range. 
+    It retrieves the user's clock-in data, calculates the number of on-time and late 
+    arrivals, and returns a dictionary containing attendance status, values, and 
+    formatted date information for reporting purposes.
+    """
     UserModel = apps.get_model("auth", "User")
     user = UserModel.objects.get(id=selected_user)
     from_date = get_date_object_from_date_str(from_date)
@@ -139,6 +165,10 @@ def get_employee_punctuality_report_data(selected_user, from_date, to_date):
 
 ### Performance and Learning Report Utils ###
 def get_performance_and_learning_reports(for_hr: bool = False):
+    """
+    Retrieves a list of performance and learning reports, returning tuples that 
+    include the report value and its display name.
+    """
     return [
         (
             performance_and_learning_report.value,
@@ -149,6 +179,12 @@ def get_performance_and_learning_reports(for_hr: bool = False):
 
 
 def get_employee_performance_evaluation_summary_data(selected_year, selected_user):
+    """
+    Generates a summary of an employee's performance evaluations for a specific year. 
+    It retrieves the user's evaluations, calculates self and peer ratings for each quarter, 
+    and returns a dictionary containing the ratings data, quarter labels, and selected user information 
+    for reporting purposes.
+    """
     UserModel = apps.get_model("auth", "User")
     UserEvaluationModel = apps.get_model("performance", "UserEvaluation")
 
@@ -195,6 +231,11 @@ def get_employee_performance_evaluation_summary_data(selected_year, selected_use
 
 ### Payroll Report Utils ###
 def get_payroll_reports(for_hr: bool = False):
+    """
+    Retrieves a list of payroll reports, returning tuples that include each report's value 
+    and display name. If the `for_hr` parameter is set to False, the YEARLY_SALARY_EXPENSE 
+    report is excluded from the output.
+    """
     return [
         (payroll_report.value, payroll_report.get_display_name())
         for payroll_report in PayrollReports
@@ -203,6 +244,11 @@ def get_payroll_reports(for_hr: bool = False):
 
 
 def get_yearly_salary_expense_report_data(selected_year):
+    """
+    Computes and retrieves the total net salary expenses for each month of a specified year. 
+    It aggregates net salaries from released payslips, constructs a data dictionary with 
+    monthly totals and overall expenses, and returns the data formatted for reporting purposes.
+    """
     def _get_total_net_income(months, payslips):
         total_amount = 0
         total_list = []
@@ -248,6 +294,12 @@ def get_yearly_salary_expense_report_data(selected_year):
 
 
 def get_employee_yearly_salary_salary_report_data(selected_year, selected_user):
+    """
+    Retrieves and calculates the yearly salary data for a specific employee. 
+    It aggregates net salaries from the user's payslips for the selected year, 
+    constructs a data dictionary with monthly totals, and returns the data 
+    formatted for reporting, including total salary and month-wise breakdown.
+    """
     UserModel = apps.get_model("auth", "User")
     user = UserModel.objects.get(id=selected_user)
     payslips = user.payslips.filter(year=selected_year)
@@ -293,6 +345,10 @@ def get_employee_yearly_salary_salary_report_data(selected_year, selected_user):
 
 ### Leave Report Utils ###
 def get_leave_reports(for_hr: bool = False):
+    """
+    Retrieves a list of leave reports, returning tuples that include each report's value 
+    and display name.
+    """
     return [
         (leave_report.value, leave_report.get_display_name())
         for leave_report in LeaveReports
@@ -300,6 +356,11 @@ def get_leave_reports(for_hr: bool = False):
 
 
 def get_employee_leave_summary_report_data(selected_user, from_date, to_date):
+    """
+    Generates a summary of an employee's leave records within a specified date range. 
+    It retrieves leave data, categorizes it into paid, unpaid, and work-related trip types, 
+    and returns a structured dictionary containing chart data and detailed leave records for reporting.
+    """
     UserModel = apps.get_model("auth", "User")
     LeaveModel = apps.get_model("leave", "Leave")
 
@@ -339,6 +400,11 @@ def get_employee_leave_summary_report_data(selected_user, from_date, to_date):
 
 ### User Report Utils ###
 def get_users_reports():
+    """
+    Retrieves a list of user reports, returning tuples that include each report's value 
+    and display name. This function provides a straightforward way to access available 
+    user report options.
+    """
     return [
         (users_report.value, users_report.get_display_name())
         for users_report in UsersReports
@@ -346,6 +412,12 @@ def get_users_reports():
 
 
 def get_age_demographics_report_data(as_of_date=""):
+    """
+    Generates age demographics data for active users as of a specified date. 
+    It calculates the age of each user, categorizes them into defined age groups, 
+    and returns a structured dictionary containing the age group counts and user details 
+    for reporting purposes.
+    """
     as_of_date = get_date_object_from_date_str(as_of_date)
 
     def _age_group_counter(age_list):
@@ -406,6 +478,11 @@ def get_age_demographics_report_data(as_of_date=""):
 
 
 def get_gender_demographics_report_data(as_of_date=""):
+    """
+    Generates gender demographics data for active users as of a specified date. 
+    It counts the number of male and female users, returning a structured dictionary 
+    containing gender counts and details for reporting purposes.
+    """
     as_of_date = get_date_object_from_date_str(as_of_date)
     UserDetailsModel = apps.get_model("core", "UserDetails")
 
@@ -441,6 +518,12 @@ def get_gender_demographics_report_data(as_of_date=""):
 
 
 def get_years_of_experience_report_data(as_of_date=""):
+    """
+    Generates a report on years of experience for active users as of a specified date. 
+    It calculates the number of years each user has been employed, compiles this data into 
+    groups, and returns a structured dictionary containing the experience counts and 
+    average years of experience for reporting purposes.
+    """
     as_of_date = get_date_object_from_date_str(as_of_date)
     UserDetailsModel = apps.get_model("core", "UserDetails")
 
@@ -481,6 +564,12 @@ def get_years_of_experience_report_data(as_of_date=""):
 
 
 def get_education_level_report_data(as_of_date=""):
+    """
+    Generates a report on the educational levels of active users as of a specified date. 
+    It collects data on users' educational attainment, counts the number of users in each 
+    educational category, and returns a structured dictionary containing this information 
+    for reporting purposes.
+    """
     as_of_date = get_date_object_from_date_str(as_of_date)
     UserDetailsModel = apps.get_model("core", "UserDetails")
     EducationalAttainment = UserDetailsModel.EducationalAttainment
@@ -529,6 +618,11 @@ def get_education_level_report_data(as_of_date=""):
 
 
 def get_religion_report_data(as_of_date=""):
+    """
+    Generates a report on the religious affiliations of active users as of a specified date. 
+    It collects data on users' religions, counts the number of users in each category, 
+    and returns a structured dictionary containing this information for reporting purposes.
+    """
     as_of_date = get_date_object_from_date_str(as_of_date)
     UserDetailsModel = apps.get_model("core", "UserDetails")
     Religion = UserDetailsModel.Religion

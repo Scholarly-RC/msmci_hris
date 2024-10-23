@@ -23,19 +23,19 @@ def process_daily_shift_schedule(department, year, month, day, employee, shift):
     Adds or removes a shift assignment for an employee based on the current schedule.
     If the shift assignment does not already exist for the day, it is added; otherwise, it is removed.
     """
-    daily_shift_schedule_model = apps.get_model("attendance", "DailyShiftSchedule")
-    daily_shift_records_model = apps.get_model("attendance", "DailyShiftRecord")
+    DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
+    DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
 
     selected_date = get_date_object(int(year), int(month), int(day))
     try:
         daily_shift_record, daily_shift_record_created = (
-            daily_shift_records_model.objects.get_or_create(
+            DailyShiftRecordModel.objects.get_or_create(
                 department=department, date=selected_date
             )
         )
 
         new_daily_shift_schedule, new_daily_shift_schedule_created = (
-            daily_shift_schedule_model.objects.get_or_create(user=employee, shift=shift)
+            DailyShiftScheduleModel.objects.get_or_create(user=employee, shift=shift)
         )
 
         if new_daily_shift_schedule not in daily_shift_record.shifts.all():
@@ -60,13 +60,13 @@ def process_bulk_daily_shift_schedule(
     - If `deselect` is False, it adds the selected shift to employees who are not already assigned.
     - If `deselect` is True, it removes the selected shift from employees who are assigned.
     """
-    daily_shift_schedule_model = apps.get_model("attendance", "DailyShiftSchedule")
-    daily_shift_records_model = apps.get_model("attendance", "DailyShiftRecord")
+    DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
+    DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
 
     selected_date = get_date_object(int(year), int(month), int(day))
     try:
         daily_shift_record, daily_shift_record_created = (
-            daily_shift_records_model.objects.get_or_create(
+            DailyShiftRecordModel.objects.get_or_create(
                 department=department, date=selected_date
             )
         )
@@ -77,7 +77,7 @@ def process_bulk_daily_shift_schedule(
 
         current_employee_id_list = employees.values_list("id", flat=True)
 
-        shift_schedules = daily_shift_schedule_model.objects.filter(
+        shift_schedules = DailyShiftScheduleModel.objects.filter(
             shift=selected_shift, user__id__in=current_employee_id_list
         )
 
@@ -258,8 +258,13 @@ def process_create_new_shift(payload):
         start_time = get_time_object(payload.get("start_time"))
         end_time = get_time_object(payload.get("end_time"))
 
+        multi_day = "multi_day" in payload
+
         shift_model = ShiftModel.objects.create(
-            description=shift_description, start_time=start_time, end_time=end_time
+            description=shift_description,
+            start_time=start_time,
+            end_time=end_time,
+            multi_day=multi_day,
         )
 
         return shift_model

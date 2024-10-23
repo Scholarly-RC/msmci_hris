@@ -23,7 +23,6 @@ class UserDetails(models.Model):
         SEPARATED = "SE", _("Separated")
 
     class Role(models.TextChoices):
-        BOARD_OF_DIRECTOR = "BOD", _("Board of Director")
         HR = "HR", _("Human Resource")
         PRESIDENT = "PRES", _("President")
         DIRECTOR = "DIR", _("Director")
@@ -181,14 +180,8 @@ class UserDetails(models.Model):
     def str_date_of_hiring(self):
         return date_to_string(self.date_of_hiring)
 
-    def is_board_of_director(self):
-        return self.role == self.Role.BOARD_OF_DIRECTOR
-
     def is_hr(self):
         return self.role == self.Role.HR
-
-    def is_manager(self):
-        return self.role == self.Role.MANAGER
 
     def is_department_head(self):
         return self.role == self.Role.DEPARTMENT_HEAD

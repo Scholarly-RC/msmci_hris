@@ -65,7 +65,7 @@ def add_user_attendance_record(attendance_data):
             ).first()
             if (
                 yesterday_shift_schedule
-                and yesterday_shift_schedule.shift.is_next_day_clock_out()
+                and yesterday_shift_schedule.shift.multi_day
                 and not yesterday_shift_schedule.clock_out
             ):
                 yesterday_shift_schedule.clock_out = timestamp - timedelta(days=1)

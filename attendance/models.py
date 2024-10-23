@@ -57,6 +57,7 @@ class Shift(models.Model):
     description = models.TextField(_("Shift Description"), null=True, blank=True)
     start_time = models.TimeField(_("Shift Start Time"), null=True, blank=True)
     end_time = models.TimeField(_("Shift End Time"), null=True, blank=True)
+    multi_day = models.BooleanField(_("Shift Is Multi Day"), default=False)
     is_active = models.BooleanField(_("Shift Is Active"), default=True)
     departments = models.ManyToManyField(Department, related_name="shifts", blank=True)
 
@@ -82,9 +83,6 @@ class Shift(models.Model):
         if start_time and end_time:
             return f"{start_time} to {end_time}"
         return None
-
-    def is_next_day_clock_out(self):
-        return self.start_time > self.end_time
 
 
 class DailyShiftSchedule(models.Model):

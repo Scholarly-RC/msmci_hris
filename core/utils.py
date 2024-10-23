@@ -94,8 +94,8 @@ def get_dict_for_user_and_user_details(querydict):
     if "department" in user_details_dict:
         department = user_details_dict["department"]
         if department:
-            department_model = apps.get_model("core", "Department")
-            selected_department = department_model.objects.get(id=department)
+            DepartmentModel = apps.get_model("core", "Department")
+            selected_department = DepartmentModel.objects.get(id=department)
             user_details_dict["department"] = selected_department
         else:
             user_details_dict["department"] = None
@@ -108,8 +108,8 @@ def get_users_sorted_by_department(user_query: str = "", selected_department: in
     Retrieves and sorts users by department and first name, excluding those with the HR role.
     Optionally filters users by a search query and/or a selected department.
     """
-    user_details_model = apps.get_model("core", "UserDetails")
-    hr_role = user_details_model.Role.HR.value
+    UserDetailsModel = apps.get_model("core", "UserDetails")
+    hr_role = UserDetailsModel.Role.HR.value
 
     users = User.objects.exclude(userdetails__role=hr_role).order_by(
         "userdetails__department__name", "first_name"
@@ -133,20 +133,20 @@ def get_education_list():
     """
     Returns a list of educational attainment choices from the UserDetails model.
     """
-    user_details_model = apps.get_model("core", "UserDetails")
-    return user_details_model.EducationalAttainment.choices
+    UserDetailsModel = apps.get_model("core", "UserDetails")
+    return UserDetailsModel.EducationalAttainment.choices
 
 
 def get_education_list_with_degrees_earned():
     """
     Returns a list of specific educational attainment values related to degrees earned.
     """
-    user_details_model = apps.get_model("core", "UserDetails")
+    UserDetailsModel = apps.get_model("core", "UserDetails")
     return [
-        user_details_model.EducationalAttainment.VOCATIONAL.value,
-        user_details_model.EducationalAttainment.BACHELOR.value,
-        user_details_model.EducationalAttainment.MASTER.value,
-        user_details_model.EducationalAttainment.DOCTORATE.value,
+        UserDetailsModel.EducationalAttainment.VOCATIONAL.value,
+        UserDetailsModel.EducationalAttainment.BACHELOR.value,
+        UserDetailsModel.EducationalAttainment.MASTER.value,
+        UserDetailsModel.EducationalAttainment.DOCTORATE.value,
     ]
 
 
@@ -154,41 +154,41 @@ def get_civil_status_list():
     """
     Returns a list of civil status choices from the UserDetails model.
     """
-    user_details_model = apps.get_model("core", "UserDetails")
-    return user_details_model.CivilStatus.choices
+    UserDetailsModel = apps.get_model("core", "UserDetails")
+    return UserDetailsModel.CivilStatus.choices
 
 
 def get_religion_list():
     """
     Returns a list of religion choices from the UserDetails model.
     """
-    user_details_model = apps.get_model("core", "UserDetails")
-    return user_details_model.Religion.choices
+    UserDetailsModel = apps.get_model("core", "UserDetails")
+    return UserDetailsModel.Religion.choices
 
 
 def get_role_list():
     """
     Returns a list of role choices from the UserDetails model.
     """
-    user_details_model = apps.get_model("core", "UserDetails")
-    return user_details_model.Role.choices
+    UserDetailsModel = apps.get_model("core", "UserDetails")
+    return UserDetailsModel.Role.choices
 
 
 def get_gender_list():
     """
     Returns a list of gender choices from the UserDetails model.
     """
-    user_details_model = apps.get_model("core", "UserDetails")
-    return user_details_model.Gender.choices
+    UserDetailsModel = apps.get_model("core", "UserDetails")
+    return UserDetailsModel.Gender.choices
 
 
 def check_if_biometric_uid_exists(current_user, uid):
     """
     Checks if a biometric UID exists in the system for any user other than the current user.
     """
-    biometric_detail_model = apps.get_model("core", "BiometricDetail")
+    BiometricDetailModel = apps.get_model("core", "BiometricDetail")
     return (
-        biometric_detail_model.objects.filter(user_id_in_device=uid)
+        BiometricDetailModel.objects.filter(user_id_in_device=uid)
         .exclude(user=current_user)
         .exists()
     )

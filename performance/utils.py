@@ -18,9 +18,9 @@ def get_year_and_quarter_from_user_evaluation(user_evaluation):
     Returns a string in the format "Year - Quarter".
     """
 
-    user_evaluation_model = apps.get_model("performance", "UserEvaluation")
+    UserEvaluationModel = apps.get_model("performance", "UserEvaluation")
 
-    selected_quarter = user_evaluation_model.Quarter(
+    selected_quarter = UserEvaluationModel.Quarter(
         user_evaluation.quarter
     ).name.replace("_", " ")
 
@@ -35,13 +35,13 @@ def get_user_evaluator_choices(selected_user):
     excluding the selected user themselves. The list is ordered by user role and first name.
     """
 
-    user_model = apps.get_model("auth", "User")
-    user_details_model = apps.get_model("core", "UserDetails")
+    UserModel = apps.get_model("auth", "User")
+    UserDetailsModel = apps.get_model("core", "UserDetails")
 
-    hr_role = user_details_model.Role.HR.value
+    hr_role = UserDetailsModel.Role.HR.value
 
     evaluator_choices = (
-        user_model.objects.filter(
+        UserModel.objects.filter(
             Q(userdetails__role=hr_role)
             | Q(userdetails__department=selected_user.userdetails.department),
             is_active=True,
@@ -70,15 +70,15 @@ def get_user_questionnaire(user):
     otherwise returns the questionnaire with the code 'NAPES'.
     """
 
-    questionaire_model = apps.get_model("performance", "Questionnaire")
+    QuestionnaireModel = apps.get_model("performance", "Questionnaire")
 
     is_evaluatee_employee = user.userdetails.is_employee()
     if is_evaluatee_employee:
-        return questionaire_model.objects.get(
+        return QuestionnaireModel.objects.get(
             content__questionnaire_code=QuestionnaireTypes.NEPET.value
         )
 
-    return questionaire_model.objects.get(
+    return QuestionnaireModel.objects.get(
         content__questionnaire_code=QuestionnaireTypes.NAPES.value
     )
 
@@ -152,8 +152,8 @@ def get_polls_and_posts_by_date_and_filter(date="", filters=[]):
     Fetches polls and posts from the database, with optional filtering by date and type.
     Returns a list of dates with their corresponding polls and posts, sorted by date and creation time.
     """
-    poll_model = apps.get_model("performance", "Poll")
-    post_model = apps.get_model("performance", "Post")
+    PollModel = apps.get_model("performance", "Poll")
+    PostModel = apps.get_model("performance", "Post")
 
     if not filters:
         show_poll = True
@@ -163,14 +163,14 @@ def get_polls_and_posts_by_date_and_filter(date="", filters=[]):
         show_post = "post" in filters
 
     polls = (
-        poll_model.objects.all().order_by("-created")
+        PollModel.objects.all().order_by("-created")
         if show_poll
-        else poll_model.objects.none()
+        else PollModel.objects.none()
     )
     posts = (
-        post_model.objects.all().order_by("-created")
+        PostModel.objects.all().order_by("-created")
         if show_post
-        else post_model.objects.none()
+        else PostModel.objects.none()
     )
 
     if date:
@@ -219,11 +219,11 @@ def get_poll_and_post_combined_list():
     and sorts them by creation date in descending order.
     """
 
-    poll_model = apps.get_model("performance", "Poll")
-    post_model = apps.get_model("performance", "Post")
+    PollModel = apps.get_model("performance", "Poll")
+    PostModel = apps.get_model("performance", "Post")
 
-    all_polls = poll_model.objects.all().order_by("-created")
-    all_posts = post_model.objects.all().order_by("-created")
+    all_polls = PollModel.objects.all().order_by("-created")
+    all_posts = PostModel.objects.all().order_by("-created")
 
     combined_list = list(chain(all_polls, all_posts))
     sorted_combined_list = sorted(
@@ -244,11 +244,11 @@ def get_user_with_hr_role():
     """
     Retrieves users who have the HR role.
     """
-    user_model = apps.get_model("auth", "User")
-    user_details_model = apps.get_model("core", "UserDetails")
+    UserModel = apps.get_model("auth", "User")
+    UserDetailsModel = apps.get_model("core", "UserDetails")
 
-    hr_role = user_details_model.Role.HR.value
-    hr = user_model.objects.filter(userdetails__role=hr_role)
+    hr_role = UserDetailsModel.Role.HR.value
+    hr = UserModel.objects.filter(userdetails__role=hr_role)
     return hr
 
 
@@ -275,7 +275,7 @@ def get_users_shared_resources(uploader_id, shared_to_id=""):
     and the document is shared with either `shared_to_id` or `uploader_id`.
     If `shared_to_id` is not provided, it returns documents uploaded by `uploader_id` and not shared with anyone.
     """
-    shared_documents_model = apps.get_model("performance", "SharedResource")
+    SharedResourceModel = apps.get_model("performance", "SharedResource")
 
     if shared_to_id:
         shared_documents_filter = (
@@ -284,7 +284,7 @@ def get_users_shared_resources(uploader_id, shared_to_id=""):
     else:
         shared_documents_filter = Q(uploader_id=uploader_id) & Q(shared_to__isnull=True)
 
-    user_shared_documents = shared_documents_model.objects.filter(
+    user_shared_documents = SharedResourceModel.objects.filter(
         shared_documents_filter
     )
     return user_shared_documents
@@ -294,15 +294,15 @@ def get_users_for_shared_resources(user):
     """
     Retrieves users with HR, Department Head, or Employee roles, excluding the specified user.
     """
-    user_model = apps.get_model("auth", "User")
-    user_details_model = apps.get_model("core", "UserDetails")
+    UserModel = apps.get_model("auth", "User")
+    UserDetailsModel = apps.get_model("core", "UserDetails")
 
-    hr_role = user_details_model.Role.HR.value
-    department_head_role = user_details_model.Role.DEPARTMENT_HEAD.value
-    employee_role = user_details_model.Role.EMPLOYEE.value
+    hr_role = UserDetailsModel.Role.HR.value
+    department_head_role = UserDetailsModel.Role.DEPARTMENT_HEAD.value
+    employee_role = UserDetailsModel.Role.EMPLOYEE.value
 
     if user.userdetails.role == employee_role:
-        users = user_model.objects.filter(
+        users = UserModel.objects.filter(
             Q(userdetails__role=hr_role)
             | Q(
                 userdetails__department=user.userdetails.department,
@@ -310,7 +310,7 @@ def get_users_for_shared_resources(user):
             )
         ).exclude(pk=user.id)
     elif user.userdetails.role == department_head_role:
-        users = user_model.objects.filter(
+        users = UserModel.objects.filter(
             Q(userdetails__role=hr_role)
             | Q(
                 userdetails__department=user.userdetails.department,
@@ -318,7 +318,7 @@ def get_users_for_shared_resources(user):
             )
         ).exclude(pk=user.id)
     else:
-        users = user_model.objects.filter(
+        users = UserModel.objects.filter(
             Q(userdetails__role=hr_role)
             | Q(userdetails__role=department_head_role)
             | Q(userdetails__role=employee_role)
@@ -331,17 +331,17 @@ def get_users_per_shared_resources(user, resource):
     """
     Retrieves users who have the HR, Department Head, or Employee roles and are not the specified user or already shared with the resource.
     """
-    user_model = apps.get_model("auth", "User")
-    user_details_model = apps.get_model("core", "UserDetails")
+    UserModel = apps.get_model("auth", "User")
+    UserDetailsModel = apps.get_model("core", "UserDetails")
 
-    hr_role = user_details_model.Role.HR.value
-    department_head_role = user_details_model.Role.DEPARTMENT_HEAD.value
-    employee_role = user_details_model.Role.EMPLOYEE.value
+    hr_role = UserDetailsModel.Role.HR.value
+    department_head_role = UserDetailsModel.Role.DEPARTMENT_HEAD.value
+    employee_role = UserDetailsModel.Role.EMPLOYEE.value
 
     users_shared_with_resource = resource.shared_to.values_list("id", flat=True)
 
     users = (
-        user_model.objects.filter(
+        UserModel.objects.filter(
             Q(userdetails__role=hr_role)
             | Q(userdetails__role=department_head_role)
             | Q(userdetails__role=employee_role)
@@ -354,6 +354,10 @@ def get_users_per_shared_resources(user, resource):
 
 
 def get_finalized_user_evaluation_year_list():
+    """
+    Retrieves a list of distinct years for finalized user evaluations. 
+    Returns the years in which evaluations have been finalized.
+    """
     UserEvaluationModel = apps.get_model("performance", "UserEvaluation")
     return (
         UserEvaluationModel.objects.filter(is_finalized=True)
@@ -363,6 +367,10 @@ def get_finalized_user_evaluation_year_list():
 
 
 def get_user_evaluation_users():
+    """
+    Retrieves a list of users who have finalized evaluations. 
+    The users are ordered by their first names and returned as distinct entries.
+    """
     UserModel = apps.get_model("auth", "User")
     return (
         UserModel.objects.filter(evaluatee_evaluations__is_finalized=True)
