@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from django_htmx.http import reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
@@ -90,7 +90,12 @@ def view_employee_punctuality_report(
         response = retarget(response, "#report_content_display")
         response = reswap(response, "innerHTML")
         return response
+
+    if not is_user_hr:
+        return redirect(reverse("core:main"))
+
     context["for_print_download"] = True
+
     return render(
         request,
         "reports_and_analytics/components/employee_punctuality_report.html",
@@ -156,7 +161,12 @@ def view_employee_performance_evaluation_summary(
         response = retarget(response, "#report_content_display")
         response = reswap(response, "innerHTML")
         return response
+
+    if not is_user_hr:
+        return redirect(reverse("core:main"))
+
     context["for_print_download"] = True
+
     return render(
         request,
         "reports_and_analytics/components/employee_performance_evaluation_summary_report.html",
@@ -265,7 +275,12 @@ def view_employee_yearly_salary_summary_report(
         response = retarget(response, "#report_content_display")
         response = reswap(response, "innerHTML")
         return response
+
+    if not is_user_hr:
+        return redirect(reverse("core:main"))
+
     context["for_print_download"] = True
+
     return render(
         request,
         "reports_and_analytics/components/employee_yearly_salary_summary_report.html",
@@ -330,7 +345,11 @@ def view_employee_leave_summary_report(
         response = reswap(response, "innerHTML")
         return response
 
+    if not is_user_hr:
+        return redirect(reverse("core:main"))
+
     context["for_print_download"] = True
+
     return render(
         request,
         "reports_and_analytics/components/employee_leave_summary_report.html",
