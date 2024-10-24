@@ -30,6 +30,11 @@ urlpatterns = [
         name="modify_user_biometric_details",
     ),
     path(
+        "user-management/modify-user-details/update-rank-selection",
+        core_views.update_rank_selection,
+        name="update_rank_selection",
+    ),
+    path(
         "user-management/modify-user-details/<str:pk>",
         core_views.modify_user_details,
         name="modify_user_details",

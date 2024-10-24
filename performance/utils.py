@@ -284,9 +284,7 @@ def get_users_shared_resources(uploader_id, shared_to_id=""):
     else:
         shared_documents_filter = Q(uploader_id=uploader_id) & Q(shared_to__isnull=True)
 
-    user_shared_documents = SharedResourceModel.objects.filter(
-        shared_documents_filter
-    )
+    user_shared_documents = SharedResourceModel.objects.filter(shared_documents_filter)
     return user_shared_documents
 
 
@@ -355,7 +353,7 @@ def get_users_per_shared_resources(user, resource):
 
 def get_finalized_user_evaluation_year_list():
     """
-    Retrieves a list of distinct years for finalized user evaluations. 
+    Retrieves a list of distinct years for finalized user evaluations.
     Returns the years in which evaluations have been finalized.
     """
     UserEvaluationModel = apps.get_model("performance", "UserEvaluation")
@@ -368,7 +366,7 @@ def get_finalized_user_evaluation_year_list():
 
 def get_user_evaluation_users():
     """
-    Retrieves a list of users who have finalized evaluations. 
+    Retrieves a list of users who have finalized evaluations.
     The users are ordered by their first names and returned as distinct entries.
     """
     UserModel = apps.get_model("auth", "User")

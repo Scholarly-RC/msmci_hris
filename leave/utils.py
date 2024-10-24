@@ -10,7 +10,7 @@ from leave.enums import LeaveRequestAction
 
 def get_department_heads(selected_department):
     """
-    Retrieves a list of users who are designated as department heads for the specified department. 
+    Retrieves a list of users who are designated as department heads for the specified department.
     It filters users based on their role and department affiliation.
     """
     UserDetailsModel = apps.get_model("core", "UserDetails")
@@ -24,7 +24,7 @@ def get_department_heads(selected_department):
 
 def get_directors():
     """
-    Retrieves a list of users who hold the role of director. 
+    Retrieves a list of users who hold the role of director.
     It filters users based on their role affiliation within the user details model.
     """
     UserDetailsModel = apps.get_model("core", "UserDetails")
@@ -35,7 +35,7 @@ def get_directors():
 
 def get_presidents():
     """
-    Retrieves a list of users who hold the role of president. 
+    Retrieves a list of users who hold the role of president.
     It filters users based on their role affiliation within the user details model.
     """
     UserDetailsModel = apps.get_model("core", "UserDetails")
@@ -46,8 +46,8 @@ def get_presidents():
 
 def get_approvers_per_department(selected_department) -> dict:
     """
-    Retrieves the approvers for a specified department's leave requests. 
-    It returns a dictionary containing the department approver, director approver, 
+    Retrieves the approvers for a specified department's leave requests.
+    It returns a dictionary containing the department approver, director approver,
     president approver, and HR approver. If no approvers are found, an empty dictionary is returned.
     """
     approvers = selected_department.leave_approvers.first()
@@ -64,10 +64,10 @@ def get_approvers_per_department(selected_department) -> dict:
 
 def get_approvers_per_user(user):
     """
-    Retrieves the appropriate leave approvers for a given user based on their department 
-    and role. It checks the user's role against defined approver roles and raises an error 
-    if any required approvers are missing. Returns a dictionary containing the approver IDs 
-    and their status for the user's leave request. If no approvers are found for the role, 
+    Retrieves the appropriate leave approvers for a given user based on their department
+    and role. It checks the user's role against defined approver roles and raises an error
+    if any required approvers are missing. Returns a dictionary containing the approver IDs
+    and their status for the user's leave request. If no approvers are found for the role,
     it returns None.
     """
     department = user.userdetails.department
@@ -105,7 +105,7 @@ def get_approvers_per_user(user):
 
 def get_leave_types():
     """
-    Retrieves the available leave types from the Leave model. 
+    Retrieves the available leave types from the Leave model.
     It returns a list of choices that represent the different types of leave defined in the system.
     """
     LeaveModel = apps.get_model("leave", "Leave")
@@ -114,8 +114,8 @@ def get_leave_types():
 
 def group_leave_by_month_and_year(leave):
     """
-    Groups leave records by month and year, counting the number of leaves for each 
-    month. It returns a list of dictionaries, each containing the formatted month/year 
+    Groups leave records by month and year, counting the number of leaves for each
+    month. It returns a list of dictionaries, each containing the formatted month/year
     and the corresponding leave records for that period.
     """
     grouped_leaves = (
@@ -138,7 +138,7 @@ def group_leave_by_month_and_year(leave):
 
 def get_user_leave(user: User):
     """
-    Retrieves all leave records for a specified user and groups them by month and year. 
+    Retrieves all leave records for a specified user and groups them by month and year.
     It returns a structured list of leave records for the user, formatted by month.
     """
     leave = user.user_leaves.all()
@@ -148,8 +148,8 @@ def get_user_leave(user: User):
 
 def get_users_with_leave():
     """
-    Retrieves a list of active users who have approved leave requests. 
-    It filters users based on the status of their leave approvals and returns 
+    Retrieves a list of active users who have approved leave requests.
+    It filters users based on the status of their leave approvals and returns
     a distinct list, ordered by first name.
     """
     return (
@@ -172,8 +172,8 @@ def get_leave_to_review(
     user, specific_user_id: int = "", month: int = "", year: int = ""
 ):
     """
-    Retrieves leave records for review by a specified user, optionally filtering by 
-    a specific user ID, month, and year. It returns the grouped leave data by month 
+    Retrieves leave records for review by a specified user, optionally filtering by
+    a specific user ID, month, and year. It returns the grouped leave data by month
     and year, including the user's status for each leave request.
     """
     LeaveModel = apps.get_model("leave", "Leave")
@@ -206,7 +206,7 @@ def get_leave_to_review(
 
 def get_leave_year_list() -> list:
     """
-    Retrieves a list of distinct years in which leave records exist. 
+    Retrieves a list of distinct years in which leave records exist.
     The years are ordered chronologically and returned as a list.
     """
     LeaveModel = apps.get_model("leave", "Leave")
@@ -224,7 +224,7 @@ def check_user_has_approved_leave_on_specific_date(
     user, day: int, month: int, year: int
 ) -> bool:
     """
-    Checks if a user has any approved leave on a specified date. 
+    Checks if a user has any approved leave on a specified date.
     Returns True if there is an approved leave record for that date; otherwise, returns False.
     """
     selected_date = get_date_object(year=year, month=month, day=day)

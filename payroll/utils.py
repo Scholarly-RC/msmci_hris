@@ -34,10 +34,9 @@ def get_job_list(department: int):
 def get_rank_choices(department_id: int) -> list:
     """
     Retrieve rank choices for jobs in a specified department.
-    This function collects and organizes job rank information, 
-    including any specific steps within those ranks, 
-    for all jobs associated with a given department ID. 
-    The resulting list structures this data for easy access and presentation.
+    This function collects and organizes job rank information,
+    including any specific steps within those ranks,
+    for all jobs associated with a given department ID.
     """
     rank_choices = []
     jobs = get_job_list(department_id)
@@ -141,11 +140,12 @@ def get_deduction_configuration_with_submitted_changes(
 ):
     """
     Retrieve updated deduction configuration data based on submitted changes.
-    This function processes various deduction configurations (SSS, PhilHealth, Tax, and PagIBIG) 
-    by applying updates from a provided payload. It generates a list of updated configuration 
-    dictionaries, ensuring that each deduction category reflects the most recent values based on 
+    This function processes various deduction configurations (SSS, PhilHealth, Tax, and PagIBIG)
+    by applying updates from a provided payload. It generates a list of updated configuration
+    dictionaries, ensuring that each deduction category reflects the most recent values based on
     the input data.
     """
+
     def _update_config_data(config_copy, payload, config_keys):
         config_data = config_copy.get("data")
         for config_key, payload_key in config_keys.items():
@@ -202,9 +202,9 @@ def get_deduction_configuration_with_submitted_changes(
 
 def convert_decimal_list_to_string(list: list) -> str:
     """
-    This function takes each number in the list, 
-    converts it to a string, and joins them together 
-    with commas, making it easy to format numeric data 
+    This function takes each number in the list,
+    converts it to a string, and joins them together
+    with commas, making it easy to format numeric data
     for display.
     """
     return ", ".join(map(str, list))
@@ -212,9 +212,9 @@ def convert_decimal_list_to_string(list: list) -> str:
 
 def convert_string_to_decimal_list(str: str) -> list:
     """
-    This function splits the input string by commas, 
-    converts each resulting substring into a Decimal, 
-    and returns a list of these Decimal numbers, 
+    This function splits the input string by commas,
+    converts each resulting substring into a Decimal,
+    and returns a list of these Decimal numbers,
     allowing for precise numerical calculations.
     """
     return [Decimal(x) for x in str.split(", ")]
@@ -236,8 +236,8 @@ def get_mp2_object():
 
 def get_current_month_and_year():
     """
-    Retrieves the current month and year as a tuple, 
-    ensuring the datetime is timezone-aware for accurate 
+    Retrieves the current month and year as a tuple,
+    ensuring the datetime is timezone-aware for accurate
     results in applications that handle multiple time zones.
     """
     now = make_aware(datetime.now())
@@ -249,8 +249,8 @@ def get_current_month_and_year():
 
 def get_payslip_year_list() -> list:
     """
-    Fetches a list of distinct years from the Payslip model, 
-    ordering them chronologically. This is useful for generating 
+    Fetches a list of distinct years from the Payslip model,
+    ordering them chronologically. This is useful for generating
     yearly reports or summaries related to payroll data.
     """
     PayslipModel = apps.get_model("payroll", "Payslip")
@@ -264,8 +264,8 @@ def get_payslip_year_list() -> list:
 
 def get_users_with_payslip():
     """
-    Retrieves a list of users who have payslips, excluding those 
-    with an HR role. The result is ordered by the user's first name 
+    Retrieves a list of users who have payslips, excluding those
+    with an HR role. The result is ordered by the user's first name
     and ensures that each user appears only once in the list.
     """
     UserModel = apps.get_model("auth", "User")
@@ -283,9 +283,9 @@ def get_users_with_payslip():
 
 def get_compensation_year_list() -> list:
     """
-    Fetches a list of distinct years for fixed compensation records 
-    from the database, ordering the results by year. This provides 
-    a chronological overview of the years for which fixed compensation 
+    Fetches a list of distinct years for fixed compensation records
+    from the database, ordering the results by year. This provides
+    a chronological overview of the years for which fixed compensation
     data exists.
     """
     FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
@@ -301,9 +301,9 @@ def get_compensation_year_list() -> list:
 
 def get_13th_month_pay_year_list() -> list:
     """
-    Retrieves a list of distinct years for thirteenth month pay records 
-    from the database, ordering the results in descending order. 
-    This provides insight into the available years for which thirteenth 
+    Retrieves a list of distinct years for thirteenth month pay records
+    from the database, ordering the results in descending order.
+    This provides insight into the available years for which thirteenth
     month pay data exists.
     """
     FixedCompensationModel = apps.get_model("payroll", "ThirteenthMonthPay")
@@ -319,9 +319,9 @@ def get_13th_month_pay_year_list() -> list:
 
 def get_existing_compensation(month: int, year: int) -> list:
     """
-    Retrieves a list of existing fixed compensation records for a specified 
-    month and year from the database. This function filters the compensation 
-    data to return only those records that match the given month and year, 
+    Retrieves a list of existing fixed compensation records for a specified
+    month and year from the database. This function filters the compensation
+    data to return only those records that match the given month and year,
     providing relevant information for payroll processing.
     """
     FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
@@ -334,9 +334,9 @@ def get_existing_compensation(month: int, year: int) -> list:
 
 def get_fix_compensation_and_users(compensation_id: int):
     """
-    Fetches a specific fixed compensation record along with its associated 
-    users from the database using the given compensation ID. This function 
-    retrieves the fixed compensation details and the list of users linked 
+    Fetches a specific fixed compensation record along with its associated
+    users from the database using the given compensation ID. This function
+    retrieves the fixed compensation details and the list of users linked
     to that compensation, facilitating the management of payroll information.
     """
     FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
@@ -346,10 +346,10 @@ def get_fix_compensation_and_users(compensation_id: int):
 
 def get_user_payslips(user, month: int, year: int, released: bool = False):
     """
-    Retrieves the payslips for a specified user for a given month and year. 
-    This function allows the option to filter the results based on the 
-    released status of the payslips. If 'released' is set to False, 
-    all payslips are returned; otherwise, only the released payslips 
+    Retrieves the payslips for a specified user for a given month and year.
+    This function allows the option to filter the results based on the
+    released status of the payslips. If 'released' is set to False,
+    all payslips are returned; otherwise, only the released payslips
     are returned.
     """
     PayslipModel = apps.get_model("payroll", "Payslip")
@@ -363,10 +363,10 @@ def get_user_payslips(user, month: int, year: int, released: bool = False):
 
 def get_users_with_payslip_data(users, month: int, year: int):
     """
-    Collects and organizes payslip data for a list of users for a specified 
-    month and year. For each user, the function retrieves the payslip data 
-    and adds entries for both the first and second period payslips, 
-    returning a list of dictionaries that include the user and their 
+    Collects and organizes payslip data for a list of users for a specified
+    month and year. For each user, the function retrieves the payslip data
+    and adds entries for both the first and second period payslips,
+    returning a list of dictionaries that include the user and their
     corresponding payslip information.
     """
     data = []
@@ -384,11 +384,11 @@ def get_users_with_payslip_data(users, month: int, year: int):
 
 def get_payslip_fixed_compensations(payslip, semi_monthly=False):
     """
-    Retrieves fixed compensation records associated with a specific 
-    payslip for a user in a given month and year. It calculates the 
-    total amount of these compensations, and if specified, divides 
-    the total by two for semi-monthly compensation structures. The 
-    function returns both the list of compensations and the total 
+    Retrieves fixed compensation records associated with a specific
+    payslip for a user in a given month and year. It calculates the
+    total amount of these compensations, and if specified, divides
+    the total by two for semi-monthly compensation structures. The
+    function returns both the list of compensations and the total
     amount calculated.
     """
     FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
@@ -410,9 +410,9 @@ def get_payslip_fixed_compensations(payslip, semi_monthly=False):
 
 def get_payslip_variable_deductions(payslip):
     """
-    Fetches all variable deductions associated with a given payslip 
-    and calculates the total amount of these deductions. The function 
-    returns both the list of variable deductions and the total amount 
+    Fetches all variable deductions associated with a given payslip
+    and calculates the total amount of these deductions. The function
+    returns both the list of variable deductions and the total amount
     calculated.
     """
     deductions = payslip.variable_deductions.all()
@@ -424,9 +424,9 @@ def get_payslip_variable_deductions(payslip):
 
 def get_payslip_variable_compensations(payslip):
     """
-    Retrieves all variable compensations linked to a specific payslip 
-    and computes the total amount of these compensations. The function 
-    returns both the list of variable compensations and the total amount 
+    Retrieves all variable compensations linked to a specific payslip
+    and computes the total amount of these compensations. The function
+    returns both the list of variable compensations and the total amount
     calculated.
     """
     compensation = payslip.variable_compensation.all()
@@ -438,13 +438,14 @@ def get_payslip_variable_compensations(payslip):
 
 def get_salary_from_rank(rank_code):
     """
-    Retrieves the salary associated with a given rank code, which 
-    includes the job code, rank, and optional step. The function first 
-    extracts the relevant details from the rank code using a regex pattern, 
-    then fetches the job object from the database. It iterates through the 
-    job's salary data to return the basic salary for the specified rank 
+    Retrieves the salary associated with a given rank code, which
+    includes the job code, rank, and optional step. The function first
+    extracts the relevant details from the rank code using a regex pattern,
+    then fetches the job object from the database. It iterates through the
+    job's salary data to return the basic salary for the specified rank
     and step, if applicable.
     """
+
     def _extract_details(rank_code):
         pattern = re.compile(
             r"^(?P<job_code>[A-Z]+)-(?P<rank>\d+)(?: - STEP (?P<step>\d+))?$"
@@ -478,10 +479,10 @@ def get_salary_from_rank(rank_code):
 
 def get_user_13th_month_pay_list(user_id, year="", released=""):
     """
-    Retrieves a user's list of thirteenth month pay records for a specified year. 
-    The function fetches the user by their ID and orders their thirteenth month 
-    pay entries by year and month in descending order. If a specific year is provided, 
-    it filters the results accordingly. Additionally, if the 'released' parameter 
+    Retrieves a user's list of thirteenth month pay records for a specified year.
+    The function fetches the user by their ID and orders their thirteenth month
+    pay entries by year and month in descending order. If a specific year is provided,
+    it filters the results accordingly. Additionally, if the 'released' parameter
     is set to true, it further filters the list to include only released entries.
     """
     UserModel = apps.get_model("auth", "User")
