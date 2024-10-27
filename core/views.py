@@ -514,6 +514,23 @@ def modify_user_details(request, pk):
 
 
 @login_required(login_url="/login")
+def update_rank_selection(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        response = HttpResponse()
+        department_id = data.get("department")
+        rank_list = get_rank_choices(department_id) if department_id else []
+        context["rank_list"] = rank_list
+        response.content = render_block_to_string(
+            "core/modify_user_profile.html", "rank_selection", context
+        )
+        response = retarget(response, "#rank_selection")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+@login_required(login_url="/login")
 def modify_user_biometric_details(request, pk):
     """
     Additional Info: This view is used by both User Profile and Change User Profile.

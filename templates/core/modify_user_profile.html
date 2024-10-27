@@ -201,6 +201,8 @@
                                 </label>
                                 <select id="department"
                                         name="department"
+                                        hx-post="{% url "core:update_rank_selection" %}"
+                                        hx-trigger="change"
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                                     <option value="">Choose a Department...</option>
                                     {% for department_details in department_list %}
@@ -211,29 +213,31 @@
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="col-span-6 sm:col-span-3">
-                                <label for="rank"
-                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Rank
-                                </label>
-                                <select id="rank"
-                                        name="rank"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                                    <option value="">Choose a Rank...</option>
-                                    {% for rank_group in rank_list %}
-                                        {% for rank_category, rank_items in rank_group.items %}
-                                            <optgroup label="{{ rank_category }}">
-                                                {% for item in rank_items %}
-                                                    <option value="{{ item }}"
-                                                            {% if selected_user.userdetails.rank == item %}selected{% endif %}>
-                                                        {{ item }}
-                                                    </option>
-                                                {% endfor %}
-                                            </optgroup>
+                            {% block rank_selection %}
+                                <div id="rank_selection" class="col-span-6 sm:col-span-3">
+                                    <label for="rank"
+                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        Rank
+                                    </label>
+                                    <select id="rank"
+                                            name="rank"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                        <option value="">Choose a Rank...</option>
+                                        {% for rank_group in rank_list %}
+                                            {% for rank_category, rank_items in rank_group.items %}
+                                                <optgroup label="{{ rank_category }}">
+                                                    {% for item in rank_items %}
+                                                        <option value="{{ item }}"
+                                                                {% if selected_user.userdetails.rank == item %}selected{% endif %}>
+                                                            {{ item }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </optgroup>
+                                            {% endfor %}
                                         {% endfor %}
-                                    {% endfor %}
-                                </select>
-                            </div>
+                                    </select>
+                                </div>
+                            {% endblock %}
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="role"
                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
