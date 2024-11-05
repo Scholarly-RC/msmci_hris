@@ -19,121 +19,121 @@
           class="bg-gray-50 dark:bg-gray-800">
         {% block content %}{% endblock %}
         <div id="global_alert_container"
-             class="fixed top-20 right-4 flex flex-col items-end max-w-lg z-50">
-            <div id="chat_container"></div>
-            <script src="{% static 'assets/js/flowbite.min.js' %}"></script>
-            <script src="{% static 'assets/js/dark-mode.js' %}"></script>
-            <script src="{% static 'assets/js/htmx.min.js' %}"></script>
-            <script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
-            <script src="{% static 'assets/js/general-modal-modifier.js' %}"></script>
-            {% block javascript %}
-            {% endblock javascript %}
-            <script>
-                document.body.addEventListener("initializeGlobalAlert", (event) => {
-                    const {
-                        message,
-                        type,
-                        duration
-                    } = event.detail;
+             class="fixed top-20 right-4 flex flex-col items-end max-w-lg z-50"></div>
+        <div id="chat_container"></div>
+        <script src="{% static 'assets/js/flowbite.min.js' %}"></script>
+        <script src="{% static 'assets/js/dark-mode.js' %}"></script>
+        <script src="{% static 'assets/js/htmx.min.js' %}"></script>
+        <script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
+        <script src="{% static 'assets/js/general-modal-modifier.js' %}"></script>
+        {% block javascript %}
+        {% endblock javascript %}
+        <script>
+            document.body.addEventListener("initializeGlobalAlert", (event) => {
+                const {
+                    message,
+                    type,
+                    duration
+                } = event.detail;
 
-                    const safeDetail = {
-                        message,
-                        type,
-                        duration,
-                    };
+                const safeDetail = {
+                    message,
+                    type,
+                    duration,
+                };
 
-                    htmx.ajax("GET", '{% url "show_alert" %}', {
-                        values: {
-                            details: JSON.stringify(safeDetail),
-                        },
-                    });
+                htmx.ajax("GET", '{% url "show_alert" %}', {
+                    values: {
+                        details: JSON.stringify(safeDetail),
+                    },
                 });
+            });
 
-                document.body.addEventListener("showGlobalAlert", (event) => {
-                    const alertId = event?.detail?.alertId
-                    const alertCloseId = event?.detail?.alertCloseId
-                    const alertDuration = event?.detail?.alertDuration
-
-
-                    const $targetAlert = document.getElementById(alertId);
-                    const $targetCloseTrigger = document.getElementById(alertCloseId);
-
-                    const options = {
-                        transition: 'transition-opacity',
-                        duration: 1000,
-                        timing: 'ease-out',
-                    };
-
-                    const instanceOptions = {
-                        id: alertId,
-                        override: true
-                    };
-
-                    const dismiss = new Dismiss($targetAlert, $targetCloseTrigger, options, instanceOptions);
-                    setTimeout(() => {
-                        dismiss.hide();
-                    }, alertDuration * 1000);
-                });
-            </script>
-            <script>
-                document.body.addEventListener("toggleChatWindow", (event) => {
-                    var dropdown = document.getElementById("userMenuDropdown");
-                    if (dropdown) {
-                        dropdown.classList.toggle("hidden");
-                    }
-                });
-            </script>
-            <script>
-                (function() {
-                    const $targetEl = document.getElementById('moduleDropdownMenu');
-                    const $triggerEl = document.getElementById('moduleDropdownButton');
+            document.body.addEventListener("showGlobalAlert", (event) => {
+                const alertId = event?.detail?.alertId
+                const alertCloseId = event?.detail?.alertCloseId
+                const alertDuration = event?.detail?.alertDuration
 
 
-                    const options = {
-                        placement: 'bottom',
-                        triggerType: 'click',
-                        offsetSkidding: 0,
-                        offsetDistance: 10,
-                        delay: 300,
-                        ignoreClickOutsideClass: false,
-                    };
+                const $targetAlert = document.getElementById(alertId);
+                const $targetCloseTrigger = document.getElementById(alertCloseId);
 
-                    const instanceOptions = {
-                        id: 'moduleDropdownMenu',
-                        override: true
-                    };
+                const options = {
+                    transition: 'transition-opacity',
+                    duration: 1000,
+                    timing: 'ease-out',
+                };
 
-                    const appMenuDropdown = new Dropdown($targetEl, $triggerEl, options, instanceOptions);
-                })();
-            </script>
-            <script>
-                (function() {
-                    const $targetEl = document.getElementById('userNotification');
-                    const $triggerEl = document.getElementById('userNotificationButton');
+                const instanceOptions = {
+                    id: alertId,
+                    override: true
+                };
 
-                    const retrieveNotification = () => {
-                        htmx.ajax('POST', '{% url "core:retrieve_notifications" %}');
-                    };
+                const dismiss = new Dismiss($targetAlert, $targetCloseTrigger, options, instanceOptions);
+                setTimeout(() => {
+                    dismiss.hide();
+                }, alertDuration * 1000);
+            });
+        </script>
+        <script>
+            document.body.addEventListener("toggleChatWindow", (event) => {
+                var dropdown = document.getElementById("userMenuDropdown");
+                if (dropdown) {
+                    dropdown.classList.toggle("hidden");
+                }
+            });
+        </script>
+        <script>
+            (function() {
+                const $targetEl = document.getElementById('moduleDropdownMenu');
+                const $triggerEl = document.getElementById('moduleDropdownButton');
 
-                    const options = {
-                        placement: 'bottom',
-                        triggerType: 'click',
-                        offsetSkidding: 0,
-                        offsetDistance: 10,
-                        delay: 300,
-                        ignoreClickOutsideClass: false,
-                        onShow: () => {
-                            retrieveNotification();
-                        },
-                    };
 
-                    const instanceOptions = {
-                        id: 'userNotification',
-                        override: true
-                    };
+                const options = {
+                    placement: 'bottom',
+                    triggerType: 'click',
+                    offsetSkidding: 0,
+                    offsetDistance: 10,
+                    delay: 300,
+                    ignoreClickOutsideClass: false,
+                };
 
-                    const dropdown = new Dropdown($targetEl, $triggerEl, options, instanceOptions);
-                })();
-            </script>
-        </body>
-    </html>
+                const instanceOptions = {
+                    id: 'moduleDropdownMenu',
+                    override: true
+                };
+
+                const appMenuDropdown = new Dropdown($targetEl, $triggerEl, options, instanceOptions);
+            })();
+        </script>
+        <script>
+            (function() {
+                const $targetEl = document.getElementById('userNotification');
+                const $triggerEl = document.getElementById('userNotificationButton');
+
+                const retrieveNotification = () => {
+                    htmx.ajax('POST', '{% url "core:retrieve_notifications" %}');
+                };
+
+                const options = {
+                    placement: 'bottom',
+                    triggerType: 'click',
+                    offsetSkidding: 0,
+                    offsetDistance: 10,
+                    delay: 300,
+                    ignoreClickOutsideClass: false,
+                    onShow: () => {
+                        retrieveNotification();
+                    },
+                };
+
+                const instanceOptions = {
+                    id: 'userNotification',
+                    override: true
+                };
+
+                const dropdown = new Dropdown($targetEl, $triggerEl, options, instanceOptions);
+            })();
+        </script>
+    </body>
+</html>
