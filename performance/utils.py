@@ -39,10 +39,14 @@ def get_user_evaluator_choices(selected_user):
     UserDetailsModel = apps.get_model("core", "UserDetails")
 
     hr_role = UserDetailsModel.Role.HR.value
+    director_role = UserDetailsModel.Role.DIRECTOR.value
+    president_role = UserDetailsModel.Role.PRESIDENT.value
 
     evaluator_choices = (
         UserModel.objects.filter(
             Q(userdetails__role=hr_role)
+            | Q(userdetails__role=director_role)
+            | Q(userdetails__role=president_role)
             | Q(userdetails__department=selected_user.userdetails.department),
             is_active=True,
         )
@@ -290,12 +294,14 @@ def get_users_shared_resources(uploader_id, shared_to_id=""):
 
 def get_users_for_shared_resources(user):
     """
-    Retrieves users with HR, Department Head, or Employee roles, excluding the specified user.
+    Retrieves users with HR, President, Director, Department Head, or Employee roles, excluding the specified user.
     """
     UserModel = apps.get_model("auth", "User")
     UserDetailsModel = apps.get_model("core", "UserDetails")
 
     hr_role = UserDetailsModel.Role.HR.value
+    president_role = UserDetailsModel.Role.PRESIDENT.value
+    director_role = UserDetailsModel.Role.DIRECTOR.value
     department_head_role = UserDetailsModel.Role.DEPARTMENT_HEAD.value
     employee_role = UserDetailsModel.Role.EMPLOYEE.value
 
@@ -304,7 +310,7 @@ def get_users_for_shared_resources(user):
             Q(userdetails__role=hr_role)
             | Q(
                 userdetails__department=user.userdetails.department,
-                userdetails__role__in=department_head_role,
+                userdetails__role__in=[department_head_role],
             )
         ).exclude(pk=user.id)
     elif user.userdetails.role == department_head_role:
@@ -312,40 +318,39 @@ def get_users_for_shared_resources(user):
             Q(userdetails__role=hr_role)
             | Q(
                 userdetails__department=user.userdetails.department,
-                userdetails__role__in=[department_head_role, employee_role],
+                userdetails__role__in=[director_role, employee_role],
+            )
+        ).exclude(pk=user.id)
+    elif user.userdetails.role == director_role:
+        users = UserModel.objects.filter(
+            Q(userdetails__role=hr_role)
+            | Q(
+                userdetails__department=user.userdetails.department,
+                userdetails__role__in=[department_head_role, president_role],
+            )
+        ).exclude(pk=user.id)
+    elif user.userdetails.role == president_role:
+        users = UserModel.objects.filter(
+            Q(userdetails__role=hr_role)
+            | Q(
+                userdetails__department=user.userdetails.department,
+                userdetails__role__in=[director_role],
             )
         ).exclude(pk=user.id)
     else:
-        users = UserModel.objects.filter(
-            Q(userdetails__role=hr_role)
-            | Q(userdetails__role=department_head_role)
-            | Q(userdetails__role=employee_role)
-        ).exclude(pk=user.id)
+        users = UserModel.objects.exclude(pk=user.id)
 
     return users
 
 
 def get_users_per_shared_resources(user, resource):
     """
-    Retrieves users who have the HR, Department Head, or Employee roles and are not the specified user or already shared with the resource.
+    Retrieves users who have the HR, President, Director, Department Head, or Employee roles and are not the specified user or already shared with the resource.
     """
-    UserModel = apps.get_model("auth", "User")
-    UserDetailsModel = apps.get_model("core", "UserDetails")
-
-    hr_role = UserDetailsModel.Role.HR.value
-    department_head_role = UserDetailsModel.Role.DEPARTMENT_HEAD.value
-    employee_role = UserDetailsModel.Role.EMPLOYEE.value
-
     users_shared_with_resource = resource.shared_to.values_list("id", flat=True)
 
-    users = (
-        UserModel.objects.filter(
-            Q(userdetails__role=hr_role)
-            | Q(userdetails__role=department_head_role)
-            | Q(userdetails__role=employee_role)
-        )
-        .exclude(id=user.id)
-        .exclude(id__in=users_shared_with_resource)
+    users = get_users_for_shared_resources(user=user).exclude(
+        id__in=users_shared_with_resource
     )
 
     return users
