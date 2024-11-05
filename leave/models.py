@@ -116,6 +116,9 @@ class Leave(models.Model):
     def get_second_approver(self):
         return User.objects.get(id=self.second_approver_data["approver"])
 
+    def ready_for_second_approver(self):
+        return self.first_approver_data["status"] != LeaveRequestAction.PENDING.value
+
 
 class LeaveCredit(models.Model):
     user = models.OneToOneField(User, on_delete=models.RESTRICT, primary_key=True)

@@ -192,7 +192,9 @@ def process_upload_resources(user, file_data):
                 file_name,
             )
 
-    user_shared_resources = SharedResourceModel.objects.filter(uploader=user)
+    user_shared_resources = SharedResourceModel.objects.filter(
+        uploader=user, shared_to__isnull=True
+    )
     return user_shared_resources, errors
 
 

@@ -26,10 +26,10 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for data in age_demographic_table_data.users %}
+                                {% for data in age_demographic_table_data %}
                                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                        <td class="px-6 py-4 text-start">{{ data.get_user_fullname|title }}</td>
-                                        <td class="px-6 py-4 text-center">{{ data.get_age }}</td>
+                                        <td class="px-6 py-4 text-start">{{ data.user.get_user_fullname|title }}</td>
+                                        <td class="px-6 py-4 text-center">{{ data.age }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

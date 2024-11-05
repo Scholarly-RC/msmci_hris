@@ -109,41 +109,12 @@
                                                             <p class="mb-2 font-bold text-gray-700 dark:text-gray-400">Status: {{ leave.0.get_status }}</p>
                                                         </div>
                                                         <div class="w-40 md:w-auto flex flex-col gap-4 justify-center">
-                                                            {% if leave.1 == "PENDING" and not leave.0.get_status == "REJECTED" %}
-                                                                <button type="button"
-                                                                        hx-post="{% url "leave:review_leave_request" %}"
-                                                                        hx-vals='{"leave": {{ leave.0.id }}, "choice": "APPROVE"}'
-                                                                        class="px-6 py-3.5 text-base font-medium text-white inline-flex items-center bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 rounded-lg text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
-                                                                    <svg class="w-6 h-6 text-white me-1"
-                                                                         aria-hidden="true"
-                                                                         xmlns="http://www.w3.org/2000/svg"
-                                                                         width="24"
-                                                                         height="24"
-                                                                         fill="none"
-                                                                         viewBox="0 0 24 24">
-                                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11c.889-.086 1.416-.543 2.156-1.057a22.323 22.323 0 0 0 3.958-5.084 1.6 1.6 0 0 1 .582-.628 1.549 1.549 0 0 1 1.466-.087c.205.095.388.233.537.406a1.64 1.64 0 0 1 .384 1.279l-1.388 4.114M7 11H4v6.5A1.5 1.5 0 0 0 5.5 19v0A1.5 1.5 0 0 0 7 17.5V11Zm6.5-1h4.915c.286 0 .372.014.626.15.254.135.472.332.637.572a1.874 1.874 0 0 1 .215 1.673l-2.098 6.4C17.538 19.52 17.368 20 16.12 20c-2.303 0-4.79-.943-6.67-1.475" />
-                                                                    </svg>
-                                                                    Approve
-                                                                </button>
-                                                                <button type="button"
-                                                                        hx-post="{% url "leave:review_leave_request" %}"
-                                                                        hx-vals='{"leave": {{ leave.0.id }}, "choice": "REJECT"}'
-                                                                        class="px-6 py-3.5 text-base font-medium text-white inline-flex items-center bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 rounded-lg text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
-                                                                    <svg class="w-6 h-6 text-white me-1"
-                                                                         aria-hidden="true"
-                                                                         xmlns="http://www.w3.org/2000/svg"
-                                                                         width="24"
-                                                                         height="24"
-                                                                         fill="none"
-                                                                         viewBox="0 0 24 24">
-                                                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13c-.889.086-1.416.543-2.156 1.057a22.322 22.322 0 0 0-3.958 5.084 1.6 1.6 0 0 1-.582.628 1.549 1.549 0 0 1-1.466.087 1.587 1.587 0 0 1-.537-.406 1.666 1.666 0 0 1-.384-1.279l1.389-4.114M17 13h3V6.5A1.5 1.5 0 0 0 18.5 5v0A1.5 1.5 0 0 0 17 6.5V13Zm-6.5 1H5.585c-.286 0-.372-.014-.626-.15a1.797 1.797 0 0 1-.637-.572 1.873 1.873 0 0 1-.215-1.673l2.098-6.4C6.462 4.48 6.632 4 7.88 4c2.302 0 4.79.943 6.67 1.475" />
-                                                                    </svg>
-                                                                    Reject
-                                                                </button>
-                                                            {% else %}
-                                                                {% if leave.1 == "APPROVED" %}
+                                                            {% if current_user == leave.0.get_second_approver and leave.0.ready_for_second_approver %}
+                                                                {% if leave.1 == "PENDING" and not leave.0.get_status == "REJECTED" %}
                                                                     <button type="button"
-                                                                            class="disabled px-6 py-3.5 text-base font-medium text-white inline-flex items-center bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 rounded-lg text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                                                                            hx-post="{% url "leave:review_leave_request" %}"
+                                                                            hx-vals='{"leave": {{ leave.0.id }}, "choice": "APPROVE"}'
+                                                                            class="px-6 py-3.5 text-base font-medium text-white inline-flex items-center bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 rounded-lg text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
                                                                         <svg class="w-6 h-6 text-white me-1"
                                                                              aria-hidden="true"
                                                                              xmlns="http://www.w3.org/2000/svg"
@@ -153,11 +124,12 @@
                                                                              viewBox="0 0 24 24">
                                                                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11c.889-.086 1.416-.543 2.156-1.057a22.323 22.323 0 0 0 3.958-5.084 1.6 1.6 0 0 1 .582-.628 1.549 1.549 0 0 1 1.466-.087c.205.095.388.233.537.406a1.64 1.64 0 0 1 .384 1.279l-1.388 4.114M7 11H4v6.5A1.5 1.5 0 0 0 5.5 19v0A1.5 1.5 0 0 0 7 17.5V11Zm6.5-1h4.915c.286 0 .372.014.626.15.254.135.472.332.637.572a1.874 1.874 0 0 1 .215 1.673l-2.098 6.4C17.538 19.52 17.368 20 16.12 20c-2.303 0-4.79-.943-6.67-1.475" />
                                                                         </svg>
-                                                                        Approved
+                                                                        Approve
                                                                     </button>
-                                                                {% elif leave.1 == "REJECTED" or leave.0.get_status == "REJECTED" %}
                                                                     <button type="button"
-                                                                            class="disabled px-6 py-3.5 text-base font-medium text-white inline-flex items-center bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 rounded-lg text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
+                                                                            hx-post="{% url "leave:review_leave_request" %}"
+                                                                            hx-vals='{"leave": {{ leave.0.id }}, "choice": "REJECT"}'
+                                                                            class="px-6 py-3.5 text-base font-medium text-white inline-flex items-center bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 rounded-lg text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
                                                                         <svg class="w-6 h-6 text-white me-1"
                                                                              aria-hidden="true"
                                                                              xmlns="http://www.w3.org/2000/svg"
@@ -167,35 +139,65 @@
                                                                              viewBox="0 0 24 24">
                                                                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13c-.889.086-1.416.543-2.156 1.057a22.322 22.322 0 0 0-3.958 5.084 1.6 1.6 0 0 1-.582.628 1.549 1.549 0 0 1-1.466.087 1.587 1.587 0 0 1-.537-.406 1.666 1.666 0 0 1-.384-1.279l1.389-4.114M17 13h3V6.5A1.5 1.5 0 0 0 18.5 5v0A1.5 1.5 0 0 0 17 6.5V13Zm-6.5 1H5.585c-.286 0-.372-.014-.626-.15a1.797 1.797 0 0 1-.637-.572 1.873 1.873 0 0 1-.215-1.673l2.098-6.4C6.462 4.48 6.632 4 7.88 4c2.302 0 4.79.943 6.67 1.475" />
                                                                         </svg>
-                                                                        Rejected
+                                                                        Reject
                                                                     </button>
-                                                                {% endif %}
-                                                                {% block leave_card_button_group %}
-                                                                    <div class="leave-card-button-group">
-                                                                        {% if delete_confirmation %}
-                                                                            <div class="flex flex-col">
-                                                                                <button type="button"
-                                                                                        hx-delete="{% url "leave:delete_leave_request" leave.0.id %}"
-                                                                                        hx-include="[name='selected_user'],[name='selected_month'],[name='selected_year']"
-                                                                                        class="text-blue-700 hover:text-white border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-1.5 text-center me-2 mb-2 dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800">
-                                                                                    Confirm
-                                                                                </button>
+                                                                {% else %}
+                                                                    {% if leave.1 == "APPROVED" %}
+                                                                        <button type="button"
+                                                                                class="disabled px-6 py-3.5 text-base font-medium text-white inline-flex items-center bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 rounded-lg text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                                                                            <svg class="w-6 h-6 text-white me-1"
+                                                                                 aria-hidden="true"
+                                                                                 xmlns="http://www.w3.org/2000/svg"
+                                                                                 width="24"
+                                                                                 height="24"
+                                                                                 fill="none"
+                                                                                 viewBox="0 0 24 24">
+                                                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11c.889-.086 1.416-.543 2.156-1.057a22.323 22.323 0 0 0 3.958-5.084 1.6 1.6 0 0 1 .582-.628 1.549 1.549 0 0 1 1.466-.087c.205.095.388.233.537.406a1.64 1.64 0 0 1 .384 1.279l-1.388 4.114M7 11H4v6.5A1.5 1.5 0 0 0 5.5 19v0A1.5 1.5 0 0 0 7 17.5V11Zm6.5-1h4.915c.286 0 .372.014.626.15.254.135.472.332.637.572a1.874 1.874 0 0 1 .215 1.673l-2.098 6.4C17.538 19.52 17.368 20 16.12 20c-2.303 0-4.79-.943-6.67-1.475" />
+                                                                            </svg>
+                                                                            Approved
+                                                                        </button>
+                                                                    {% elif leave.1 == "REJECTED" or leave.0.get_status == "REJECTED" %}
+                                                                        <button type="button"
+                                                                                class="disabled px-6 py-3.5 text-base font-medium text-white inline-flex items-center bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 rounded-lg text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
+                                                                            <svg class="w-6 h-6 text-white me-1"
+                                                                                 aria-hidden="true"
+                                                                                 xmlns="http://www.w3.org/2000/svg"
+                                                                                 width="24"
+                                                                                 height="24"
+                                                                                 fill="none"
+                                                                                 viewBox="0 0 24 24">
+                                                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13c-.889.086-1.416.543-2.156 1.057a22.322 22.322 0 0 0-3.958 5.084 1.6 1.6 0 0 1-.582.628 1.549 1.549 0 0 1-1.466.087 1.587 1.587 0 0 1-.537-.406 1.666 1.666 0 0 1-.384-1.279l1.389-4.114M17 13h3V6.5A1.5 1.5 0 0 0 18.5 5v0A1.5 1.5 0 0 0 17 6.5V13Zm-6.5 1H5.585c-.286 0-.372-.014-.626-.15a1.797 1.797 0 0 1-.637-.572 1.873 1.873 0 0 1-.215-1.673l2.098-6.4C6.462 4.48 6.632 4 7.88 4c2.302 0 4.79.943 6.67 1.475" />
+                                                                            </svg>
+                                                                            Rejected
+                                                                        </button>
+                                                                    {% endif %}
+                                                                    {% block leave_card_button_group %}
+                                                                        <div class="leave-card-button-group">
+                                                                            {% if delete_confirmation %}
+                                                                                <div class="flex flex-col">
+                                                                                    <button type="button"
+                                                                                            hx-delete="{% url "leave:delete_leave_request" leave.0.id %}"
+                                                                                            hx-include="[name='selected_user'],[name='selected_month'],[name='selected_year']"
+                                                                                            class="text-blue-700 hover:text-white border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-1.5 text-center me-2 mb-2 dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800">
+                                                                                        Confirm
+                                                                                    </button>
+                                                                                    <button type="button"
+                                                                                            hx-post="{% url "leave:delete_leave_request" leave.0.id %}"
+                                                                                            hx-vals='{"cancel": "True"}'
+                                                                                            class="text-yellow-400 hover:text-white border border-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-sm px-3 py-1.5 text-center me-2 mb-2 dark:border-yellow-300 dark:text-yellow-300 dark:hover:text-white dark:hover:bg-yellow-400 dark:focus:ring-yellow-900">
+                                                                                        Cancel
+                                                                                    </button>
+                                                                                </div>
+                                                                            {% else %}
                                                                                 <button type="button"
                                                                                         hx-post="{% url "leave:delete_leave_request" leave.0.id %}"
-                                                                                        hx-vals='{"cancel": "True"}'
-                                                                                        class="text-yellow-400 hover:text-white border border-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-sm px-3 py-1.5 text-center me-2 mb-2 dark:border-yellow-300 dark:text-yellow-300 dark:hover:text-white dark:hover:bg-yellow-400 dark:focus:ring-yellow-900">
-                                                                                    Cancel
+                                                                                        class="w-full text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900">
+                                                                                    Delete
                                                                                 </button>
-                                                                            </div>
-                                                                        {% else %}
-                                                                            <button type="button"
-                                                                                    hx-post="{% url "leave:delete_leave_request" leave.0.id %}"
-                                                                                    class="w-full text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900">
-                                                                                Delete
-                                                                            </button>
-                                                                        {% endif %}
-                                                                    </div>
-                                                                {% endblock %}
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    {% endblock %}
+                                                                {% endif %}
                                                             {% endif %}
                                                         </div>
                                                     </div>

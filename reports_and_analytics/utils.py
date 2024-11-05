@@ -303,9 +303,9 @@ def get_employee_yearly_salary_salary_report_data(selected_year, selected_user):
     """
     UserModel = apps.get_model("auth", "User")
     user = UserModel.objects.get(id=selected_user)
-    payslips = user.payslips.filter(year=selected_year)
+    payslips = user.payslips.filter(year=selected_year, released=True)
 
-    months = payslips.values_list("month", flat=True)
+    months = payslips.values_list("month", flat=True).distinct()
 
     months_list = [Months(month).name[:3].title() for month in months]
 
@@ -469,7 +469,9 @@ def get_age_demographics_report_data(as_of_date=""):
         "age_group_count": age_group_count,
     }
 
-    age_demographic_table_data = {"users": users}
+    age_demographic_table_data = [
+        {"user": users[i], "age": age_list[i]} for i in range(users.count())
+    ]
 
     return {
         "chart_option_data": json.dumps(age_demographic_data),

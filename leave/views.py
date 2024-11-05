@@ -215,6 +215,7 @@ def leave_management(request):
     )
     context.update(
         {
+            "current_user": user,
             "leave_data": leave_to_review,
             "users": users,
             "months": months,
@@ -259,7 +260,10 @@ def review_leave_request(request):
                     url=reverse("leave:user_leave"),
                 )
 
-                if user_response == LeaveRequestAction.APPROVED.value:
+                if (
+                    user_response == LeaveRequestAction.APPROVED.value
+                    and leave.type == Leave.LeaveType.PAID.value
+                ):
                     process_add_user_used_leave_credits(leave.user)
 
                 response.content = render_block_to_string(

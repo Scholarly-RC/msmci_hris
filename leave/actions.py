@@ -146,6 +146,12 @@ def process_submit_leave_request_response(user, payload):
 @transaction.atomic
 def process_delete_submit_leave_request(leave):
     try:
+        if (
+            leave.get_status() == LeaveRequestAction.APPROVED.value
+            and leave.user.leavecredit.used_credits
+        ):
+            leave.user.leavecredit.used_credits -= 1
+            leave.user.leavecredit.save()
         leave.delete()
     except Exception:
         logger.error("An error occurred while deleting leave request", exc_info=True)
