@@ -46,7 +46,7 @@ def get_user_clocked_time(user, year: int, month: int, day: int, shift):
 
     DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
     selected_daily_shift_schedule = DailyShiftScheduleModel.objects.filter(
-        user=user, shift=shift
+        user=user, shift=shift, date=selected_date
     ).first()
 
     clock_in_timestamp = (

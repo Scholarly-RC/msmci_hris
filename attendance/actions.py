@@ -27,6 +27,7 @@ def process_daily_shift_schedule(department, year, month, day, employee, shift):
     DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
 
     selected_date = get_date_object(int(year), int(month), int(day))
+
     try:
         daily_shift_record, daily_shift_record_created = (
             DailyShiftRecordModel.objects.get_or_create(
@@ -35,7 +36,9 @@ def process_daily_shift_schedule(department, year, month, day, employee, shift):
         )
 
         new_daily_shift_schedule, new_daily_shift_schedule_created = (
-            DailyShiftScheduleModel.objects.get_or_create(user=employee, shift=shift)
+            DailyShiftScheduleModel.objects.get_or_create(
+                user=employee, shift=shift, date=selected_date
+            )
         )
 
         if new_daily_shift_schedule not in daily_shift_record.shifts.all():

@@ -86,6 +86,7 @@ class Shift(models.Model):
 
 
 class DailyShiftSchedule(models.Model):
+    date = models.DateField(_("Daily Shift Schedule Date"), null=True, blank=True)
     shift = models.ForeignKey(
         Shift, on_delete=models.RESTRICT, related_name="daily_shift_schedules"
     )
@@ -103,7 +104,7 @@ class DailyShiftSchedule(models.Model):
         verbose_name_plural = "Daily Shift Schedules"
 
     def __str__(self):
-        return f"{self.shift} - {self.user.userdetails.get_user_fullname()}"
+        return f"{get_readable_date_from_date_object(self.date) if self.date else ''} {self.shift} - {self.user.userdetails.get_user_fullname()}"
 
     def get_clock_in_localtime(self):
         if not self.clock_in:
