@@ -428,7 +428,7 @@
                                                         <div>
                                                             <div class="h-auto flex flex-col sm:flex-row gap-0 sm:gap-5 text-center sm:text-left w-full items-center justify-between p-4 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                                                                 <h5 class="max-w-lg mb-2 py-2 text-xl font-bold text-gray-900 dark:text-white">
-                                                                    {{ peer_evaluation.user_evaluation.evaluatee.userdetails.get_user_fullname }} - {{ peer_evaluation.user_evaluation.get_year_and_quarter }}
+                                                                    {{ peer_evaluation.user_evaluation.evaluatee.userdetails.get_user_fullname|title }} - {{ peer_evaluation.user_evaluation.get_year_and_quarter }}
                                                                 </h5>
                                                                 <button type="button"
                                                                         hx-post="{% url "performance:selected_performance_peer_evaluation" peer_evaluation.id %}"
