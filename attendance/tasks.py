@@ -70,7 +70,7 @@ def add_user_attendance_record(attendance_data):
             ):
                 yesterday_shift_schedule.clock_out = timestamp - timedelta(days=1)
                 yesterday_shift_schedule.save()
-            elif user_daily_shift_schedule.clock_out:
+            elif not user_daily_shift_schedule.clock_out:
                 user_daily_shift_schedule.clock_out = timestamp
                 user_daily_shift_schedule.save()
 
