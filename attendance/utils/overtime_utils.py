@@ -15,6 +15,7 @@ def get_user_overtime_approver(user):
     if user_role == roles.EMPLOYEE.value:
         department = user.userdetails.department
         approvers = UserModel.objects.filter(
+            Q(is_active=True),
             Q(userdetails__department=department),
             Q(userdetails__role=roles.DEPARTMENT_HEAD.value),
         )
@@ -22,18 +23,21 @@ def get_user_overtime_approver(user):
 
     if user_role == roles.DEPARTMENT_HEAD.value:
         approvers = UserModel.objects.filter(
+            Q(is_active=True),
             Q(userdetails__role=roles.DIRECTOR.value),
         )
         return approvers
 
     if user_role == roles.DIRECTOR.value:
         approvers = UserModel.objects.filter(
+            Q(is_active=True),
             Q(userdetails__role=roles.PRESIDENT.value),
         )
         return approvers
 
     if user_role == roles.PRESIDENT.value:
         approvers = UserModel.objects.filter(
+            Q(is_active=True),
             Q(userdetails__role=roles.HR.value),
         )
         return approvers

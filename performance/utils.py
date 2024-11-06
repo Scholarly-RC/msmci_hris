@@ -44,6 +44,7 @@ def get_user_evaluator_choices(selected_user):
 
     evaluator_choices = (
         UserModel.objects.filter(
+            Q(is_active=True),
             Q(userdetails__role=hr_role)
             | Q(userdetails__role=director_role)
             | Q(userdetails__role=president_role)
@@ -252,7 +253,7 @@ def get_user_with_hr_role():
     UserDetailsModel = apps.get_model("core", "UserDetails")
 
     hr_role = UserDetailsModel.Role.HR.value
-    hr = UserModel.objects.filter(userdetails__role=hr_role)
+    hr = UserModel.objects.filter(is_active=True, userdetails__role=hr_role)
     return hr
 
 
@@ -307,35 +308,39 @@ def get_users_for_shared_resources(user):
 
     if user.userdetails.role == employee_role:
         users = UserModel.objects.filter(
+            Q(is_active=True),
             Q(userdetails__role=hr_role)
             | Q(
                 userdetails__department=user.userdetails.department,
                 userdetails__role__in=[department_head_role],
-            )
+            ),
         ).exclude(pk=user.id)
     elif user.userdetails.role == department_head_role:
         users = UserModel.objects.filter(
+            Q(is_active=True),
             Q(userdetails__role=hr_role)
             | Q(
                 userdetails__department=user.userdetails.department,
                 userdetails__role__in=[director_role, employee_role],
-            )
+            ),
         ).exclude(pk=user.id)
     elif user.userdetails.role == director_role:
         users = UserModel.objects.filter(
+            Q(is_active=True),
             Q(userdetails__role=hr_role)
             | Q(
                 userdetails__department=user.userdetails.department,
                 userdetails__role__in=[department_head_role, president_role],
-            )
+            ),
         ).exclude(pk=user.id)
     elif user.userdetails.role == president_role:
         users = UserModel.objects.filter(
+            Q(is_active=True),
             Q(userdetails__role=hr_role)
             | Q(
                 userdetails__department=user.userdetails.department,
                 userdetails__role__in=[director_role],
-            )
+            ),
         ).exclude(pk=user.id)
     else:
         users = UserModel.objects.exclude(pk=user.id)
@@ -376,7 +381,9 @@ def get_user_evaluation_users():
     """
     UserModel = apps.get_model("auth", "User")
     return (
-        UserModel.objects.filter(evaluatee_evaluations__is_finalized=True)
+        UserModel.objects.filter(
+            is_active=True, evaluatee_evaluations__is_finalized=True
+        )
         .order_by("first_name")
         .distinct()
     )

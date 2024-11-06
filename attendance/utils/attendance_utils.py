@@ -154,7 +154,9 @@ def get_employees_list_per_department():
 
 def get_employees_with_attendance_record():
     return (
-        User.objects.filter(daily_shift_schedules__clock_in__isnull=False)
+        User.objects.filter(
+            is_active=True, daily_shift_schedules__clock_in__isnull=False
+        )
         .distinct()
         .order_by("first_name")
     )

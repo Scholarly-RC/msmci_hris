@@ -799,7 +799,7 @@ def assign_shift(request, department="", year="", month="", day=""):
     shift_day = day
     selected_department = Department.objects.get(id=department)
     employees = User.objects.filter(
-        userdetails__department=selected_department
+        is_active=True, userdetails__department=selected_department
     ).order_by("first_name")
 
     shifts = selected_department.shifts.order_by("start_time")
@@ -868,7 +868,7 @@ def assign_user_to_shift(request, department="", year="", month="", day=""):
         selected_department = Department.objects.get(id=department)
         user_search_query = data.get("search_user", "")
         employees = User.objects.filter(
-            userdetails__department=selected_department
+            is_active=True, userdetails__department=selected_department
         ).order_by("first_name")
         if user_search_query:
             search_params = (

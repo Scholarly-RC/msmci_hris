@@ -17,6 +17,7 @@ def get_department_heads(selected_department):
     department_head = UserDetailsModel.Role.DEPARTMENT_HEAD.value
 
     return User.objects.filter(
+        is_active=True,
         userdetails__department=selected_department,
         userdetails__role=department_head,
     )
@@ -30,7 +31,7 @@ def get_directors():
     UserDetailsModel = apps.get_model("core", "UserDetails")
     director = UserDetailsModel.Role.DIRECTOR.value
 
-    return User.objects.filter(userdetails__role=director)
+    return User.objects.filter(is_active=True, userdetails__role=director)
 
 
 def get_presidents():
@@ -41,7 +42,7 @@ def get_presidents():
     UserDetailsModel = apps.get_model("core", "UserDetails")
     president = UserDetailsModel.Role.PRESIDENT.value
 
-    return User.objects.filter(userdetails__role=president)
+    return User.objects.filter(is_active=True, userdetails__role=president)
 
 
 def get_approvers_per_department(selected_department) -> dict:
