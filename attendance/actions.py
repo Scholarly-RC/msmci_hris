@@ -45,6 +45,9 @@ def process_daily_shift_schedule(department, year, month, day, employee, shift):
             daily_shift_record.shifts.add(new_daily_shift_schedule)
         else:
             daily_shift_record.shifts.remove(new_daily_shift_schedule)
+            new_daily_shift_schedule.clock_in = None
+            new_daily_shift_schedule.clock_out = None
+            new_daily_shift_schedule.save()
 
     except Exception:
         logger.error(
