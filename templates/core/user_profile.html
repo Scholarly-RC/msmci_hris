@@ -53,10 +53,8 @@
                                 <input type="text"
                                        name="first_name"
                                        id="first_name"
-                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       placeholder="Enter your first name"
                                        value="{{ current_user.first_name }}"
-                                       required>
+                                       {% if current_user.userdetails.is_hr %} class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required {% else %} class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500" disabled readonly {% endif %}>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="middle_name"
@@ -66,10 +64,8 @@
                                 <input type="text"
                                        name="middle_name"
                                        id="middle_name"
-                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       placeholder="Enter your middle name"
                                        value="{% if current_user.userdetails.middle_name %}{{ current_user.userdetails.middle_name }}{% endif %}"
-                                       required>
+                                       {% if current_user.userdetails.is_hr %} class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required {% else %} class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500" disabled readonly {% endif %}>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="last_name"
@@ -79,10 +75,8 @@
                                 <input type="text"
                                        name="last_name"
                                        id="last_name"
-                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       placeholder="Enter your last name"
                                        value="{{ current_user.last_name }}"
-                                       required>
+                                       {% if current_user.userdetails.is_hr %} class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required {% else %} class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500" disabled readonly {% endif %}>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="email"
@@ -92,8 +86,8 @@
                                 <input type="email"
                                        name="email"
                                        id="email"
-                                       class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                        value="{{ current_user.email }}"
+                                       class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                        disabled
                                        readonly>
                             </div>
@@ -105,8 +99,7 @@
                                 <textarea type="text"
                                           name="address"
                                           id="address"
-                                          class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                          placeholder="e.g. Mlang">{% if current_user.userdetails.address %}{{ current_user.userdetails.address }}{% endif %}</textarea>
+                                          {% if current_user.userdetails.is_hr %} class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required {% else %} class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500" disabled readonly {% endif %}>{% if current_user.userdetails.address %}{{ current_user.userdetails.address }}{% endif %}</textarea>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
                                 <div class="flex flex-row justify-between">
@@ -121,8 +114,8 @@
                                 <input type="date"
                                        name="date_of_birth"
                                        id="date_of_birth"
-                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       value="{{ current_user.userdetails.str_date_of_birth }}">
+                                       value="{{ current_user.userdetails.str_date_of_birth }}"
+                                       {% if current_user.userdetails.is_hr %} class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required {% else %} class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500" disabled readonly {% endif %}>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
                                 <div class="flex flex-row justify-between">
@@ -133,7 +126,7 @@
                                 </div>
                                 <select id="gender"
                                         name="gender"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                        {% if current_user.userdetails.is_hr %} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required {% else %} class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500" disabled readonly {% endif %}>
                                     <option value="">Choose Gender...</option>
                                     {% for gender_detail in genders_list %}
                                         <option value="{{ gender_detail.0 }}"
@@ -152,10 +145,9 @@
                                 <input type="tel"
                                        name="phone_number"
                                        id="phone_number"
-                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       placeholder="e.g. 09999999999"
                                        maxlength="11"
-                                       value="{% if current_user.userdetails.phone_number %}{{ current_user.userdetails.phone_number }}{% endif %}">
+                                       value="{% if current_user.userdetails.phone_number %}{{ current_user.userdetails.phone_number }}{% endif %}"
+                                       {% if current_user.userdetails.is_hr %} class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required {% else %} class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500" disabled readonly {% endif %}>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="civil_status"
@@ -164,7 +156,7 @@
                                 </label>
                                 <select id="civil_status"
                                         name="civil_status"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                        {% if current_user.userdetails.is_hr %} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required {% else %} class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500" disabled readonly {% endif %}>
                                     <option value="">Choose Civil Status...</option>
                                     {% for civil_status_detail in civil_status_list %}
                                         <option value="{{ civil_status_detail.0 }}"
@@ -181,7 +173,7 @@
                                 </label>
                                 <select id="religion"
                                         name="religion"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                        {% if current_user.userdetails.is_hr %} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required {% else %} class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500" disabled readonly {% endif %}>
                                     <option value="">Choose Religious Affiliation...</option>
                                     {% for religion_detail in religion_list %}
                                         <option value="{{ religion_detail.0 }}"
@@ -198,9 +190,9 @@
                                 </label>
                                 <select id="education"
                                         name="education"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         hx-post="{% url "core:profile" %}"
-                                        hx-vals='{"toggle_degrees_earned": "True"}'>
+                                        hx-vals='{"toggle_degrees_earned": "True"}'
+                                        {% if current_user.userdetails.is_hr %} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required {% else %} class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500" disabled readonly {% endif %}>
                                     <option value="">Choose Educational Attainment...</option>
                                     {% for education_detail in education_list %}
                                         <option value="{{ education_detail.0 }}"
@@ -220,8 +212,7 @@
                                                       name="degrees_earned"
                                                       id="degrees_earned"
                                                       required
-                                                      class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                                      placeholder="Enter degrees earned (separate with newline if multiple)">{% if current_user.userdetails.degrees_earned %}{{ current_user.userdetails.degrees_earned }}{% endif %}</textarea>
+                                                      {% if current_user.userdetails.is_hr %} class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required {% else %} class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500" disabled readonly {% endif %}>{% if current_user.userdetails.degrees_earned %}{{ current_user.userdetails.degrees_earned }}{% endif %}</textarea>
                                         {% endif %}
                                     </div>
                                 {% endblock %}
@@ -234,7 +225,10 @@
                                     </label>
                                     <select id="department"
                                             name="department"
-                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 {% if current_user.userdetails.department and not current_user.userdetails.is_hr %}hidden{% endif %}">
+                                            {% if current_user.userdetails.is_hr %} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required {% else %} class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 {% if current_user.userdetails.department and not current_user.userdetails.is_hr %}hidden{% endif %}"
+                                            disabled
+                                            readonly
+                                            {% endif %}>
                                         <option value="">Choose a Department...</option>
                                         {% for department_details in department_list %}
                                             <option value="{{ department_details.id }}"
@@ -246,7 +240,7 @@
                                     <input type="text"
                                            name="department_display"
                                            id="department_display"
-                                           class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 {% if current_user.userdetails.is_hr %}hidden{% endif %}"
+                                           class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 {% if current_user.userdetails.is_hr or not current_user.userdetails.department %}hidden{% endif %}"
                                            value="{{ current_user.userdetails.department.name }}"
                                            readonly
                                            disabled>
@@ -259,8 +253,11 @@
                                     <input type="text"
                                            name="rank"
                                            id="rank"
-                                           class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 {% if current_user.userdetails.str_date_of_hiring %}hidden{% endif %}"
-                                           value="{% if current_user.userdetails.rank %}{{ current_user.userdetails.rank }}{% endif %}">
+                                           value="{% if current_user.userdetails.rank %}{{ current_user.userdetails.rank }}{% endif %}"
+                                           {% if current_user.userdetails.is_hr %} class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required {% else %} class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 {% if current_user.userdetails.str_date_of_hiring %}hidden{% endif %}"
+                                           disabled
+                                           readonly
+                                           {% endif %}>
                                     <input type="text"
                                            name="rank_display"
                                            id="rank_display"
@@ -277,7 +274,10 @@
                                 </label>
                                 <select id="role"
                                         name="role"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 {% if not current_user.userdetails.is_hr %}hidden{% endif %}">
+                                        {% if current_user.userdetails.is_hr %} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required {% else %} class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 {% if not current_user.userdetails.is_hr %}hidden{% endif %}"
+                                        disabled
+                                        readonly
+                                        {% endif %}>
                                     <option value="">Choose a Role...</option>
                                     {% for role in role_list %}
                                         <option value="{{ role.0 }}"
@@ -350,22 +350,24 @@
                                 <input type="text"
                                        id="employee_number"
                                        name="employee_number"
-                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 {% if current_user.userdetails.employee_number %}hidden{% endif %}"
-                                       placeholder="Enter your employee ID"
-                                       value="{% if current_user.userdetails.employee_number %}{{ current_user.userdetails.employee_number }}{% endif %}">
+                                       value="{% if current_user.userdetails.employee_number %}{{ current_user.userdetails.employee_number }}{% endif %}"
+                                       class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500 {% if not current_user.userdetails.str_date_of_hiring %}hidden{% endif %}"
+                                       disabled
+                                       readonly>
                             {% else %}
                                 <input type="text"
                                        id="employee_number"
                                        name="employee_number"
-                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       placeholder="Enter your employee ID"
-                                       value="{{ current_user.userdetails.employee_number }}">
+                                       value="{{ current_user.userdetails.employee_number }}"
+                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                             {% endif %}
                         </div>
-                        <div class="col-span-6 sm:col-full">
-                            <button class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                                    type="submit">Save</button>
-                        </div>
+                        {% if current_user.userdetails.is_hr %}
+                            <div class="col-span-6 sm:col-full">
+                                <button class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                                        type="submit">Save</button>
+                            </div>
+                        {% endif %}
                     </div>
                 </form>
             </div>
@@ -386,12 +388,10 @@
                                    name="user_id_in_device"
                                    id="user_id_in_device"
                                    class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                   placeholder="UID In Biometric Device"
                                    value="{% if current_user.biometricdetail.user_id_in_device %}{{ current_user.biometricdetail.user_id_in_device }}{% endif %}"
-                                   required
-                                   {% if current_user.biometricdetail.user_id_in_device %}disabled readonly{% endif %}>
+                                   {% if not current_user.userdetails.is_hr %}disabled readonly{% else %}required{% endif %}>
                         </div>
-                        {% if not current_user.biometricdetail.user_id_in_device %}
+                        {% if current_user.userdetails.is_hr %}
                             <div class="col-span-6 sm:col-full">
                                 <button class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
                                         type="submit">Save</button>
