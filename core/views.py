@@ -271,6 +271,7 @@ def change_user_password(request):
             modify_selected_user = "modify_selected_user" in request.POST
             if modify_selected_user:
                 user = User.objects.get(id=request.POST["modify_selected_user"])
+                context['selected_user'] = user
                 response.content = render_block_to_string(
                     "core/modify_user_profile.html",
                     "password_information_section",

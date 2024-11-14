@@ -95,35 +95,35 @@
                                                         Shift
                                                     </th>
                                                     <th scope="col"
-                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                        class="p-4 text-xs font-medium text-gray-500 uppercase dark:text-gray-400 text-center">
                                                         Time In
                                                     </th>
                                                     <th scope="col"
-                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                        class="p-4 text-xs font-medium text-gray-500 uppercase dark:text-gray-400 text-center">
                                                         Time In Difference
                                                     </th>
                                                     <th scope="col"
-                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                        class="p-4 text-xs font-medium text-gray-500 uppercase dark:text-gray-400 text-center">
                                                         Time Out
                                                     </th>
                                                     <th scope="col"
-                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                        class="p-4 text-xs font-medium text-gray-500 uppercase dark:text-gray-400 text-center">
                                                         Time Out Difference
                                                     </th>
                                                     <th scope="col"
-                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                        class="p-4 text-xs font-medium text-gray-500 uppercase dark:text-gray-400 text-center">
                                                         Holiday
                                                     </th>
                                                     <th scope="col"
-                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                        class="p-4 text-xs font-medium text-gray-500 uppercase dark:text-gray-400 text-center">
                                                         Overtime
                                                     </th>
                                                     <th scope="col"
-                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                        class="p-4 text-xs font-medium text-gray-500 uppercase dark:text-gray-400 text-center">
                                                         On Leave
                                                     </th>
                                                     <th scope="col"
-                                                        class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                        class="p-4 text-xs font-medium text-gray-500 uppercase dark:text-gray-400 text-center">
                                                         Modify
                                                     </th>
                                                 </tr>
@@ -288,22 +288,4 @@
             {% endblock %}
         </div>
     </div>
-{% endblock %}
-{% block javascript %}
-    <script>
-        // Function to attach event handlers htmx afterSwap
-        function attachEventHandlers() {
-            $('[data-dismiss-target]').on('click', function() {
-                var dismissTargetId = $(this).attr('data-dismiss-target');
-                var dismissTarget = $(dismissTargetId);
-                if (dismissTarget) {
-                    dismissTarget.toggleClass('hidden');
-                }
-            });
-        }
-
-        $(document).on('htmx:afterSwap', function(event) {
-            attachEventHandlers();
-        });
-    </script>
 {% endblock %}

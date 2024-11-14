@@ -95,21 +95,3 @@
         </div>
     </div>
 {% endblock %}
-{% block javascript %}
-    <script>
-        // Function to attach event handlers htmx afterSwap
-        function attachEventHandlers() {
-            $('[data-dismiss-target]').on('click', function() {
-                var dismissTargetId = $(this).attr('data-dismiss-target');
-                var dismissTarget = $(dismissTargetId);
-                if (dismissTarget) {
-                    dismissTarget.toggleClass('hidden');
-                }
-            });
-        }
-
-        $(document).on('htmx:afterSwap', function(event) {
-            attachEventHandlers();
-        });
-    </script>
-{% endblock %}

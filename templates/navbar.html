@@ -305,8 +305,6 @@
                 </div>
                 <button type="button"
                         class="flex mx-3 text-sm bg-gray-800 rounded-full md:mr-0 flex-shrink-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-                        id="userMenuDropdownButton"
-                        aria-expanded="false"
                         data-dropdown-toggle="userMenuDropdown">
                     <img class="w-8 h-8 rounded-full"
                          src="{% if request.user.userdetails.profile_picture %}{{ request.user.userdetails.profile_picture.url }}{% else %}{% static "assets\imgs\user-profile-icon.jpg" %}{% endif %}"
@@ -319,8 +317,7 @@
                         <span class="block text-sm font-semibold text-gray-900 dark:text-white">{{ request.user.userdetails.get_user_fullname }}</span>
                         <span class="block text-sm font-light text-gray-500 truncate dark:text-gray-400">{{ request.user.email }}</span>
                     </div>
-                    <ul class="py-1 font-light text-gray-500 dark:text-gray-400"
-                        aria-labelledby="userMenuDropdownButton">
+                    <ul class="py-1 font-light text-gray-500 dark:text-gray-400">
                         <li>
                             <a href="{% url "core:profile" %}"
                                class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">My Profile</a>
