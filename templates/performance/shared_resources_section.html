@@ -130,19 +130,6 @@
                                                                     </button>
                                                                 </li>
                                                             {% endif %}
-                                                            {% if not file.is_confidential %}
-                                                                <li>
-                                                                    <a href="{% url "performance:download_resource" file.id %}"
-                                                                       class="block px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Download</a>
-                                                                </li>
-                                                            {% else %}
-                                                                {% if request.user in file.confidential_access_users.all %}
-                                                                    <li>
-                                                                        <a href="{% url "performance:download_resource" file.id %}"
-                                                                           class="block px-4 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Download</a>
-                                                                    </li>
-                                                                {% endif %}
-                                                            {% endif %}
                                                             {% if current_user == file.uploader %}
                                                                 <li>
                                                                     <button type="submit"
