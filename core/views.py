@@ -401,10 +401,11 @@ def user_management(request):
 def add_new_user(request):
     context = {}
     data = request.POST
-    first_name = data["first_name"]
-    last_name = data["last_name"]
-    email = data["email"].lower()
-    employee_id = data["employee_id"]
+    first_name = data["first_name"].strip()
+    middle_name = data["middle_name"].strip()
+    last_name = data["last_name"].strip()
+    email = data["email"].strip().lower()
+    employee_id = data["employee_id"].strip()
 
     if request.method == "POST":
         response = HttpResponse()
@@ -421,6 +422,7 @@ def add_new_user(request):
                 user_details, _, _ = (
                     process_get_or_create_intial_user_one_to_one_fields(user)
                 )
+                user_details[0].middle_name = middle_name
                 user_details[0].employee_number = employee_id
                 user_details[0].save()
                 response = HttpResponseClientRedirect(reverse("core:user_management"))
@@ -433,7 +435,7 @@ def add_new_user(request):
             response = create_global_alert_instance(
                 response, "User credentials already exists.", "INFO"
             )
-            response = reswap(response, "outerHTML")
+            response = reswap(response, "none")
     return response
 
 

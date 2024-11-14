@@ -180,7 +180,7 @@
                 <!-- Modal body -->
                 <div class="p-6 space-y-6">
                     <form hx-post="{% url "core:add_new_user" %}">
-                        <div class="grid grid-cols-6 gap-6">
+                        <div class="flex flex-col gap-2">
                             <div class="col-span-6 sm:col-span-3">
                                 <label for="first-name"
                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -189,7 +189,18 @@
                                 <input type="text"
                                        name="first_name"
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       placeholder="Enter your first name"
+                                       placeholder="Enter employee first name"
+                                       required>
+                            </div>
+                            <div class="col-span-6 sm:col-span-3">
+                                <label for="first-name"
+                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                    Middle Name
+                                </label>
+                                <input type="text"
+                                       name="middle_name"
+                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                       placeholder="Enter employee middle name"
                                        required>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
@@ -200,7 +211,7 @@
                                 <input type="text"
                                        name="last_name"
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       placeholder="Enter your last name"
+                                       placeholder="Enter employee last name"
                                        required>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
@@ -211,7 +222,7 @@
                                 <input type="email"
                                        name="email"
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       placeholder="Enter your email"
+                                       placeholder="Enter employee email"
                                        required>
                             </div>
                             <div class="col-span-6 sm:col-span-3">
@@ -223,7 +234,7 @@
                                        name="employee_id"
                                        id="employee_id"
                                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                       placeholder="Enter your employee ID"
+                                       placeholder="Enter employee ID"
                                        required>
                             </div>
                         </div>
