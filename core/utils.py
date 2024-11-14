@@ -23,7 +23,30 @@ def generate_username_from_employee_id(employee_id):
     """
     Generates a username based on the provided employee ID.
     """
-    return f"emp-id-{employee_id}"
+    user = User.objects.get(id=employee_id)
+
+    if user.is_superuser:
+        return "admin"
+
+    user_details = user.userdetails
+    if (
+        user.first_name
+        and user.last_name
+        and user_details.middle_name
+        and user_details.employee_number
+    ):
+        username = (
+            user.first_name[:1]
+            + user_details.middle_name[:1]
+            + user.last_name[:1]
+            + "_"
+            + str(user_details.employee_number)
+        )
+        username = username.lower()
+    else:
+        username = user.email
+
+    return username
 
 
 def string_to_date(string_date):

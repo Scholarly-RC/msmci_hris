@@ -3,9 +3,41 @@ import logging
 from django.apps import apps
 from django.db import transaction
 
-from core.utils import get_dict_for_user_and_user_details, string_to_date
+from core.utils import (
+    get_dict_for_user_and_user_details,
+    string_to_date,
+    generate_username_from_employee_id,
+)
 
 logger = logging.getLogger(__name__)
+
+
+@transaction.atomic
+def process_update_username(user_id=None):
+    """
+    Updates the usernames of users based on their employee ID.
+    If a user_id is provided, updates the username for that specific user.
+    If no user_id is provided, updates the usernames for all users in the system.
+    """
+
+    UserModel = apps.get_model("auth", "User")
+
+    def _update_user_username(user_id):
+        username = generate_username_from_employee_id(user_id)
+        user = UserModel.objects.get(id=user_id)
+        user.username = username
+        user.save()
+
+    try:
+        if not user_id:
+            users = UserModel.objects.all()
+            for user in users:
+                _update_user_username(user_id=user.id)
+        else:
+            _update_user_username(user_id=user_id)
+    except Exception:
+        logger.error("Error occurred while updating usernames", exc_info=True)
+        raise
 
 
 @transaction.atomic
@@ -38,6 +70,7 @@ def process_update_user_and_user_details(user_instance, querydict):
 
         for attr, value in user_payload.items():
             setattr(user_instance, attr, value)
+
         user_instance.save()
 
         date_fields = ["date_of_birth", "date_of_hiring"]
@@ -53,6 +86,8 @@ def process_update_user_and_user_details(user_instance, querydict):
             setattr(user_details, attr, value)
 
         user_details.save()
+
+        process_update_username(user_id=user_instance.id)
 
         return user_instance
     except Exception:
