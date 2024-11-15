@@ -85,6 +85,13 @@ def get_user_profile_picture_directory_path(instance, filename):
     return f"{instance.user.id}/profile_picture/{new_filename}"
 
 
+def get_personal_files_directory_path(instance, filename):
+    """
+    Returns the file path for saving a personal file based on the uploader's ID and the filename.
+    """
+    return f"{instance.owner.id}/personal_files/{filename}"
+
+
 def get_dict_for_user_and_user_details(querydict):
     """
     Extracts and organizes user and user details fields from a QueryDict.
@@ -215,3 +222,19 @@ def check_if_biometric_uid_exists(current_user, uid):
         .exclude(user=current_user)
         .exists()
     )
+
+
+def get_personal_file_categories():
+    """
+    Retrieves the choices defined in the PersonalFileCategory model.
+    """
+    PersonalFileModel = apps.get_model("core", "PersonalFile")
+    return PersonalFileModel.PersonalFileCategory.choices
+
+
+def get_user_personal_files(user):
+    personal_files = {}
+    for category in get_personal_file_categories():
+        personal_files[category[0]] = user.personal_files.filter(category=category[0])
+
+    return personal_files

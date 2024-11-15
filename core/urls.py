@@ -13,6 +13,31 @@ urlpatterns = [
     ),
     # USER PROFILE #
     path(
+        "profile/preview-personal-file",
+        core_views.preview_personal_file,
+        name="preview_personal_file",
+    ),
+    path(
+        "profile/reload-personal-files-section",
+        core_views.reload_personal_files_section,
+        name="reload_personal_files_section",
+    ),
+    path(
+        "profile/delete-selected-personal-file",
+        core_views.delete_selected_personal_file,
+        name="delete_selected_personal_file",
+    ),
+    path(
+        "profile/change-selected-category",
+        core_views.change_selected_category,
+        name="change_selected_category",
+    ),
+    path(
+        "profile/add-personal-files",
+        core_views.add_personal_files,
+        name="add_personal_files",
+    ),
+    path(
         "profile/change-user-password",
         core_views.change_user_password,
         name="change_user_password",
@@ -65,6 +90,11 @@ urlpatterns = [
         "notifications/button-indicator",
         core_views.notification_button_indicator,
         name="notification_button_indicator",
+    ),
+    path(
+        "close-modals",
+        core_views.core_module_close_modals,
+        name="core_module_close_modals",
     ),
     path("", core_views.main, name="main"),
 ]

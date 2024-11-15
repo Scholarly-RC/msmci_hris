@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.contrib import messages
@@ -7,19 +8,27 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.db.utils import IntegrityError
 from django.http import HttpResponse
+from django.http.request import QueryDict
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django_htmx.http import HttpResponseClientRedirect, reswap, retarget
+from django_htmx.http import (
+    HttpResponseClientRedirect,
+    reswap,
+    retarget,
+    trigger_client_event,
+)
 from openpyxl import load_workbook
 from render_block import render_block_to_string
 
 from core.actions import (
+    process_add_personal_file,
     process_change_profile_picture,
+    process_delete_personal_file,
     process_get_or_create_intial_user_one_to_one_fields,
     process_update_user_and_user_details,
 )
 from core.decorators import hr_required
-from core.models import Department, Notification
+from core.models import Department, Notification, PersonalFile
 from core.notification import mark_notification_read, user_has_unread_notification
 from core.utils import (
     check_if_biometric_uid_exists,
@@ -29,12 +38,15 @@ from core.utils import (
     get_education_list,
     get_education_list_with_degrees_earned,
     get_gender_list,
+    get_personal_file_categories,
     get_religion_list,
     get_role_list,
+    get_user_personal_files,
     get_users_sorted_by_department,
     profile_picture_validation,
 )
-from core.validations import password_validation
+from core.validations import password_validation, personal_file_validation
+from hris.exceptions import PersonalFilesBlockNotFound
 from hris.utils import create_global_alert_instance
 from payroll.utils import get_rank_choices
 
@@ -206,6 +218,8 @@ def user_profile(request):
     religion_list = get_religion_list()
     roles = get_role_list()
     genders = get_gender_list()
+    personal_files = get_user_personal_files(user=user)
+
     context = {
         "current_user": user,
         "department_list": departments,
@@ -214,6 +228,7 @@ def user_profile(request):
         "religion_list": religion_list,
         "role_list": roles,
         "genders_list": genders,
+        "personal_files": personal_files,
     }
 
     if (
@@ -271,7 +286,7 @@ def change_user_password(request):
             modify_selected_user = "modify_selected_user" in request.POST
             if modify_selected_user:
                 user = User.objects.get(id=request.POST["modify_selected_user"])
-                context['selected_user'] = user
+                context["selected_user"] = user
                 response.content = render_block_to_string(
                     "core/modify_user_profile.html",
                     "password_information_section",
@@ -365,6 +380,212 @@ def upload_user_profile_picture(request):
             )
 
     return response
+
+
+@login_required(login_url="/login")
+def add_personal_files(request):
+    context = {}
+    user = request.user
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "GET":
+            file_categories = get_personal_file_categories()
+            context["file_categories"] = file_categories
+            response.content = render_block_to_string(
+                "core/user_profile.html", "add_file_modal_content", context
+            )
+            response = trigger_client_event(
+                response, "initializeAddFileModal", after="swap"
+            )
+            response = retarget(response, "#add_file_modal_content")
+            response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "POST":
+            data = request.POST
+            file_data = request.FILES
+            try:
+                errors = personal_file_validation(file_data=file_data)
+                if errors:
+                    response = create_global_alert_instance(
+                        response,
+                        f"{errors[0]}",
+                        "WARNING",
+                    )
+                    response = reswap(response, "none")
+                    return response
+
+                new_file = process_add_personal_file(
+                    user=user, payload=data, file_data=file_data
+                )
+                response = create_global_alert_instance(
+                    response,
+                    "Personal file has been successfully added.",
+                    "SUCCESS",
+                )
+                response = trigger_client_event(
+                    response, "closeAddFileModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response,
+                    "reloadPersonalFilesSection",
+                    {"category": new_file.category},
+                    after="swap",
+                )
+                response = reswap(response, "none")
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while adding the personal file. Error details: {error}.",
+                    "DANGER",
+                )
+                response = reswap(response, "none")
+                return response
+
+
+@login_required(login_url="/login")
+def change_selected_category(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        data = request.POST
+        selected_category = data.get("selected_category")
+        if selected_category in [
+            PersonalFile.PersonalFileCategory.DIPLOMA.value,
+            PersonalFile.PersonalFileCategory.TRANSCRIPT_OF_RECORDS.value,
+        ]:
+            context["academic_degrees"] = get_education_list()
+
+        if selected_category in [
+            PersonalFile.PersonalFileCategory.CERTIFICATES.value,
+            PersonalFile.PersonalFileCategory.MEDICAL_RECORDS.value,
+        ]:
+            context["show_year"] = True
+
+        response.content = render_block_to_string(
+            "core/user_profile.html", "additional_personal_file_details", context
+        )
+
+        response = retarget(response, "#additional_personal_file_details")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+@login_required(login_url="/login")
+def delete_selected_personal_file(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "POST":
+            data = request.POST
+            file_id = data.get("file")
+            file = PersonalFile.objects.get(id=file_id)
+            context["file_to_delete"] = file
+
+            response.content = render_block_to_string(
+                "core/user_profile.html",
+                "personal_file_delete_confirmation_modal_content",
+                context,
+            )
+
+            response = trigger_client_event(
+                response, "initializePersonalFileDeleteConfigmationModal", after="swap"
+            )
+
+            response = retarget(
+                response, "#personal_file_delete_confirmation_modal_content"
+            )
+            response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "DELETE":
+            data = QueryDict(request.body)
+            try:
+                category = process_delete_personal_file(payload=data)
+                response = create_global_alert_instance(
+                    response, "Selected Personal File successfully deleted.", "SUCCESS"
+                )
+                response = trigger_client_event(
+                    response, "closePersonalFileDeleteConfigmationModal", after="swap"
+                )
+                response = trigger_client_event(
+                    response,
+                    "reloadPersonalFilesSection",
+                    {"category": category},
+                    after="swap",
+                )
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while deleting the personal file. Error details: {error}.",
+                    "DANGER",
+                )
+                response = reswap(response, "none")
+                return response
+
+
+@login_required(login_url="/login")
+def reload_personal_files_section(request):
+    context = {}
+    user = request.user
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        data = request.POST
+        details = json.loads(data.get("details", {}))
+        personal_files = get_user_personal_files(user=user)
+        category = details.get("category")
+        context["personal_files"] = personal_files
+
+        if category == PersonalFile.PersonalFileCategory.DIPLOMA:
+            block = "diploma_content"
+        elif category == PersonalFile.PersonalFileCategory.TRANSCRIPT_OF_RECORDS:
+            block = "tor_content"
+        elif category == PersonalFile.PersonalFileCategory.ELIGIBILITY:
+            block = "eligibility_content"
+        elif category == PersonalFile.PersonalFileCategory.CERTIFICATES:
+            block = "certificates_content"
+        elif category == PersonalFile.PersonalFileCategory.SEMINARS_TRAININGS:
+            block = "seminars_training_content"
+        elif category == PersonalFile.PersonalFileCategory.MEDICAL_RECORDS:
+            block = "medical_records_content"
+        elif category == PersonalFile.PersonalFileCategory.OTHERS:
+            block = "others_content"
+        else:
+            raise PersonalFilesBlockNotFound("Selected Personal File block is invalid.")
+
+        response.content = render_block_to_string(
+            "core/user_profile.html",
+            block,
+            context,
+        )
+        response = retarget(response, f"#{block}")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+@login_required(login_url="/login")
+def preview_personal_file(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        data = request.POST
+        file_id = data.get("file")
+        file_to_preview = PersonalFile.objects.get(id=file_id)
+        context["file_to_preview"] = file_to_preview
+
+        response.content = render_block_to_string(
+            "core/user_profile.html",
+            "preview_personal_file_modal_content",
+            context,
+        )
+        response = trigger_client_event(
+            response, "initializePreviewPersonalFileModal", after="swap"
+        )
+        response = retarget(response, "#preview_personal_file_modal_content")
+        response = reswap(response, "outerHTML")
+        return response
 
 
 ### USER MANAGEMENT ###
@@ -667,3 +888,14 @@ def open_notification(request):
             )
             response = reswap(response, "none")
             return response
+
+
+# App Shared View
+def core_module_close_modals(request):
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        event_name = data.get("event_name")
+        response = HttpResponse()
+        response = trigger_client_event(response, event_name, after="swap")
+        response = reswap(response, "none")
+        return response

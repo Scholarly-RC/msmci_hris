@@ -4,10 +4,11 @@ from django.apps import apps
 from django.db import transaction
 
 from core.utils import (
+    generate_username_from_employee_id,
     get_dict_for_user_and_user_details,
     string_to_date,
-    generate_username_from_employee_id,
 )
+from performance.utils import extract_filename_and_extension
 
 logger = logging.getLogger(__name__)
 
@@ -117,3 +118,47 @@ def process_get_or_create_intial_user_one_to_one_fields(user):
         (biometric_details, biometric_details_created),
         (leave_credit_details, leave_credit_created),
     ]
+
+
+@transaction.atomic
+def process_add_personal_file(user, payload, file_data):
+    """
+    Adds a personal file with a selected category to the database.
+    """
+    PersonalFileModel = apps.get_model("core", "PersonalFile")
+    try:
+        file = file_data.get("personal_file")
+        file_name, _ = extract_filename_and_extension(filename=file.name)
+        category = payload.get("selected_category")
+        personal_file_data = {
+            "owner": user,
+            "name": file_name,
+            "file": file,
+            "category": category,
+        }
+        if "academic_degree" in payload:
+            personal_file_data["academic_degree"] = payload.get("academic_degree")
+
+        if "year" in payload:
+            personal_file_data["year"] = int(payload.get("year"))
+
+        new_file = PersonalFileModel.objects.create(**personal_file_data)
+        return new_file
+    except Exception:
+        logger.error("An error occurred while adding a Personal File", exc_info=True)
+        raise
+
+
+@transaction.atomic
+def process_delete_personal_file(payload):
+    PersonalFileModel = apps.get_model("core", "PersonalFile")
+    file_id = payload.get("file")
+    try:
+        file = PersonalFileModel.objects.get(id=file_id)
+        category = file.category
+        file.file.delete()
+        file.delete()
+        return category
+    except Exception:
+        logger.error("An error occurred while deleting a Personal File", exc_info=True)
+        raise

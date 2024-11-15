@@ -20,3 +20,7 @@ class InvalidApproverPermission(Exception):
 
 class InvalidApproverResponse(Exception):
     pass
+
+
+class PersonalFilesBlockNotFound(Exception):
+    pass

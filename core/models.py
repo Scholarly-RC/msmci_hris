@@ -1,10 +1,16 @@
 import datetime
+import mimetypes
 
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from core.utils import date_to_string, get_user_profile_picture_directory_path
+from core.utils import (
+    date_to_string,
+    get_personal_files_directory_path,
+    get_user_profile_picture_directory_path,
+)
+from performance.utils import extract_filename_and_extension
 
 
 class UserDetails(models.Model):
@@ -248,3 +254,76 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification for {self.recipient.userdetails.get_user_fullname()} on {date_to_string(self.date)}."
+
+
+class PersonalFile(models.Model):
+    class PersonalFileCategory(models.TextChoices):
+        DIPLOMA = "D", "Diploma"
+        TRANSCRIPT_OF_RECORDS = "TOR", "Transcript of Records"
+        ELIGIBILITY = "E", "Eligibility"
+        CERTIFICATES = "C", "Certificates"
+        SEMINARS_TRAININGS = "ST", "Seminars & Trainings"
+        MEDICAL_RECORDS = "MR", "Medical Records"
+        OTHERS = "O", "Others"
+
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.RESTRICT,
+        null=True,
+        blank=True,
+        related_name="personal_files",
+    )
+
+    name = models.CharField(
+        _("Personal File Name"), max_length=500, null=True, blank=True
+    )
+
+    file = models.FileField(
+        _("Personal File"),
+        null=True,
+        blank=True,
+        upload_to=get_personal_files_directory_path,
+    )
+
+    category = models.CharField(
+        _("Personal File Category"),
+        max_length=3,
+        choices=PersonalFileCategory.choices,
+        default=None,
+        null=True,
+        blank=True,
+    )
+
+    academic_degree = models.CharField(
+        _("Personal File Academic Degree"),
+        max_length=2,
+        choices=UserDetails.EducationalAttainment.choices,
+        default=None,
+        null=True,
+        blank=True,
+    )
+
+    year = models.IntegerField(_("Personal File Year"), null=True, blank=True)
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Personal Files"
+
+    def __str__(self):
+        return f"User #{self.owner.id} - {self.get_file_display()} - {self.PersonalFileCategory(self.category).name}"
+
+    def get_file_extension(self):
+        _, ext = extract_filename_and_extension(self.file.name)
+        return ext
+
+    def get_file_display(self):
+        return self.name + self.get_file_extension()
+
+    def is_file_image(self):
+        mime_type, _ = mimetypes.guess_type(self.file.name)
+        return mime_type and mime_type.startswith("image")
+
+    def is_file_pdf(self):
+        return self.get_file_extension() == ".pdf"
