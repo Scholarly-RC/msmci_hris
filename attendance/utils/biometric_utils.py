@@ -1,5 +1,4 @@
 from django.apps import apps
-from django.utils.timezone import make_aware
 
 
 def process_biometric_data_from_device(attendance_data):
@@ -12,7 +11,7 @@ def process_biometric_data_from_device(attendance_data):
 
     punch = _get_punch_value(attendance_data.punch)
 
-    timestamp = make_aware(attendance_data.timestamp)
+    timestamp = attendance_data.timestamp
 
     # TODO: Reserve for future usage
     status = attendance_data.status
@@ -53,9 +52,3 @@ def _get_punch_value(value):
 
     if value == 1:
         return AttendanceRecordModel.Punch.TIME_OUT.value
-
-    if value == 4:
-        return AttendanceRecordModel.Punch.OVERTIME_IN.value
-
-    if value == 5:
-        return AttendanceRecordModel.Punch.OVERTIME_OUT.value

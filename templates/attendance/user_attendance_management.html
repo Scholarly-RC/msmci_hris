@@ -100,15 +100,7 @@
                                                     </th>
                                                     <th scope="col"
                                                         class="p-4 text-xs font-medium text-gray-500 uppercase dark:text-gray-400 text-center">
-                                                        Time In Difference
-                                                    </th>
-                                                    <th scope="col"
-                                                        class="p-4 text-xs font-medium text-gray-500 uppercase dark:text-gray-400 text-center">
                                                         Time Out
-                                                    </th>
-                                                    <th scope="col"
-                                                        class="p-4 text-xs font-medium text-gray-500 uppercase dark:text-gray-400 text-center">
-                                                        Time Out Difference
                                                     </th>
                                                     <th scope="col"
                                                         class="p-4 text-xs font-medium text-gray-500 uppercase dark:text-gray-400 text-center">
@@ -135,6 +127,7 @@
                                                             <td class="flex items-center p-4 mr-12 space-x-6 whitespace-nowrap">
                                                                 <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
                                                                     <div class="text-base font-semibold text-gray-900 dark:text-white">{{ user_shift_data.day }}</div>
+                                                                    <p class="text-gray-500 dark:text-gray-400">{{ user_shift_data.day_name }}</p>
                                                                 </div>
                                                             </td>
                                                             <td class="max-w-sm p-4 overflow-hidden text-base font-bold text-gray-500 truncate xl:max-w-xs dark:text-gray-400">
@@ -147,49 +140,19 @@
                                                                     </div>
                                                                 </div>
                                                             </td>
-                                                            <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                                                {% if record_edit_mode %}
-                                                                    <div class="w-32 relative mx-auto">
-                                                                        <label for="clock_in_time">Clock In</label>
-                                                                        <input type="time"
-                                                                               id="clock_in_time"
-                                                                               name="clock_in_time"
-                                                                               class="text-center bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                                               value="{{ user_shift_data.clocked_time.clock_in_str }}"
-                                                                               required />
-                                                                    </div>
-                                                                {% else %}
-                                                                    {% if user_shift_data.clocked_time.clock_in %}{{ user_shift_data.clocked_time.clock_in|date:"h:i a" }}{% endif %}
-                                                                {% endif %}
+                                                            <td>
+                                                                <div class="flex flex-col p-4 whitespace-nowrap text-center">
+                                                                    {% for data in user_shift_data.clocked_time_data.IN %}
+                                                                        <p class="text-base font-medium text-gray-900 dark:text-white">{{ data.get_localtime_time|date:"h:i a" }}</p>
+                                                                    {% endfor %}
+                                                                </div>
                                                             </td>
-                                                            <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                                                {% if not record_edit_mode %}
-                                                                    {% if user_shift_data.clocked_time.clock_in_time_diff_formatted %}
-                                                                        {{ user_shift_data.clocked_time.clock_in_time_diff_formatted }}
-                                                                    {% endif %}
-                                                                {% endif %}
-                                                            </td>
-                                                            <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                                                {% if record_edit_mode %}
-                                                                    <div class="w-32 relative mx-auto">
-                                                                        <label for="clock_out_time">Clock Out</label>
-                                                                        <input type="time"
-                                                                               id="clock_out_time"
-                                                                               name="clock_out_time"
-                                                                               class="text-center bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                                               value="{{ user_shift_data.clocked_time.clock_out_str }}"
-                                                                               required />
-                                                                    </div>
-                                                                {% else %}
-                                                                    {% if user_shift_data.clocked_time.clock_out %}{{ user_shift_data.clocked_time.clock_out|date:"h:i a" }}{% endif %}
-                                                                {% endif %}
-                                                            </td>
-                                                            <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                                                {% if not record_edit_mode %}
-                                                                    {% if user_shift_data.clocked_time.clock_out_time_diff_formatted %}
-                                                                        {{ user_shift_data.clocked_time.clock_out_time_diff_formatted }}
-                                                                    {% endif %}
-                                                                {% endif %}
+                                                            <td>
+                                                                <div class="flex flex-col p-4 whitespace-nowrap text-center">
+                                                                    {% for data in user_shift_data.clocked_time_data.OUT %}
+                                                                        <p class="text-base font-medium text-gray-900 dark:text-white">{{ data.get_localtime_time|date:"h:i a" }}</p>
+                                                                    {% endfor %}
+                                                                </div>
                                                             </td>
                                                             <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
                                                                 {% if user_shift_data.holidays %}
@@ -226,52 +189,22 @@
                                                                 {% endif %}
                                                             </td>
                                                             <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                                {% if user_shift_data.daily_user_shift %}
-                                                                    {% if record_edit_mode %}
-                                                                        <div class="flex flex-row">
-                                                                            <button type="button"
-                                                                                    hx-post="{% url "attendance:toggle_user_management_record_edit" %}"
-                                                                                    hx-vals='{"toggle_edit_mode": "off", "selected_day": {{ user_shift_data.day }}}'
-                                                                                    hx-include="[name='selected_user'], [name='attendance_year'], [name='attendance_month']"
-                                                                                    hx-target="closest tr">
-                                                                                <svg class="w-6 h-6"
-                                                                                     xmlns="http://www.w3.org/2000/svg"
-                                                                                     fill="currentColor"
-                                                                                     viewBox="0 0 24 24">
-                                                                                    <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm3.707,12.293a1,1,0,1,1-1.414,1.414L12,13.414,9.707,15.707a1,1,0,0,1-1.414-1.414L10.586,12,8.293,9.707A1,1,0,0,1,9.707,8.293L12,10.586l2.293-2.293a1,1,0,0,1,1.414,1.414L13.414,12Z" />
-                                                                                </svg>
-                                                                            </button>
-                                                                            <button type="button"
-                                                                                    hx-post="{% url "attendance:toggle_user_management_record_edit" %}"
-                                                                                    hx-vals='{"save_record": "True", "selected_day": {{ user_shift_data.day }}}'
-                                                                                    hx-include="[name='selected_user'], [name='attendance_year'], [name='attendance_month'], [name='clock_in_time'], [name='clock_out_time']"
-                                                                                    hx-target="closest tr">
-                                                                                <svg class="w-6 h-6"
-                                                                                     xmlns="http://www.w3.org/2000/svg"
-                                                                                     fill="currentColor"
-                                                                                     viewBox="0 0 24 24">
-                                                                                    <path d="M21 20V8.414a1 1 0 0 0-.293-.707l-4.414-4.414A1 1 0 0 0 15.586 3H4a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1zM9 8h4a1 1 0 0 1 0 2H9a1 1 0 0 1 0-2zm7 11H8v-4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z" />
-                                                                                </svg>
-                                                                            </button>
-                                                                        </div>
-                                                                    {% else %}
-                                                                        <div class="flex justify-center">
-                                                                            <button type="button"
-                                                                                    hx-post="{% url "attendance:toggle_user_management_record_edit" %}"
-                                                                                    hx-vals='{"toggle_edit_mode": "on", "selected_day": {{ user_shift_data.day }}}'
-                                                                                    hx-include="[name='selected_user'], [name='attendance_year'], [name='attendance_month']"
-                                                                                    hx-target="closest tr">
-                                                                                <svg class="w-6 h-6"
-                                                                                     fill="currentColor"
-                                                                                     viewBox="0 0 20 20"
-                                                                                     xmlns="http://www.w3.org/2000/svg">
-                                                                                    <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path>
-                                                                                    <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd">
-                                                                                    </path>
-                                                                                </svg>
-                                                                            </button>
-                                                                        </div>
-                                                                    {% endif %}
+                                                                {% if user_shift_data.clocked_time_data.IN or user_shift_data.clocked_time_data.OUT %}
+                                                                    <div class="flex justify-center">
+                                                                        <button type="button"
+                                                                                hx-get="{% url "attendance:modify_user_clocked_time" %}"
+                                                                                hx-vals='{"selected_day": {{ user_shift_data.day }}}'
+                                                                                hx-include="[name='selected_user'], [name='attendance_year'], [name='attendance_month']">
+                                                                            <svg class="w-6 h-6"
+                                                                                 fill="currentColor"
+                                                                                 viewBox="0 0 20 20"
+                                                                                 xmlns="http://www.w3.org/2000/svg">
+                                                                                <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path>
+                                                                                <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd">
+                                                                                </path>
+                                                                            </svg>
+                                                                        </button>
+                                                                    </div>
                                                                 {% endif %}
                                                             </td>
                                                         </tr>
@@ -286,6 +219,261 @@
                     </div>
                 </div>
             {% endblock %}
+            <!-- Modify Clocked Time Modal -->
+            <div id="modify_clocked_time_modal"
+                 tabindex="-1"
+                 aria-hidden="true"
+                 class="hidden fixed top-0 bottom-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-auto max-h-full">
+                {% block modify_clocked_time_modal_container %}
+                    <div id="modify_clocked_time_modal_container"
+                         class="relative w-full max-w-4xl max-h-full">
+                        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 mx-4">
+                            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Modify Clocked Time</h3>
+                                <button hx-post="{% url "attendance:attendance_module_close_modals" %}"
+                                        hx-vals='{"event_name": "closeModifyClockedTimeModal"}'
+                                        type="button"
+                                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                                    <svg class="w-3 h-3"
+                                         aria-hidden="true"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         fill="none"
+                                         viewBox="0 0 14 14">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="p-4 md:p-5 h-[20rem] md:h-[35rem] overflow-y-auto">
+                                <div class="text-gray-900 whitespace-nowrap dark:text-white">
+                                    <div class="text-base font-semibold">Employee: {{ selected_user.userdetails.get_user_fullname|title }}</div>
+                                    <div class="text-base font-semibold">
+                                        Date: <u>{{ selected_date }}</u>
+                                    </div>
+                                </div>
+                                <div class="flex flex-row h-[15.5rem] overflow-y-auto">
+                                    <div class="w-full relative overflow-x-auto">
+                                        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                <tr>
+                                                    <th scope="col" class="px-6 py-3">Clock In</th>
+                                                    <th scope="col" class="px-6 py-3">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for data in clocked_time_data.IN %}
+                                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                                        <th scope="row"
+                                                            class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                            {{ data.get_localtime_time|date:"h:i a" }}
+                                                        </th>
+                                                        {% block clocked_in_action_section %}
+                                                            <td class="px-2 py-2">
+                                                                {% if delete_confirmation %}
+                                                                    <button hx-delete="{% url 'attendance:delete_user_clocked_time' %}"
+                                                                            hx-vals='{"attendance_record": {{ data.id }}}'
+                                                                            type="button"
+                                                                            class="px-2 py-1 text-xs font-medium text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 rounded-lg text-center dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900">
+                                                                        Confirm
+                                                                    </button>
+                                                                    <button hx-post="{% url 'attendance:delete_user_clocked_time' %}"
+                                                                            hx-vals='{"attendance_record": {{ data.id }}, "punch": "IN", "cancel": "true"}'
+                                                                            type="button"
+                                                                            class="px-2 py-1 text-xs font-medium text-yellow-400 hover:text-white border border-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:outline-none focus:ring-yellow-300 rounded-lg text-center dark:border-yellow-300 dark:text-yellow-300 dark:hover:text-white dark:hover:bg-yellow-400 dark:focus:ring-yellow-900">
+                                                                        Cancel
+                                                                    </button>
+                                                                {% else %}
+                                                                    <button hx-get="{% url 'attendance:edit_user_clocked_time' %}"
+                                                                            hx-vals='{"attendance_record": {{ data.id }}, "selected_date": "{{ selected_date_str }}"}'
+                                                                            type="button"
+                                                                            class="px-2 py-1 text-xs font-medium text-blue-700 hover:text-white border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg text-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800">
+                                                                        Edit
+                                                                    </button>
+                                                                    <button hx-post="{% url 'attendance:delete_user_clocked_time' %}"
+                                                                            hx-vals='{"attendance_record": {{ data.id }}, "punch": "IN"}'
+                                                                            type="button"
+                                                                            class="px-2 py-1 text-xs font-medium text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 rounded-lg text-center dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900">
+                                                                        Delete
+                                                                    </button>
+                                                                {% endif %}
+                                                            </td>
+                                                        {% endblock %}
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="w-full relative overflow-x-auto">
+                                        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                <tr>
+                                                    <th scope="col" class="px-6 py-3">Clock Out</th>
+                                                    <th scope="col" class="px-6 py-3">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for data in clocked_time_data.OUT %}
+                                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                                        <th scope="row"
+                                                            class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                            {{ data.get_localtime_time|date:"h:i a" }}
+                                                        </th>
+                                                        {% block clocked_out_action_section %}
+                                                            <td class="px-2 py-2">
+                                                                {% if delete_confirmation %}
+                                                                    <button hx-delete="{% url 'attendance:delete_user_clocked_time' %}"
+                                                                            hx-vals='{"attendance_record": {{ data.id }}}'
+                                                                            type="button"
+                                                                            class="px-2 py-1 text-xs font-medium text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 rounded-lg text-center dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900">
+                                                                        Confirm
+                                                                    </button>
+                                                                    <button hx-post="{% url 'attendance:delete_user_clocked_time' %}"
+                                                                            hx-vals='{"attendance_record": {{ data.id }}, "punch": "IN", "cancel": "true"}'
+                                                                            type="button"
+                                                                            class="px-2 py-1 text-xs font-medium text-yellow-400 hover:text-white border border-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:outline-none focus:ring-yellow-300 rounded-lg text-center dark:border-yellow-300 dark:text-yellow-300 dark:hover:text-white dark:hover:bg-yellow-400 dark:focus:ring-yellow-900">
+                                                                        Cancel
+                                                                    </button>
+                                                                {% else %}
+                                                                    <button hx-get="{% url 'attendance:edit_user_clocked_time' %}"
+                                                                            hx-vals='{"attendance_record": {{ data.id }}, "selected_date": "{{ selected_date_str }}"}'
+                                                                            type="button"
+                                                                            class="px-2 py-1 text-xs font-medium text-blue-700 hover:text-white border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg text-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800">
+                                                                        Edit
+                                                                    </button>
+                                                                    <button hx-post="{% url 'attendance:delete_user_clocked_time' %}"
+                                                                            hx-vals='{"attendance_record": {{ data.id }}, "punch": "OUT"}'
+                                                                            type="button"
+                                                                            class="px-2 py-1 text-xs font-medium text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 rounded-lg text-center dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900">
+                                                                        Delete
+                                                                    </button>
+                                                                {% endif %}
+                                                            </td>
+                                                        {% endblock %}
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                {% block modify_clocked_time_section %}
+                                    <div id="modify_clocked_time_section">
+                                        <form {% if for_update %} hx-post="{% url 'attendance:edit_user_clocked_time' %}" hx-vals='{"attendance_record": {{ attendance_record.id }}, "selected_date": "{{ selected_date_str }}"}' {% else %} hx-post="{% url 'attendance:add_user_clocked_time' %}" hx-vals='{"selected_user": {{ selected_user.id }}, "selected_date": "{{ selected_date_str }}"}' {% endif %}
+                                              class="w-[20rem] flex flex-col gap-2 mx-auto bg-white dark:bg-gray-800 p-2">
+                                            <div>
+                                                <label for="clocked_time"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    Select time:
+                                                </label>
+                                                <div class="flex">
+                                                    <input type="time"
+                                                           id="clocked_time"
+                                                           name="clocked_time"
+                                                           class="rounded-none rounded-s-lg bg-gray-50 border text-gray-900 leading-none focus:ring-blue-500 focus:border-blue-500 block flex-1 w-full text-sm border-gray-300 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                           value="{{ attendance_record.get_localtime_time_str }}"
+                                                           required>
+                                                    <span class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border rounded-s-0 border-s-0 border-gray-300 rounded-e-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600">
+                                                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400"
+                                                             aria-hidden="true"
+                                                             xmlns="http://www.w3.org/2000/svg"
+                                                             fill="currentColor"
+                                                             viewBox="0 0 24 24">
+                                                            <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z" clip-rule="evenodd" />
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select Punch:</label>
+                                                <ul class="items-center w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg sm:flex dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                                    <li class="w-full border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+                                                        <div class="flex items-center ps-3">
+                                                            <input id="clock_in_punch"
+                                                                   type="radio"
+                                                                   value="IN"
+                                                                   name="punch"
+                                                                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                                                                   {% if attendance_record.punch == 'IN' %}checked{% endif %}
+                                                                   required>
+                                                            <label for="clock_in_punch"
+                                                                   class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                                Clock In
+                                                            </label>
+                                                        </div>
+                                                    </li>
+                                                    <li class="w-full dark:border-gray-600">
+                                                        <div class="flex items-center ps-3">
+                                                            <input id="clock_out_punch"
+                                                                   type="radio"
+                                                                   value="OUT"
+                                                                   name="punch"
+                                                                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                                                                   {% if attendance_record.punch == 'OUT' %}checked{% endif %}
+                                                                   required>
+                                                            <label for="clock_out_punch"
+                                                                   class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                                                Clock Out
+                                                            </label>
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <div class="w-full flex justify-center">
+                                                <button type="submit"
+                                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                                    {% if for_update %}
+                                                        Save
+                                                    {% else %}
+                                                        Add
+                                                    {% endif %}
+                                                </button>
+                                                {% if for_update %}
+                                                    <button hx-get="{% url 'attendance:edit_user_clocked_time' %}"
+                                                            hx-vals='{"cancel": "True"}'
+                                                            type="button"
+                                                            class="text-yellow-400 hover:text-white border border-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-yellow-300 dark:text-yellow-300 dark:hover:text-white dark:hover:bg-yellow-400 dark:focus:ring-yellow-900">
+                                                        Cancel
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </form>
+                                    </div>
+                                {% endblock %}
+                            </div>
+                        </div>
+                    </div>
+                {% endblock %}
+            </div>
         </div>
     </div>
+{% endblock %}
+{% block javascript %}
+    <script>
+        htmx.onLoad(function(content) {
+            content.addEventListener("reloadModifyClockedTimeList", (event) => {
+                const {
+                    userId,
+                    selectedDate,
+                } = event.detail;
+
+                const safeDetail = {
+                    userId,
+                    selectedDate,
+                };
+
+                htmx.ajax("POST", '{% url "attendance:reload_modify_clocked_time_list" %}', {
+                    values: {
+                        details: JSON.stringify(safeDetail),
+                    },
+                });
+            });
+
+
+            // Initialize specific modals
+            const initializeModifyClockedTimeModal = () => initializeModal('modify_clocked_time_modal');
+            const closeModifyClockedTimeModal = () => closeModal('modify_clocked_time_modal');
+
+            // Event listeners for modals
+            content.addEventListener('openModifyClockedTimeModal', initializeModifyClockedTimeModal);
+            content.addEventListener('closeModifyClockedTimeModal', closeModifyClockedTimeModal);
+        })
+    </script>
 {% endblock %}

@@ -3,9 +3,9 @@ from datetime import datetime
 
 from django.apps import apps
 from django.db import transaction
+from django.utils.timezone import make_aware
 
 from attendance.utils.assign_shift_utils import get_employee_assignments
-from attendance.utils.biometric_utils import process_biometric_data_from_device
 from attendance.utils.date_utils import (
     get_date_object,
     get_date_object_from_date_str,
@@ -109,41 +109,76 @@ def process_bulk_daily_shift_schedule(
 
 
 @transaction.atomic
-def manually_set_user_clocked_time(user, selected_date, clock_in_time, clock_out_time):
+def manually_set_user_clocked_time(payload):
     """
-    Manually sets or updates the clock-in and clock-out times for a user on a specific date.
-    If provided, updates the clock-in and/or clock-out times in the attendance records.
+    Updates or creates an attendance record for a user with the specified clock-in/out time.
+    Uses the provided user ID, date, and time to set the record.
     """
+    UserModel = apps.get_model("auth", "User")
+    AttendanceRecordModel = apps.get_model("attendance", "AttendanceRecord")
     try:
-        DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
+        selected_user_id = payload.get("selected_user")
+        selected_user = UserModel.objects.get(id=selected_user_id)
+        selected_date = get_date_object_from_date_str(payload.get("selected_date"))
+        selected_time = get_time_object(payload.get("clocked_time"))
+        selected_datetime = datetime.combine(selected_date, selected_time)
+        punch = payload.get("punch")
 
-        daily_shift_records = DailyShiftRecordModel.objects.get(
-            date=selected_date, department=user.userdetails.department
+        attendance_record, attendance_record_created = (
+            AttendanceRecordModel.objects.get_or_create(
+                user_biometric_detail=selected_user.biometricdetail,
+                user_id_from_device=selected_user.biometricdetail.user_id_in_device,
+                timestamp=make_aware(selected_datetime),
+                punch=punch,
+            )
         )
-
-        daily_clocked_time_shift = daily_shift_records.shifts.get(user=user)
-
-        if clock_in_time:
-            clock_in_time = get_time_object(clock_in_time)
-            daily_clocked_time_shift.clock_in = datetime.combine(
-                selected_date, clock_in_time
-            )
-        else:
-            daily_clocked_time_shift.clock_in = None
-
-        if clock_out_time:
-            clock_out_time = get_time_object(clock_out_time)
-            daily_clocked_time_shift.clock_out = datetime.combine(
-                selected_date, clock_out_time
-            )
-        else:
-            daily_clocked_time_shift.clock_out = None
-
-        daily_clocked_time_shift.save()
+        return attendance_record
 
     except Exception:
         logger.error(
             "An error occurred while manually setting user clocked time", exc_info=True
+        )
+        raise
+
+
+@transaction.atomic
+def process_delete_user_clocked_time(payload):
+    """
+    Deletes a user attendance record based on the provided payload.
+    """
+    AttendanceRecordModel = apps.get_model("attendance", "AttendanceRecord")
+    try:
+        attendance_record = AttendanceRecordModel.objects.get(
+            id=payload.get("attendance_record")
+        )
+        attendance_record.delete()
+    except Exception:
+        logger.error(
+            "An error occurred while deleting a user clocked time", exc_info=True
+        )
+        raise
+
+
+@transaction.atomic
+def process_update_clocked_time(payload):
+    """
+    Deletes a user attendance record based on the provided payload.
+    """
+    AttendanceRecordModel = apps.get_model("attendance", "AttendanceRecord")
+    try:
+        attendance_record = AttendanceRecordModel.objects.get(
+            id=payload.get("attendance_record")
+        )
+        selected_date = get_date_object_from_date_str(payload.get("selected_date"))
+        selected_time = get_time_object(payload.get("clocked_time"))
+        selected_datetime = make_aware(datetime.combine(selected_date, selected_time))
+        attendance_record.timestamp = selected_datetime
+        attendance_record.save()
+
+        return attendance_record
+    except Exception:
+        logger.error(
+            "An error occurred while deleting a user clocked time", exc_info=True
         )
         raise
 

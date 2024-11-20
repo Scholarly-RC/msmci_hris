@@ -1,15 +1,8 @@
-from datetime import datetime, time
-
 from django.apps import apps
 from django.contrib.auth.models import User
-from django.db.models import BooleanField, Case, Q, Value, When
-from django.utils.timezone import make_aware
+from django.db.models import BooleanField, Case, Value, When
 
-from attendance.utils.biometric_utils import get_biometric_detail_from_user_id
-from attendance.utils.date_utils import (
-    get_date_object,
-    get_twenty_four_hour_time_str_from_time_object,
-)
+from attendance.utils.date_utils import get_date_object
 
 
 def get_user_daily_shift_record(department, year: int, month: int, day: int):
@@ -37,101 +30,26 @@ def get_user_daily_shift_record_shifts(user, year: int, month: int, day: int):
         return user_daily_shift_record.shifts.filter(user=user).first()
 
 
-def get_user_clocked_time(user, year: int, month: int, day: int, shift):
+def get_user_clocked_time(user, year: int, month: int, day: int):
     """
-    Retrieves and calculates the clock-in and clock-out times for a user on a specific date,
-    including their time differences from the expected shift times.
+    Retrieves the user's clock-in ("IN") and clock-out ("OUT") times for a specified date,
+    returning them as separate querysets within a dictionary. The date is determined by the
+    provided year, month, and day, and attendance records are fetched from the `AttendanceRecord` model.
     """
     selected_date = get_date_object(year=year, month=month, day=day)
 
-    DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
-    selected_daily_shift_schedule = DailyShiftScheduleModel.objects.filter(
-        user=user, shift=shift, date=selected_date
-    ).first()
+    AttendanceRecordModel = apps.get_model("attendance", "AttendanceRecord")
 
-    clock_in_timestamp = (
-        selected_daily_shift_schedule.get_clock_in_localtime()
-        if selected_daily_shift_schedule
-        else None
-    )
+    clocked_time = AttendanceRecordModel.objects.filter(
+        timestamp__date=selected_date
+    ).order_by("timestamp")
 
-    clock_out_timestamp = (
-        selected_daily_shift_schedule.get_clock_out_localtime()
-        if selected_daily_shift_schedule
-        else None
-    )
-
-    def _get_time_difference(from_time, to_time):
-        if isinstance(from_time, time):
-            from_time = make_aware(datetime.combine(selected_date, from_time))
-        if isinstance(to_time, time):
-            to_time = make_aware(datetime.combine(selected_date, to_time))
-
-        # Calculate the difference between the two datetime objects
-        time_difference = to_time - from_time
-        time_difference_total_seconds = time_difference.total_seconds()
-
-        # Get the total difference in minutes
-        total_minutes_difference = int(time_difference_total_seconds // 60)
-
-        # Calculate hours and remaining minutes
-        hours_difference = abs(total_minutes_difference) // 60
-        minutes_difference = abs(total_minutes_difference) % 60
-
-        # Build the output string
-        if total_minutes_difference > 0:
-            if hours_difference > 0:
-                return (
-                    f"+{hours_difference}h {minutes_difference}m"
-                    if minutes_difference > 0
-                    else f"+{hours_difference}h"
-                )
-            return f"+{minutes_difference}m"
-        elif total_minutes_difference < 0:
-            if hours_difference > 0:
-                return (
-                    f"-{hours_difference}h {minutes_difference}m"
-                    if minutes_difference > 0
-                    else f"-{hours_difference}h"
-                )
-            return f"-{minutes_difference}m"
-        else:
-            return "On Time"
-
-    clock_in_time_difference = (
-        _get_time_difference(clock_in_timestamp, shift.start_time)
-        if clock_in_timestamp
-        else None
-    )
-
-    clock_out_time_difference = (
-        _get_time_difference(shift.end_time, clock_out_timestamp)
-        if clock_out_timestamp
-        else None
-    )
-
-    clock_in_time_str = (
-        get_twenty_four_hour_time_str_from_time_object(clock_in_timestamp)
-        if clock_in_timestamp
-        else ""
-    )
-
-    clock_out_time_str = (
-        get_twenty_four_hour_time_str_from_time_object(clock_out_timestamp)
-        if clock_out_timestamp
-        else ""
-    )
-
-    clocked_time = {
-        "clock_in": clock_in_timestamp,
-        "clock_out": clock_out_timestamp,
-        "clock_in_str": clock_in_time_str,
-        "clock_out_str": clock_out_time_str,
-        "clock_in_time_diff_formatted": clock_in_time_difference,
-        "clock_out_time_diff_formatted": clock_out_time_difference,
+    clocked_time_data = {
+        "IN": clocked_time.filter(punch="IN"),
+        "OUT": clocked_time.filter(punch="OUT"),
     }
 
-    return clocked_time
+    return clocked_time_data
 
 
 def get_employees_list_per_department():

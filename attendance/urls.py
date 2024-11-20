@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path
 
 from attendance import views as attendance_views
 
@@ -110,6 +110,32 @@ urlpatterns = [
         name="shift_management",
     ),
     ### ATTENDANCE MANAGEMENT URLS ###
+    path(
+        "user-attendance-management/edit-user-clocked-time",
+        attendance_views.edit_user_clocked_time,
+        name="edit_user_clocked_time",
+    ),
+    path(
+        "user-attendance-management/delete-user-clocked-time",
+        attendance_views.delete_user_clocked_time,
+        name="delete_user_clocked_time",
+    ),
+    path(
+        "user-attendance-management/add-user-clocked-time",
+        attendance_views.add_user_clocked_time,
+        name="add_user_clocked_time",
+    ),
+    path(
+        "user-attendance-management/reload-modify-clocked-time-list",
+        attendance_views.reload_modify_clocked_time_list,
+        name="reload_modify_clocked_time_list",
+    ),
+    path(
+        "user-attendance-management/modify-user-clocked-time",
+        attendance_views.modify_user_clocked_time,
+        name="modify_user_clocked_time",
+    ),
+    # To Delete
     path(
         "user-attendance-management/toggle-user-management-record-edit",
         attendance_views.toggle_user_management_record_edit,

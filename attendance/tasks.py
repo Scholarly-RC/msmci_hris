@@ -1,9 +1,9 @@
 import logging
 import time
-from datetime import timedelta
 
 from django.apps import apps
 from django.conf import settings
+from django.utils.timezone import make_aware
 from django_q.tasks import async_task
 from zk import ZK
 
@@ -46,33 +46,18 @@ def add_user_attendance_record(attendance_data):
     """
     Creates a new attendance record for a user based on the provided biometric data from the device.
     """
+    AttendanceRecordModel = apps.get_model("attendance", "AttendanceRecord")
     try:
-        user_biometric_detail, _, timestamp, punch = process_biometric_data_from_device(
-            attendance_data
+        user_biometric_detail, user_id_from_device, timestamp, punch = (
+            process_biometric_data_from_device(attendance_data)
         )
 
-        user = user_biometric_detail.user
-
-        user_daily_shift_schedule = user.daily_shift_schedules.filter(
-            daily_shift_records__date=timestamp.date()
-        ).first()
-        if punch == "IN" and not user_daily_shift_schedule.clock_in:
-            user_daily_shift_schedule.clock_in = timestamp
-            user_daily_shift_schedule.save()
-        elif punch == "OUT":
-            yesterday_shift_schedule = user.daily_shift_schedules.filter(
-                daily_shift_records__date=timestamp.date() - timedelta(days=1)
-            ).first()
-            if (
-                yesterday_shift_schedule
-                and yesterday_shift_schedule.shift.multi_day
-                and not yesterday_shift_schedule.clock_out
-            ):
-                yesterday_shift_schedule.clock_out = timestamp - timedelta(days=1)
-                yesterday_shift_schedule.save()
-            elif not user_daily_shift_schedule.clock_out:
-                user_daily_shift_schedule.clock_out = timestamp
-                user_daily_shift_schedule.save()
+        attendance_record = AttendanceRecordModel.objects.create(
+            user_biometric_detail=user_biometric_detail,
+            user_id_from_device=user_id_from_device,
+            timestamp=make_aware(timestamp),
+            punch=punch,
+        )
 
     except Exception:
         logger.error(

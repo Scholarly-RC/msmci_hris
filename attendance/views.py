@@ -1,4 +1,5 @@
 import calendar
+import json
 from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
@@ -22,10 +23,12 @@ from attendance.actions import (
     process_create_overtime_request,
     process_daily_shift_schedule,
     process_delete_holiday,
+    process_delete_user_clocked_time,
     process_deleting_overtime_request,
     process_modify_department_shift,
     process_removing_shift,
     process_respond_to_overtime_request,
+    process_update_clocked_time,
 )
 from attendance.models import (
     AttendanceRecord,
@@ -42,6 +45,8 @@ from attendance.utils.attendance_utils import (
 )
 from attendance.utils.date_utils import (
     get_date_object,
+    get_date_object_from_date_str,
+    get_day_name_from_date,
     get_list_of_months,
     get_number_of_days_in_a_month,
     get_readable_date,
@@ -63,7 +68,11 @@ from attendance.utils.overtime_utils import (
     get_user_overtime_requests_to_approve,
 )
 from attendance.utils.shift_utils import get_all_shifts
-from attendance.validations import add_holiday_validation, create_new_shift_validation
+from attendance.validations import (
+    add_holiday_validation,
+    add_new_clocked_time_validation,
+    create_new_shift_validation,
+)
 from core.decorators import hr_required
 from core.models import BiometricDetail, Department
 from core.notification import create_notification
@@ -579,20 +588,24 @@ def user_attendance_management(request, user_id="", year="", month=""):
                 month=selected_month,
                 day=day,
             )
-            current_shift = daily_user_shift.shift if daily_user_shift else None
-            clocked_time = get_user_clocked_time(
+
+            clocked_time_data = get_user_clocked_time(
                 user=selected_user,
                 year=selected_year,
                 month=selected_month,
                 day=day,
-                shift=current_shift,
+            )
+
+            day_name = get_day_name_from_date(
+                date=get_date_object(year=selected_year, month=selected_month, day=day)
             )
 
             monthly_record_data.append(
                 {
                     "day": day,
+                    "day_name": day_name,
                     "daily_user_shift": daily_user_shift,
-                    "clocked_time": clocked_time,
+                    "clocked_time_data": clocked_time_data,
                     "holidays": get_holiday_for_specific_day(
                         day=day, month=selected_month, year=selected_year
                     ),
@@ -637,6 +650,7 @@ def user_attendance_management(request, user_id="", year="", month=""):
     return render(request, "attendance/user_attendance_management.html", context)
 
 
+# To Delete
 @login_required(login_url="/login")
 def toggle_user_management_record_edit(request):
     context = {}
@@ -698,6 +712,224 @@ def toggle_user_management_record_edit(request):
         )
         response = reswap(response, "outerHTML")
         return response
+
+
+# Add Admin Checks
+@login_required(login_url="/login")
+def modify_user_clocked_time(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "GET":
+            data = request.GET
+            selected_user = User.objects.get(id=data.get("selected_user"))
+            selected_year = int(data.get("attendance_year"))
+            selected_month = int(data.get("attendance_month"))
+            selected_day = int(data.get("selected_day"))
+            selected_date = get_date_object(
+                year=selected_year, month=selected_month, day=selected_day
+            )
+            response = trigger_client_event(
+                response,
+                "reloadModifyClockedTimeList",
+                {"userId": selected_user.id, "selectedDate": str(selected_date)},
+                after="swap",
+            )
+            response = trigger_client_event(
+                response, "openModifyClockedTimeModal", after="swap"
+            )
+            response = reswap(response, "none")
+            return response
+
+
+# Add Admin Checks
+@login_required(login_url="/login")
+def reload_modify_clocked_time_list(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        data = request.POST
+        details = json.loads(data.get("details", {}))
+        user_id = details.get("userId")
+        selected_user = User.objects.get(id=user_id)
+        selected_date = get_date_object_from_date_str(details.get("selectedDate"))
+
+        clocked_time_data = get_user_clocked_time(
+            user=selected_user.id,
+            year=selected_date.year,
+            month=selected_date.month,
+            day=selected_date.day,
+        )
+        context.update(
+            {
+                "clocked_time_data": clocked_time_data,
+                "selected_user": selected_user,
+                "selected_date": selected_date,
+                "selected_date_str": str(selected_date),
+            }
+        )
+        response.content = render_block_to_string(
+            "attendance/user_attendance_management.html",
+            "modify_clocked_time_modal_container",
+            context,
+        )
+        response = retarget(response, "#modify_clocked_time_modal_container")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+# Add Admin Checks
+@login_required(login_url="/login")
+def add_user_clocked_time(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        try:
+            data = request.POST
+            errors = add_new_clocked_time_validation(payload=data)
+            if errors:
+                for error in errors:
+                    response = create_global_alert_instance(
+                        response, errors[error], "WARNING"
+                    )
+                    response = reswap(response, "none")
+                    return response
+
+            attendance_record = manually_set_user_clocked_time(payload=data)
+            response = trigger_client_event(
+                response,
+                "reloadModifyClockedTimeList",
+                {
+                    "userId": attendance_record.user_biometric_detail.user.id,
+                    "selectedDate": str(attendance_record.timestamp.date()),
+                },
+                after="swap",
+            )
+            response = create_global_alert_instance(
+                response,
+                "The clocked time for the selected date has been successfully updated.",
+                "SUCCESS",
+            )
+            return response
+        except Exception as error:
+            response = create_global_alert_instance(
+                response,
+                f"An error occurred while modifying the clocked time for the selected date. Details: {error}",
+                "DANGER",
+            )
+            response = reswap(response, "none")
+            return response
+
+
+# Add Admin Checks
+@login_required(login_url="/login")
+def delete_user_clocked_time(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "POST":
+            data = request.POST
+            punch = data.get("punch")
+            attendance_record_id = data.get("attendance_record")
+            attendance_record = AttendanceRecord.objects.get(id=attendance_record_id)
+            context["data"] = attendance_record
+
+            if punch == "IN":
+                section = "clocked_in_action_section"
+            else:
+                section = "clocked_out_action_section"
+
+            context["delete_confirmation"] = "cancel" not in data
+
+            response.content = render_block_to_string(
+                "attendance/user_attendance_management.html",
+                section,
+                context,
+            )
+
+            response = retarget(response, "closest td")
+            response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "DELETE":
+            try:
+                data = QueryDict(request.body)
+                process_delete_user_clocked_time(payload=data)
+                response = create_global_alert_instance(
+                    response,
+                    f"Selected user's clocked time has been successfully deleted.",
+                    "SUCCESS",
+                )
+                response = retarget(response, "closest tr")
+                response = reswap(response, "delete")
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while deleting a user clocked time. Details: {error}",
+                    "DANGER",
+                )
+                response = reswap(response, "none")
+                return response
+
+
+# Add Admin Checks
+@login_required(login_url="/login")
+def edit_user_clocked_time(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "GET":
+            data = request.GET
+            if "cancel" not in data:
+                attendance_record_id = data.get("attendance_record")
+                selected_date = data.get("selected_date")
+                attendance_record = AttendanceRecord.objects.get(
+                    id=attendance_record_id
+                )
+                context.update(
+                    {
+                        "for_update": True,
+                        "attendance_record": attendance_record,
+                        "selected_date_str": selected_date,
+                    }
+                )
+            response.content = render_block_to_string(
+                "attendance/user_attendance_management.html",
+                "modify_clocked_time_section",
+                context,
+            )
+            response = retarget(response, "#modify_clocked_time_section")
+            response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "POST":
+            data = request.POST
+            try:
+                attendance_record = process_update_clocked_time(payload=data)
+                response = create_global_alert_instance(
+                    response,
+                    f"The clocked time for the selected user has been successfully updated.",
+                    "SUCCESS",
+                )
+                response = trigger_client_event(
+                    response,
+                    "reloadModifyClockedTimeList",
+                    {
+                        "userId": attendance_record.user_biometric_detail.user.id,
+                        "selectedDate": str(attendance_record.timestamp.date()),
+                    },
+                    after="swap",
+                )
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while updating the clocked time for the user. Error details: {error}",
+                    "DANGER",
+                )
+                response = reswap(response, "none")
+                return response
 
 
 ### Shift Management ###

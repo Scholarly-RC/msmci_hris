@@ -18,8 +18,6 @@ class AttendanceRecord(models.Model):
     class Punch(models.TextChoices):
         TIME_IN = "IN", _("Time In")
         TIME_OUT = "OUT", _("Time Out")
-        OVERTIME_IN = "OT_IN", _("Overtime In")
-        OVERTIME_OUT = "OT_OUT", _("Overtime Out")
 
     user_biometric_detail = models.ForeignKey(
         BiometricDetail,
@@ -28,10 +26,13 @@ class AttendanceRecord(models.Model):
         null=True,
         blank=True,
     )
+
     user_id_from_device = models.IntegerField(
         _("Attendance Record User ID From Device"), null=True, blank=True
     )
+
     timestamp = models.DateTimeField(_("Attendance Timestamp"), null=True, blank=True)
+
     punch = models.CharField(
         _("Attendance Record Punch"),
         choices=Punch.choices,
@@ -40,6 +41,7 @@ class AttendanceRecord(models.Model):
         null=True,
         blank=True,
     )
+
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated = models.DateTimeField(auto_now=True, null=True, blank=True)
 
@@ -47,10 +49,16 @@ class AttendanceRecord(models.Model):
         verbose_name_plural = "Attendance Records"
 
     def __str__(self):
-        return f"User ID: {self.user_id_from_device} - {self.punch} - {self.get_timestamp_localtime()}"
+        return f"User ID: {self.user_id_from_device} - {self.punch} - {self.get_localtime_timestamp()}"
 
-    def get_timestamp_localtime(self):
+    def get_localtime_timestamp(self):
         return localtime(self.timestamp)
+
+    def get_localtime_time(self):
+        return self.get_localtime_timestamp().time()
+
+    def get_localtime_time_str(self):
+        return self.get_localtime_time().strftime("%H:%M")
 
 
 class Shift(models.Model):
@@ -99,8 +107,9 @@ class DailyShiftSchedule(models.Model):
         User, on_delete=models.RESTRICT, related_name="daily_shift_schedules"
     )
 
-    clock_in = models.DateTimeField(_("Daily Shift Clock In"), null=True, blank=True)
-    clock_out = models.DateTimeField(_("Daily Shift Clock Out"), null=True, blank=True)
+    attendance_records = models.ManyToManyField(
+        AttendanceRecord, related_name="daily_shift_schedules", blank=True
+    )
 
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated = models.DateTimeField(auto_now=True, null=True, blank=True)
@@ -110,16 +119,6 @@ class DailyShiftSchedule(models.Model):
 
     def __str__(self):
         return f"{get_readable_date_from_date_object(self.date) if self.date else ''} {self.shift} - {self.user.userdetails.get_user_fullname()}"
-
-    def get_clock_in_localtime(self):
-        if not self.clock_in:
-            return None
-        return localtime(self.clock_in)
-
-    def get_clock_out_localtime(self):
-        if not self.clock_out:
-            return None
-        return localtime(self.clock_out)
 
 
 class DailyShiftRecord(models.Model):
