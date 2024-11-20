@@ -95,26 +95,18 @@
                                                 </th>
                                                 <th scope="col"
                                                     class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                                    Time In Difference
-                                                </th>
-                                                <th scope="col"
-                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
                                                     Time Out
                                                 </th>
                                                 <th scope="col"
-                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400">
-                                                    Time Out Difference
-                                                </th>
-                                                <th scope="col"
-                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                    class="p-4 text-xs font-medium text-gray-500 uppercase dark:text-gray-400 text-center">
                                                     Holiday
                                                 </th>
                                                 <th scope="col"
-                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                    class="p-4 text-xs font-medium text-gray-500 uppercase dark:text-gray-400 text-center">
                                                     Overtime
                                                 </th>
                                                 <th scope="col"
-                                                    class="p-4 text-xs font-medium text-left text-gray-500 uppercase dark:text-gray-400 text-center">
+                                                    class="p-4 text-xs font-medium text-gray-500 uppercase dark:text-gray-400 text-center">
                                                     On Leave
                                                 </th>
                                             </tr>
@@ -142,17 +134,7 @@
                                                             {% if user_shift_data.clocked_time.clock_in %}{{ user_shift_data.clocked_time.clock_in|date:"h:i a" }}{% endif %}
                                                         </td>
                                                         <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                            {% if user_shift_data.clocked_time.clock_in_time_diff_formatted %}
-                                                                {{ user_shift_data.clocked_time.clock_in_time_diff_formatted }}
-                                                            {% endif %}
-                                                        </td>
-                                                        <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                                             {% if user_shift_data.clocked_time.clock_out %}{{ user_shift_data.clocked_time.clock_out|date:"h:i a" }}{% endif %}
-                                                        </td>
-                                                        <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                            {% if user_shift_data.clocked_time.clock_out_time_diff_formatted %}
-                                                                {{ user_shift_data.clocked_time.clock_out_time_diff_formatted }}
-                                                            {% endif %}
                                                         </td>
                                                         <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
                                                             {% if user_shift_data.holidays %}
