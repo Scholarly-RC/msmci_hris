@@ -57,6 +57,8 @@ class Shift(models.Model):
     description = models.TextField(_("Shift Description"), null=True, blank=True)
     start_time = models.TimeField(_("Shift Start Time"), null=True, blank=True)
     end_time = models.TimeField(_("Shift End Time"), null=True, blank=True)
+    start_time_2 = models.TimeField(_("Shift Second Start Time"), null=True, blank=True)
+    end_time_2 = models.TimeField(_("Shift Second End Time"), null=True, blank=True)
     multi_day = models.BooleanField(_("Shift Is Multi Day"), default=False)
     is_active = models.BooleanField(_("Shift Is Active"), default=True)
     departments = models.ManyToManyField(Department, related_name="shifts", blank=True)
@@ -65,7 +67,10 @@ class Shift(models.Model):
         verbose_name_plural = "Shifts"
 
     def __str__(self):
-        return f"{self.description} - {self.start_time} to {self.end_time}"
+        shift_str = f"{self.description} - {self.start_time} to {self.end_time}"
+        if self.start_time_2 and self.end_time_2:
+            shift_str + f" - {self.start_time} to {self.end_time}"
+        return shift_str
 
     def get_twelve_hour_format_start_time(self):
         if self.start_time:
