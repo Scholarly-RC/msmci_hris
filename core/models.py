@@ -219,7 +219,16 @@ class BiometricDetail(models.Model):
 class Department(models.Model):
     name = models.CharField(_("Department Name"), max_length=500, null=True, blank=True)
     code = models.CharField(_("Department Code"), max_length=500, null=True, blank=True)
+    workweek = models.JSONField(
+        _("Department Workweek"), null=True, blank=True, default=list
+    )
+    shifts = models.ManyToManyField(
+        "attendance.Shift",
+        related_name="shifts",
+        blank=True,
+    )
     is_active = models.BooleanField(_("Is Department Active"), default=True)
+
     created = models.DateField(auto_now_add=True, null=True, blank=True)
     updated = models.DateField(auto_now=True, null=True, blank=True)
 
@@ -228,6 +237,12 @@ class Department(models.Model):
 
     def __str__(self):
         return self.name
+
+    def has_fixed_schedule(self):
+        return not self.has_not_set_shift_schedule() and self.shifts.count() < 2
+
+    def has_not_set_shift_schedule(self):
+        return self.shifts.count() == 0
 
 
 class Notification(models.Model):

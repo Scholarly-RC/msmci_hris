@@ -1,14 +1,18 @@
+import calendar
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.apps import apps
 from django.db import transaction
-from django.utils.timezone import make_aware
+from django.utils import timezone
+from django.utils.timezone import localtime, make_aware
 
 from attendance.utils.assign_shift_utils import get_employee_assignments
 from attendance.utils.date_utils import (
     get_date_object,
     get_date_object_from_date_str,
+    get_day_name_from_date,
+    get_number_of_days_in_a_month,
     get_time_object,
 )
 from hris.exceptions import InvalidApproverPermission, InvalidApproverResponse
@@ -299,13 +303,10 @@ def process_create_new_shift(payload):
         start_time = get_time_object(payload.get("start_time"))
         end_time = get_time_object(payload.get("end_time"))
 
-        multi_day = "multi_day" in payload
-
         shift_model = ShiftModel.objects.create(
             description=shift_description,
             start_time=start_time,
             end_time=end_time,
-            multi_day=multi_day,
         )
 
         return shift_model
@@ -333,19 +334,64 @@ def process_modify_department_shift(payload):
         ShiftModel = apps.get_model("attendance", "Shift")
 
         department_id = payload.get("department")
-        shift_id = payload.get("shift")
+        shift_ids = payload.getlist("selected_shift")
+        workweek = payload.getlist("selected_workweek")
 
         department = DepartmentModel.objects.get(id=department_id)
-        shift = ShiftModel.objects.get(id=shift_id)
+        department.workweek = workweek
+        department.save()
+        department.shifts.clear()
+        if shift_ids:
+            shifts = ShiftModel.objects.filter(id__in=shift_ids)
+            department.shifts.add(*shifts)
 
-        if "selected" in payload:
-            shift.departments.add(department)
-        else:
-            shift.departments.remove(department)
-
-        return shift, department
+        return department
     except Exception:
         logger.error(
-            "An error occurred while modifying department shift", exc_info=True
+            "An error occurred while modifying department shift settings", exc_info=True
         )
         raise
+
+
+@transaction.atomic
+def process_apply_department_fixed_or_dynamic_shift(department, month, year):
+    current_date = localtime(timezone.now()).date()
+
+    number_of_days = get_number_of_days_in_a_month(year=year, month=month)[1]
+
+    UserModel = apps.get_model("auth", "User")
+    DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
+    DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
+
+    department_users = UserModel.objects.filter(
+        userdetails__department=department, is_active=True
+    )
+
+    shift = department.shifts.first()
+
+    if department_users:
+        for user in department_users:
+            affected_date = current_date
+            for day in range(current_date.day, number_of_days):
+                affected_date += timedelta(days=1)
+                daily_shift_schedule, daily_shift_schedule_created = (
+                    DailyShiftScheduleModel.objects.get_or_create(
+                        date=affected_date, shift=shift, user=user
+                    )
+                )
+                daily_shift_record, daily_shift_record_created = (
+                    DailyShiftRecordModel.objects.get_or_create(
+                        date=affected_date, department=department
+                    )
+                )
+                if department.has_fixed_schedule() and department.workweek:
+                    if (
+                        get_day_name_from_date(date=affected_date)
+                        in department.workweek
+                    ):
+                        if daily_shift_schedule not in daily_shift_record.shifts.all():
+                            daily_shift_record.shifts.add(daily_shift_schedule)
+                    else:
+                        daily_shift_record.shifts.remove(daily_shift_schedule)
+                else:
+                    daily_shift_record.shifts.clear()

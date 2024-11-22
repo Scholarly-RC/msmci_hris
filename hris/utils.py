@@ -19,4 +19,4 @@ def create_global_alert_instance(
 
 
 def generate_short_string_id(length=5) -> str:
-    return ''.join(random.choices(string.ascii_lowercase, k=length))
+    return "".join(random.choices(string.ascii_lowercase, k=length))

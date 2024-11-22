@@ -18,6 +18,7 @@ from render_block import render_block_to_string
 from attendance.actions import (
     manually_set_user_clocked_time,
     process_add_holiday,
+    process_apply_department_fixed_or_dynamic_shift,
     process_bulk_daily_shift_schedule,
     process_create_new_shift,
     process_create_overtime_request,
@@ -947,6 +948,7 @@ def shift_management(request, department="", year="", month=""):
 
     if isinstance(shift_month, str):
         shift_month = int(shift_month)
+
     calendar.setfirstweekday(calendar.SUNDAY)
     list_of_days = calendar.monthcalendar(shift_year, shift_month)
     list_of_departments = Department.objects.filter(is_active=True).order_by("name")
@@ -954,6 +956,10 @@ def shift_management(request, department="", year="", month=""):
         list_of_departments.get(id=shift_department)
         if shift_department
         else list_of_departments.first()
+    )
+
+    process_apply_department_fixed_or_dynamic_shift(
+        department=selected_department, month=shift_month, year=shift_year
     )
 
     holidays = get_holiday_for_specific_month_and_year(shift_month, shift_year)
@@ -1036,7 +1042,20 @@ def assign_shift(request, department="", year="", month="", day=""):
 
     shifts = selected_department.shifts.order_by("start_time")
 
-    selected_date = get_date_object(int(shift_year), int(shift_month), int(shift_day))
+    if isinstance(shift_year, str):
+        shift_year = int(shift_year)
+
+    if isinstance(shift_month, str):
+        shift_month = int(shift_month)
+
+    if isinstance(shift_day, str):
+        shift_day = int(shift_day)
+
+    selected_date = get_date_object(shift_year, shift_month, shift_day)
+
+    process_apply_department_fixed_or_dynamic_shift(
+        department=selected_department, month=shift_month, year=shift_year
+    )
 
     current_daily_shift_record, current_daily_shift_record_created = (
         DailyShiftRecord.objects.get_or_create(
@@ -1289,23 +1308,31 @@ def remove_selected_shift(request):
 
 @login_required(login_url="/login")
 def modify_department_shift(request):
+    context = {}
     if request.htmx and request.method == "POST":
         response = HttpResponse()
         try:
             data = request.POST
-            shift, department = process_modify_department_shift(data)
-            action = "removed" if "selected" not in data else "added"
+            department = process_modify_department_shift(data)
+            shifts = get_all_shifts()
+            context.update({"shifts": shifts, "department": department})
+            response.content = render_block_to_string(
+                "attendance/shift_management.html",
+                "department_shift_settings_section",
+                context,
+            )
             response = create_global_alert_instance(
                 response,
-                f"The selected shift has been successfully {action} for the {department} department.",
+                "The shift settings for the selected department have been successfully updated.",
                 "SUCCESS",
             )
-            response = reswap(response, "none")
+            response = retarget(response, "closest form")
+            response = reswap(response, "outerHTML")
             return response
         except Exception as error:
             response = create_global_alert_instance(
                 response,
-                f"An error occurred while modifying the shift for the selected department. Error details: {error}.",
+                f"An error occurred while updating the shift settings for the selected department. Error details: {error}",
                 "DANGER",
             )
             response = reswap(response, "none")

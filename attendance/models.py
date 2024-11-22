@@ -10,7 +10,6 @@ from attendance.utils.date_utils import (
     get_months_dict,
     get_readable_date_from_date_object,
 )
-from core.models import BiometricDetail, Department
 
 
 # Create your models here.
@@ -20,7 +19,7 @@ class AttendanceRecord(models.Model):
         TIME_OUT = "OUT", _("Time Out")
 
     user_biometric_detail = models.ForeignKey(
-        BiometricDetail,
+        "core.BiometricDetail",
         on_delete=models.RESTRICT,
         related_name="attendance_records",
         null=True,
@@ -67,9 +66,11 @@ class Shift(models.Model):
     end_time = models.TimeField(_("Shift End Time"), null=True, blank=True)
     start_time_2 = models.TimeField(_("Shift Second Start Time"), null=True, blank=True)
     end_time_2 = models.TimeField(_("Shift Second End Time"), null=True, blank=True)
-    multi_day = models.BooleanField(_("Shift Is Multi Day"), default=False)
+
     is_active = models.BooleanField(_("Shift Is Active"), default=True)
-    departments = models.ManyToManyField(Department, related_name="shifts", blank=True)
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Shifts"
@@ -107,10 +108,6 @@ class DailyShiftSchedule(models.Model):
         User, on_delete=models.RESTRICT, related_name="daily_shift_schedules"
     )
 
-    attendance_records = models.ManyToManyField(
-        AttendanceRecord, related_name="daily_shift_schedules", blank=True
-    )
-
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated = models.DateTimeField(auto_now=True, null=True, blank=True)
 
@@ -127,7 +124,7 @@ class DailyShiftRecord(models.Model):
         DailyShiftSchedule, related_name="daily_shift_records", blank=True
     )
     department = models.ForeignKey(
-        Department,
+        "core.Department",
         on_delete=models.RESTRICT,
         related_name="daily_shift_records",
         null=True,
