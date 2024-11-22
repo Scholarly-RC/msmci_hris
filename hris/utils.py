@@ -1,4 +1,5 @@
-import uuid
+import random
+import string
 from typing import Literal
 
 from django_htmx.http import trigger_client_event
@@ -17,5 +18,5 @@ def create_global_alert_instance(
     return response
 
 
-def generate_short_uuid(length=5) -> str:
-    return str(uuid.uuid4()).replace("-", "")[:length]
+def generate_short_string_id(length=5) -> str:
+    return ''.join(random.choices(string.ascii_lowercase, k=length))

@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django_htmx.http import reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
 
-from hris.utils import generate_short_uuid
+from hris.utils import generate_short_string_id
 
 
 def show_alert(request):
@@ -13,8 +13,8 @@ def show_alert(request):
     if request.method == "GET" and request.htmx:
         data = request.GET
         details = json.loads(data.get("details", {}))
-        alert_id = generate_short_uuid()
-        alert_close_id = generate_short_uuid()
+        alert_id = generate_short_string_id()
+        alert_close_id = generate_short_string_id()
         alert_duration = details.get("duration")
         context.update(
             {
