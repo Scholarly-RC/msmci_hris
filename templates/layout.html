@@ -30,51 +30,52 @@
         {% block javascript %}
         {% endblock javascript %}
         <script>
-            document.body.addEventListener("initializeGlobalAlert", (event) => {
-                const {
-                    message,
-                    type,
-                    duration
-                } = event.detail;
-
-                const safeDetail = {
-                    message,
-                    type,
-                    duration,
-                };
-
-                htmx.ajax("GET", '{% url "show_alert" %}', {
-                    values: {
-                        details: JSON.stringify(safeDetail),
-                    },
+            htmx.onLoad(function (content) {
+                content.addEventListener("initializeGlobalAlert", (event) => {
+                    const {
+                        message,
+                        type,
+                        duration
+                    } = event.detail;
+            
+                    const safeDetail = {
+                        message,
+                        type,
+                        duration,
+                    };
+            
+                    htmx.ajax("GET", '{% url "show_alert" %}', {
+                        values: {
+                            details: JSON.stringify(safeDetail),
+                        },
+                    });
                 });
-            });
-
-            document.body.addEventListener("showGlobalAlert", (event) => {
-                const alertId = event?.detail?.alertId
-                const alertCloseId = event?.detail?.alertCloseId
-                const alertDuration = event?.detail?.alertDuration
-
-
-                const $targetAlert = document.getElementById(alertId);
-                const $targetCloseTrigger = document.getElementById(alertCloseId);
-
-                const options = {
-                    transition: 'transition-opacity',
-                    duration: 1000,
-                    timing: 'ease-out',
-                };
-
-                const instanceOptions = {
-                    id: alertId,
-                    override: true
-                };
-
-                const dismiss = new Dismiss($targetAlert, $targetCloseTrigger, options, instanceOptions);
-                setTimeout(() => {
-                    dismiss.hide();
-                }, alertDuration * 1000);
-            });
+            
+                content.addEventListener("showGlobalAlert", (event) => {
+                    const alertId = event?.detail?.alertId
+                    const alertCloseId = event?.detail?.alertCloseId
+                    const alertDuration = event?.detail?.alertDuration
+            
+                    const $targetAlert = content.querySelector(`#${alertId}`);
+                    const $targetCloseTrigger = content.querySelector(`#${alertCloseId}`);
+            
+                    const options = {
+                        transition: 'transition-opacity',
+                        duration: 1000,
+                        timing: 'ease-out',
+                    };
+            
+                    const instanceOptions = {
+                        id: alertId,
+                        override: true
+                    };
+            
+                    const dismiss = new Dismiss($targetAlert, $targetCloseTrigger, options, instanceOptions);
+                    setTimeout(() => {
+                        dismiss.hide();
+                    }, alertDuration * 1000);
+                });
+            })
         </script>
         <script>
             document.body.addEventListener("toggleChatWindow", (event) => {
