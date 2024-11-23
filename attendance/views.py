@@ -105,20 +105,24 @@ def attendance_management(request, year="", month=""):
             month=selected_month,
             day=day,
         )
-        current_shift = daily_user_shift.shift if daily_user_shift else None
-        clocked_time = get_user_clocked_time(
+
+        clocked_time_data = get_user_clocked_time(
             user=current_user,
             year=selected_year,
             month=selected_month,
             day=day,
-            shift=current_shift,
+        )
+
+        day_name = get_day_name_from_date(
+            date=get_date_object(year=selected_year, month=selected_month, day=day)
         )
 
         monthly_record_data.append(
             {
                 "day": day,
+                "day_name": day_name,
                 "daily_user_shift": daily_user_shift,
-                "clocked_time": clocked_time,
+                "clocked_time_data": clocked_time_data,
                 "holidays": get_holiday_for_specific_day(
                     day=day, month=selected_month, year=selected_year
                 ),
@@ -178,19 +182,24 @@ def sync_user_attendance(request, year="", month=""):
             month=selected_month,
             day=day,
         )
-        current_shift = daily_user_shift.shift if daily_user_shift else None
-        clocked_time = get_user_clocked_time(
+
+        clocked_time_data = get_user_clocked_time(
             user=current_user,
             year=selected_year,
             month=selected_month,
             day=day,
-            shift=current_shift,
         )
+
+        day_name = get_day_name_from_date(
+            date=get_date_object(year=selected_year, month=selected_month, day=day)
+        )
+
         monthly_record_data.append(
             {
                 "day": day,
+                "day_name": day_name,
                 "daily_user_shift": daily_user_shift,
-                "clocked_time": clocked_time,
+                "clocked_time_data": clocked_time_data,
                 "holidays": get_holiday_for_specific_day(
                     day=day, month=selected_month, year=selected_year
                 ),
@@ -649,70 +658,6 @@ def user_attendance_management(request, user_id="", year="", month=""):
         return response
 
     return render(request, "attendance/user_attendance_management.html", context)
-
-
-# To Delete
-@login_required(login_url="/login")
-def toggle_user_management_record_edit(request):
-    context = {}
-    if request.htmx and request.POST:
-        response = HttpResponse()
-        data = request.POST
-        selected_year = request.POST.get("attendance_year")
-        selected_month = request.POST.get("attendance_month")
-        selected_day = request.POST.get("selected_day")
-        selected_year = int(selected_year)
-        selected_month = int(selected_month)
-        selected_day = int(selected_day)
-        selected_user_id = request.POST.get("selected_user")
-        selected_user = User.objects.get(id=selected_user_id)
-
-        if "toggle_edit_mode" in data:
-            edit_mode = data.get("toggle_edit_mode") == "on"
-            context.update({"record_edit_mode": edit_mode})
-        elif "save_record" in data:
-            clock_in_time = data.get("clock_in_time")
-            clock_out_time = data.get("clock_out_time")
-            selected_date = get_date_object(selected_year, selected_month, selected_day)
-            manually_set_user_clocked_time(
-                selected_user, selected_date, clock_in_time, clock_out_time
-            )
-            response = create_global_alert_instance(
-                response,
-                "The clock in/out data for the selected date has been successfully updated.",
-                "SUCCESS",
-            )
-
-        daily_user_shift = get_user_daily_shift_record_shifts(
-            user=selected_user,
-            year=selected_year,
-            month=selected_month,
-            day=selected_day,
-        )
-        current_shift = daily_user_shift.shift if daily_user_shift else None
-        clocked_time = get_user_clocked_time(
-            user=selected_user,
-            year=selected_year,
-            month=selected_month,
-            day=selected_day,
-            shift=current_shift,
-        )
-
-        user_shift_data = {
-            "day": selected_day,
-            "daily_user_shift": daily_user_shift,
-            "clocked_time": clocked_time,
-        }
-
-        context.update({"user_shift_data": user_shift_data})
-
-        response.content = render_block_to_string(
-            "attendance/user_attendance_management.html",
-            "user_table_record",
-            context,
-        )
-        response = reswap(response, "outerHTML")
-        return response
 
 
 # Add Admin Checks

@@ -78,7 +78,7 @@ class Shift(models.Model):
     def __str__(self):
         shift_str = f"{self.description} - {self.start_time} to {self.end_time}"
         if self.start_time_2 and self.end_time_2:
-            shift_str + f" - {self.start_time} to {self.end_time}"
+            shift_str += f" - {self.start_time} to {self.end_time}"
         return shift_str
 
     def get_twelve_hour_format_start_time(self):
@@ -91,11 +91,28 @@ class Shift(models.Model):
             return self.end_time.strftime("%I:%M %p")
         return None
 
+    def get_twelve_hour_format_second_start_time(self):
+        if self.start_time_2:
+            return self.start_time_2.strftime("%I:%M %p")
+        return None
+
+    def get_twelve_hour_format_second_end_time(self):
+        if self.end_time_2:
+            return self.end_time_2.strftime("%I:%M %p")
+        return None
+
     def get_twelve_hour_format_shift_range(self):
         start_time = self.get_twelve_hour_format_start_time()
         end_time = self.get_twelve_hour_format_end_time()
         if start_time and end_time:
             return f"{start_time} to {end_time}"
+        return None
+
+    def get_twelve_hour_format_second_shift_range(self):
+        start_time_2 = self.get_twelve_hour_format_second_start_time()
+        end_time_2 = self.get_twelve_hour_format_second_end_time()
+        if start_time_2 and end_time_2:
+            return f"{start_time_2} to {end_time_2}"
         return None
 
 

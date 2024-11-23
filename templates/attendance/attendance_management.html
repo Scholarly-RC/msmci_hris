@@ -118,6 +118,7 @@
                                                         <td class="flex items-center p-4 mr-12 space-x-6 whitespace-nowrap">
                                                             <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
                                                                 <div class="text-base font-semibold text-gray-900 dark:text-white">{{ user_shift_data.day }}</div>
+                                                                <p class="text-gray-500 dark:text-gray-400">{{ user_shift_data.day_name }}</p>
                                                             </div>
                                                         </td>
                                                         <td class="max-w-sm p-4 overflow-hidden text-base font-bold text-gray-500 truncate xl:max-w-xs dark:text-gray-400">
@@ -130,11 +131,19 @@
                                                                 </div>
                                                             </div>
                                                         </td>
-                                                        <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                            {% if user_shift_data.clocked_time.clock_in %}{{ user_shift_data.clocked_time.clock_in|date:"h:i a" }}{% endif %}
+                                                        <td>
+                                                            <div class="flex flex-col p-4 whitespace-nowrap text-center">
+                                                                {% for data in user_shift_data.clocked_time_data.IN %}
+                                                                    <p class="text-base font-medium text-gray-900 dark:text-white">{{ data.get_localtime_time|date:"h:i a" }}</p>
+                                                                {% endfor %}
+                                                            </div>
                                                         </td>
-                                                        <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                            {% if user_shift_data.clocked_time.clock_out %}{{ user_shift_data.clocked_time.clock_out|date:"h:i a" }}{% endif %}
+                                                        <td>
+                                                            <div class="flex flex-col p-4 whitespace-nowrap text-center">
+                                                                {% for data in user_shift_data.clocked_time_data.OUT %}
+                                                                    <p class="text-base font-medium text-gray-900 dark:text-white">{{ data.get_localtime_time|date:"h:i a" }}</p>
+                                                                {% endfor %}
+                                                            </div>
                                                         </td>
                                                         <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
                                                             {% if user_shift_data.holidays %}

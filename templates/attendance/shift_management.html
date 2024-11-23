@@ -425,26 +425,24 @@
                                                 </div>
                                                 <div class="flex flex-row gap-2">
                                                     <div class="w-full mb-2">
-                                                        <label for="start_time_id"
+                                                        <label for="start_time_2_id"
                                                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                                             Start Time
                                                         </label>
                                                         <input type="time"
-                                                               id="start_time_id"
-                                                               name="start_time"
-                                                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                               required />
+                                                               id="start_time_2_id"
+                                                               name="start_time_2"
+                                                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                                                     </div>
                                                     <div class="w-full mb-2">
-                                                        <label for="end_time_id"
+                                                        <label for="end_time_2_id"
                                                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                                             End Time
                                                         </label>
                                                         <input type="time"
-                                                               id="end_time_id"
-                                                               name="end_time"
-                                                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                               required />
+                                                               id="end_time_2_id"
+                                                               name="end_time_2"
+                                                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"/>
                                                     </div>
                                                 </div>
                                                 <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
@@ -464,6 +462,7 @@
                                                             <div>
                                                                 <div class="text-base font-semibold">{{ shift.description }}</div>
                                                                 <div class="font-normal text-gray-500">{{ shift.get_twelve_hour_format_shift_range }}</div>
+                                                                <div class="font-normal text-gray-500">{{ shift.get_twelve_hour_format_second_shift_range }}</div>
                                                             </div>
                                                             <div>
                                                                 <button type="button"
@@ -512,6 +511,7 @@
                                                                 <div class="block">
                                                                     <div class="w-full text-lg font-semibold">{{ shift.description }}</div>
                                                                     <div class="w-full text-sm">{{ shift.get_twelve_hour_format_shift_range }}</div>
+                                                                    <div class="w-full text-sm">{{ shift.get_twelve_hour_format_second_shift_range }}</div>
                                                                 </div>
                                                             </label>
                                                         </li>

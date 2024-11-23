@@ -302,11 +302,15 @@ def process_create_new_shift(payload):
         shift_description = payload.get("shift_description").strip()
         start_time = get_time_object(payload.get("start_time"))
         end_time = get_time_object(payload.get("end_time"))
+        start_time_2 = payload.get("start_time_2")
+        end_time_2 = payload.get("end_time_2")
 
         shift_model = ShiftModel.objects.create(
             description=shift_description,
             start_time=start_time,
             end_time=end_time,
+            start_time_2=start_time_2 if start_time_2 != "" else None,
+            end_time_2=end_time_2 if end_time_2 != "" else None,
         )
 
         return shift_model
@@ -374,24 +378,30 @@ def process_apply_department_fixed_or_dynamic_shift(department, month, year):
             affected_date = current_date
             for day in range(current_date.day, number_of_days):
                 affected_date += timedelta(days=1)
-                daily_shift_schedule, daily_shift_schedule_created = (
-                    DailyShiftScheduleModel.objects.get_or_create(
-                        date=affected_date, shift=shift, user=user
-                    )
-                )
                 daily_shift_record, daily_shift_record_created = (
                     DailyShiftRecordModel.objects.get_or_create(
                         date=affected_date, department=department
                     )
                 )
-                if department.has_fixed_schedule() and department.workweek:
-                    if (
-                        get_day_name_from_date(date=affected_date)
-                        in department.workweek
-                    ):
-                        if daily_shift_schedule not in daily_shift_record.shifts.all():
-                            daily_shift_record.shifts.add(daily_shift_schedule)
-                    else:
-                        daily_shift_record.shifts.remove(daily_shift_schedule)
-                else:
+                if not shift:
                     daily_shift_record.shifts.clear()
+                else:
+                    daily_shift_schedule, daily_shift_schedule_created = (
+                        DailyShiftScheduleModel.objects.get_or_create(
+                            date=affected_date, shift=shift, user=user
+                        )
+                    )
+                    if department.has_fixed_schedule() and department.workweek:
+                        if (
+                            get_day_name_from_date(date=affected_date)
+                            in department.workweek
+                        ):
+                            if (
+                                daily_shift_schedule
+                                not in daily_shift_record.shifts.all()
+                            ):
+                                daily_shift_record.shifts.add(daily_shift_schedule)
+                        else:
+                            daily_shift_record.shifts.remove(daily_shift_schedule)
+                    else:
+                        daily_shift_record.shifts.clear()

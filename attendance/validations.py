@@ -25,6 +25,9 @@ def create_new_shift_validation(payload):
     start_time = payload.get("start_time")
     end_time = payload.get("end_time")
 
+    start_time_2 = payload.get("start_time_2")
+    end_time_2 = payload.get("end_time_2")
+
     if not shift_description:
         context["shift_description_error"] = "Shift description is required."
 
@@ -34,11 +37,21 @@ def create_new_shift_validation(payload):
     if not end_time:
         context["end_time_error"] = "End time is required."
 
+    if (start_time_2 or end_time_2) and (not start_time_2 or not end_time_2):
+        context["second_time_error"] = (
+            "A second start and end time are required for multiple time-in-time-out shifts."
+        )
+
     if start_time and end_time:
         start_time = get_time_object(start_time)
         end_time = get_time_object(end_time)
 
-        if ShiftModel.objects.filter(start_time=start_time, end_time=end_time).exists():
+        if ShiftModel.objects.filter(
+            start_time=start_time,
+            end_time=end_time,
+            start_time_2=start_time_2 if start_time_2 != "" else None,
+            end_time_2=end_time_2 if end_time_2 != "" else None,
+        ).exists():
             context["shift_conflict_error"] = (
                 "A shift with the same start and end time already exists."
             )

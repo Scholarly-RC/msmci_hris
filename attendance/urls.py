@@ -135,12 +135,6 @@ urlpatterns = [
         attendance_views.modify_user_clocked_time,
         name="modify_user_clocked_time",
     ),
-    # To Delete
-    path(
-        "user-attendance-management/toggle-user-management-record-edit",
-        attendance_views.toggle_user_management_record_edit,
-        name="toggle_user_management_record_edit",
-    ),
     path(
         "user-attendance-management/<str:user_id>/<str:year>/<str:month>",
         attendance_views.user_attendance_management,
