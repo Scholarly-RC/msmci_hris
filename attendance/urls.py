@@ -16,6 +16,22 @@ urlpatterns = [
         attendance_views.get_attendance_request,
         name="get_attendance_request",
     ),
+    ### SWAP URLS ###
+    path(
+        "request-swap/submit-request",
+        attendance_views.submit_request_swap,
+        name="submit_request_swap",
+    ),
+    path(
+        "request-swap/reload-user-list",
+        attendance_views.reload_request_swap_user_list,
+        name="reload_request_swap_user_list",
+    ),
+    path(
+        "request-swap",
+        attendance_views.request_swap,
+        name="request_swap",
+    ),
     ### OVERTIME URLS ###
     path(
         "request-overtime/respond",

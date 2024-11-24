@@ -358,50 +358,68 @@ def process_modify_department_shift(payload):
 
 
 @transaction.atomic
-def process_apply_department_fixed_or_dynamic_shift(department, month, year):
+def process_apply_department_fixed_or_dynamic_shift(department, month=None, year=None):
     current_date = localtime(timezone.now()).date()
+
+    if not month:
+        month = current_date.month
+    if not year:
+        year = current_date.year
 
     number_of_days = get_number_of_days_in_a_month(year=year, month=month)[1]
 
-    UserModel = apps.get_model("auth", "User")
-    DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
-    DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
+    if not (year <= current_date.year and month < current_date.month):
+        advance_month = year >= current_date.year and month > current_date.month
+        if advance_month:
+            target_day = get_date_object(year=year, month=month, day=1)
+        else:
+            target_day = current_date
 
-    department_users = UserModel.objects.filter(
-        userdetails__department=department, is_active=True
-    )
+        UserModel = apps.get_model("auth", "User")
+        DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
+        DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
 
-    shift = department.shifts.first()
+        department_users = UserModel.objects.filter(
+            userdetails__department=department, is_active=True
+        )
 
-    if department_users:
-        for user in department_users:
-            affected_date = current_date
-            for day in range(current_date.day, number_of_days):
-                affected_date += timedelta(days=1)
-                daily_shift_record, daily_shift_record_created = (
-                    DailyShiftRecordModel.objects.get_or_create(
-                        date=affected_date, department=department
-                    )
-                )
-                if not shift:
-                    daily_shift_record.shifts.clear()
-                else:
-                    daily_shift_schedule, daily_shift_schedule_created = (
-                        DailyShiftScheduleModel.objects.get_or_create(
-                            date=affected_date, shift=shift, user=user
+        shifts = department.shifts.all()
+        shift = shifts.first()
+
+        if department_users:
+            for user in department_users:
+                affected_date = target_day
+                max_day = number_of_days
+                if advance_month:
+                    affected_date = affected_date - timedelta(days=1)
+                    max_day = number_of_days + 1
+                for day in range(target_day.day, max_day):
+                    affected_date += timedelta(days=1)
+                    daily_shift_record, daily_shift_record_created = (
+                        DailyShiftRecordModel.objects.get_or_create(
+                            date=affected_date, department=department
                         )
                     )
-                    if department.has_fixed_schedule() and department.workweek:
-                        if (
-                            get_day_name_from_date(date=affected_date)
-                            in department.workweek
-                        ):
-                            if (
-                                daily_shift_schedule
-                                not in daily_shift_record.shifts.all()
-                            ):
-                                daily_shift_record.shifts.add(daily_shift_schedule)
-                        else:
-                            daily_shift_record.shifts.remove(daily_shift_schedule)
-                    else:
+                    if not shift:
                         daily_shift_record.shifts.clear()
+                    else:
+                        for shift in shifts:
+                            daily_shift_schedule, daily_shift_schedule_created = (
+                                DailyShiftScheduleModel.objects.get_or_create(
+                                    date=affected_date, shift=shift, user=user
+                                )
+                            )
+                        if department.has_fixed_schedule() and department.workweek:
+                            if (
+                                get_day_name_from_date(date=affected_date)
+                                in department.workweek
+                            ):
+                                if (
+                                    daily_shift_schedule
+                                    not in daily_shift_record.shifts.all()
+                                ):
+                                    daily_shift_record.shifts.add(daily_shift_schedule)
+                            else:
+                                daily_shift_record.shifts.remove(daily_shift_schedule)
+                        else:
+                            daily_shift_record.shifts.clear()

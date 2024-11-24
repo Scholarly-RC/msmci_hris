@@ -31,18 +31,18 @@ def create_new_shift_validation(payload):
     if not shift_description:
         context["shift_description_error"] = "Shift description is required."
 
-    if not start_time:
+    elif not start_time:
         context["start_time_error"] = "Start time is required."
 
-    if not end_time:
+    elif not end_time:
         context["end_time_error"] = "End time is required."
 
-    if (start_time_2 or end_time_2) and (not start_time_2 or not end_time_2):
+    elif (start_time_2 or end_time_2) and (not start_time_2 or not end_time_2):
         context["second_time_error"] = (
             "A second start and end time are required for multiple time-in-time-out shifts."
         )
 
-    if start_time and end_time:
+    elif start_time and end_time:
         start_time = get_time_object(start_time)
         end_time = get_time_object(end_time)
 
@@ -76,6 +76,28 @@ def add_new_clocked_time_validation(payload):
     ).exists():
         context["selected_time_already_exists_error"] = (
             "An attendance record for the selected time and punch already exists."
+        )
+
+    return context
+
+
+def request_swap_validation(user):
+    context = {}
+    department = user.userdetails.department
+
+    if not department:
+        context["department_not_set"] = (
+            "This account is not currently associated with any department. Please contact HR for assistance and try again."
+        )
+
+    elif department.has_not_set_shift_schedule():
+        context["department_empty_shifts"] = (
+            f"The department '{department}' currently does not have any shifts set. Please contact HR for assistance and try again."
+        )
+
+    elif department.has_fixed_schedule():
+        context["department_has_fixed_sched"] = (
+            "This account's department has a fixed schedule. Shift swapping is only available for departments with dynamic shifts."
         )
 
     return context

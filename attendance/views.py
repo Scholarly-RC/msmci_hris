@@ -5,6 +5,7 @@ from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.db.models.deletion import RestrictedError
 from django.http import HttpResponse
 from django.http.request import QueryDict
 from django.shortcuts import render
@@ -41,6 +42,7 @@ from attendance.models import (
 from attendance.utils.assign_shift_utils import get_employee_assignments
 from attendance.utils.attendance_utils import (
     get_employees_list_per_department,
+    get_employees_with_same_day_different_shit,
     get_user_clocked_time,
     get_user_daily_shift_record_shifts,
 )
@@ -73,6 +75,7 @@ from attendance.validations import (
     add_holiday_validation,
     add_new_clocked_time_validation,
     create_new_shift_validation,
+    request_swap_validation,
 )
 from core.decorators import hr_required
 from core.models import BiometricDetail, Department
@@ -244,6 +247,62 @@ def sync_user_attendance(request, year="", month=""):
             )
             response = reswap(response, "none")
         return response
+
+
+@login_required(login_url="/login")
+def request_swap(request):
+    context = {}
+    if request.htmx and request.method == "GET":
+        user = request.user
+        response = HttpResponse()
+        errors = request_swap_validation(user=user)
+        if errors:
+            for error in errors:
+                response = create_global_alert_instance(
+                    response, errors[error], "WARNING"
+                )
+                response = reswap(response, "none")
+                return response
+
+        response.content = render_block_to_string(
+            "attendance/attendance_management.html",
+            "request_swap_modal_container",
+            context,
+        )
+        response = trigger_client_event(response, "openRequestSwapModal", after="swap")
+        response = retarget(response, "#request_swap_modal_container")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+@login_required(login_url="/login")
+def reload_request_swap_user_list(request):
+    context = {}
+    if request.htmx and request.method == "GET":
+        user = request.user
+        response = HttpResponse()
+        data = request.GET
+        swap_date = data.get("swap_date", None)
+        shifts = get_employees_with_same_day_different_shit(user=user, date=swap_date)
+        context.update({"shifts": shifts})
+        response.content = render_block_to_string(
+            "attendance/attendance_management.html",
+            "request_swap_user_selection",
+            context,
+        )
+        response = trigger_client_event(response, "openRequestSwapModal", after="swap")
+        response = retarget(response, "#request_swap_user_selection")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+@login_required(login_url="/login")
+def submit_request_swap(request):
+    context = {}
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        data = request.POST
+        breakpoint()
 
 
 @login_required(login_url="/login")
@@ -957,6 +1016,10 @@ def update_shift_calendar(request):
         list_of_days = calendar.monthcalendar(shift_year, shift_month)
         holidays = get_holiday_for_specific_month_and_year(shift_month, shift_year)
 
+        process_apply_department_fixed_or_dynamic_shift(
+            department=selected_department, month=shift_month, year=shift_year
+        )
+
         context.update(
             {
                 "list_of_days": list_of_days,
@@ -997,10 +1060,6 @@ def assign_shift(request, department="", year="", month="", day=""):
         shift_day = int(shift_day)
 
     selected_date = get_date_object(shift_year, shift_month, shift_day)
-
-    process_apply_department_fixed_or_dynamic_shift(
-        department=selected_department, month=shift_month, year=shift_year
-    )
 
     current_daily_shift_record, current_daily_shift_record_created = (
         DailyShiftRecord.objects.get_or_create(
@@ -1240,7 +1299,14 @@ def remove_selected_shift(request):
             response = retarget(response, "#shift_settings_container")
             response = reswap(response, "outerHTML")
             return response
-
+        except RestrictedError as error:
+            response = create_global_alert_instance(
+                response,
+                f"This shift is currently being used by a department and cannot be deleted.",
+                "DANGER",
+            )
+            response = reswap(response, "none")
+            return response
         except Exception as error:
             response = create_global_alert_instance(
                 response,
@@ -1259,6 +1325,7 @@ def modify_department_shift(request):
         try:
             data = request.POST
             department = process_modify_department_shift(data)
+            process_apply_department_fixed_or_dynamic_shift(department=department)
             shifts = get_all_shifts()
             context.update({"shifts": shifts, "department": department})
             response.content = render_block_to_string(

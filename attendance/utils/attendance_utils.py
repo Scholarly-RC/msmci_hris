@@ -1,8 +1,8 @@
 from django.apps import apps
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db.models import BooleanField, Case, Value, When
 
-from attendance.utils.date_utils import get_date_object
+from attendance.utils.date_utils import get_date_object, get_date_object_from_date_str
 
 
 def get_user_daily_shift_record(department, year: int, month: int, day: int):
@@ -41,7 +41,7 @@ def get_user_clocked_time(user, year: int, month: int, day: int):
     AttendanceRecordModel = apps.get_model("attendance", "AttendanceRecord")
 
     clocked_time = AttendanceRecordModel.objects.filter(
-        timestamp__date=selected_date
+        user_biometric_detail=user.biometricdetail, timestamp__date=selected_date
     ).order_by("timestamp")
 
     clocked_time_data = {
@@ -57,7 +57,8 @@ def get_employees_list_per_department():
     Retrieves a list of active users, annotated with department existence and sorted by department and name.
     """
     all_users = (
-        User.objects.filter(is_active=True)
+        get_user_model()
+        .objects.filter(is_active=True)
         .annotate(
             department_exists=Case(
                 When(userdetails__department__isnull=True, then=Value(False)),
@@ -72,9 +73,24 @@ def get_employees_list_per_department():
 
 def get_employees_with_attendance_record():
     return (
-        User.objects.filter(
-            is_active=True, daily_shift_schedules__clock_in__isnull=False
-        )
+        get_user_model()
+        .objects.filter(is_active=True, daily_shift_schedules__clock_in__isnull=False)
         .distinct()
         .order_by("first_name")
     )
+
+
+def get_employees_with_same_day_different_shit(user=None, date=None):
+    UserModel = get_user_model()
+    DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
+    if date:
+        selected_date = get_date_object_from_date_str(date)
+        department = user.userdetails.department
+        shifts = DailyShiftRecordModel.objects.get(
+            department=department, date=selected_date
+        ).shifts.all()
+        user_shift = shifts.get(user=user).shift
+        swappable_shifts = shifts.exclude(shift=user_shift)
+        return swappable_shifts
+    else:
+        return DailyShiftRecordModel.objects.none()
