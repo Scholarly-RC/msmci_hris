@@ -1,7 +1,17 @@
 import calendar
 import datetime
 
+from django.utils import timezone
+from django.utils.timezone import localtime
+
 from attendance.enums import Months
+
+
+def get_current_local_date():
+    """
+    Returns the current time aware local date.
+    """
+    return localtime(timezone.now()).date()
 
 
 def get_list_of_months():

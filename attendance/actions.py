@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 
 from django.apps import apps
 from django.db import transaction
-from django.utils import timezone
-from django.utils.timezone import localtime, make_aware
+from django.utils.timezone import make_aware
+from django.contrib.auth import get_user_model
 
 from attendance.utils.assign_shift_utils import get_employee_assignments
 from attendance.utils.date_utils import (
@@ -14,6 +14,7 @@ from attendance.utils.date_utils import (
     get_day_name_from_date,
     get_number_of_days_in_a_month,
     get_time_object,
+    get_current_local_date,
 )
 from hris.exceptions import InvalidApproverPermission, InvalidApproverResponse
 
@@ -359,67 +360,100 @@ def process_modify_department_shift(payload):
 
 @transaction.atomic
 def process_apply_department_fixed_or_dynamic_shift(department, month=None, year=None):
-    current_date = localtime(timezone.now()).date()
+    try:
+        current_date = get_current_local_date()
 
-    if not month:
-        month = current_date.month
-    if not year:
-        year = current_date.year
+        if not month:
+            month = current_date.month
+        if not year:
+            year = current_date.year
 
-    number_of_days = get_number_of_days_in_a_month(year=year, month=month)[1]
+        number_of_days = get_number_of_days_in_a_month(year=year, month=month)[1]
 
-    if not (year <= current_date.year and month < current_date.month):
-        advance_month = year >= current_date.year and month > current_date.month
-        if advance_month:
-            target_day = get_date_object(year=year, month=month, day=1)
-        else:
-            target_day = current_date
+        if not (year <= current_date.year and month < current_date.month):
+            advance_month = year >= current_date.year and month > current_date.month
+            if advance_month:
+                target_day = get_date_object(year=year, month=month, day=1)
+            else:
+                target_day = current_date
 
-        UserModel = apps.get_model("auth", "User")
-        DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
-        DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
+            UserModel = apps.get_model("auth", "User")
+            DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
+            DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
 
-        department_users = UserModel.objects.filter(
-            userdetails__department=department, is_active=True
-        )
+            department_users = UserModel.objects.filter(
+                userdetails__department=department, is_active=True
+            )
 
-        shifts = department.shifts.all()
-        shift = shifts.first()
+            shifts = department.shifts.all()
+            shift = shifts.first()
 
-        if department_users:
-            for user in department_users:
-                affected_date = target_day
-                max_day = number_of_days
-                if advance_month:
-                    affected_date = affected_date - timedelta(days=1)
-                    max_day = number_of_days + 1
-                for day in range(target_day.day, max_day):
-                    affected_date += timedelta(days=1)
-                    daily_shift_record, daily_shift_record_created = (
-                        DailyShiftRecordModel.objects.get_or_create(
-                            date=affected_date, department=department
-                        )
-                    )
-                    if not shift:
-                        daily_shift_record.shifts.clear()
-                    else:
-                        for shift in shifts:
-                            daily_shift_schedule, daily_shift_schedule_created = (
-                                DailyShiftScheduleModel.objects.get_or_create(
-                                    date=affected_date, shift=shift, user=user
-                                )
+            if department_users:
+                for user in department_users:
+                    affected_date = target_day
+                    max_day = number_of_days
+                    if advance_month:
+                        affected_date = affected_date - timedelta(days=1)
+                        max_day = number_of_days + 1
+                    for day in range(target_day.day, max_day):
+                        affected_date += timedelta(days=1)
+                        daily_shift_record, daily_shift_record_created = (
+                            DailyShiftRecordModel.objects.get_or_create(
+                                date=affected_date, department=department
                             )
-                        if department.has_fixed_schedule() and department.workweek:
-                            if (
-                                get_day_name_from_date(date=affected_date)
-                                in department.workweek
-                            ):
-                                if (
-                                    daily_shift_schedule
-                                    not in daily_shift_record.shifts.all()
-                                ):
-                                    daily_shift_record.shifts.add(daily_shift_schedule)
-                            else:
-                                daily_shift_record.shifts.remove(daily_shift_schedule)
-                        else:
+                        )
+                        if not shift:
                             daily_shift_record.shifts.clear()
+                        else:
+                            for shift in shifts:
+                                daily_shift_schedule, daily_shift_schedule_created = (
+                                    DailyShiftScheduleModel.objects.get_or_create(
+                                        date=affected_date, shift=shift, user=user
+                                    )
+                                )
+                            if department.has_fixed_schedule() and department.workweek:
+                                if (
+                                    get_day_name_from_date(date=affected_date)
+                                    in department.workweek
+                                ):
+                                    if (
+                                        daily_shift_schedule
+                                        not in daily_shift_record.shifts.all()
+                                    ):
+                                        daily_shift_record.shifts.add(
+                                            daily_shift_schedule
+                                        )
+                                else:
+                                    daily_shift_record.shifts.remove(
+                                        daily_shift_schedule
+                                    )
+                            else:
+                                daily_shift_record.shifts.clear()
+    except Exception:
+        logger.error(
+            "An error occurred while applying changes to department fixed or dynamic shift",
+            exc_info=True,
+        )
+        raise
+
+
+@transaction.atomic
+def process_adding_shift_swap_request(requestor, payload):
+    try:
+        UserModel = get_user_model()
+        DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
+        ShiftSwapModel = apps.get_model("attendance", "ShiftSwap")
+        selected_shift_id = payload.get("selected_shift")
+        selected_shift = DailyShiftScheduleModel.objects.get(id=selected_shift_id)
+        approver_id = payload.get("selected_approver")
+        approver = UserModel.objects.get(id=approver_id)
+
+        current_shift = selected_shift.daily_shift_records.first().shifts.get(user=requestor)
+
+        ShiftSwapModel.objects.create(requested_by=requestor, requested_for=selected_shift.user, current_shift=current_shift, requested_shift=selected_shift, approver=approver)
+    except Exception:
+        logger.error(
+            "An error occurred while adding a shift swap record",
+            exc_info=True,
+        )
+        raise

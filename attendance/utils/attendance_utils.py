@@ -81,16 +81,19 @@ def get_employees_with_attendance_record():
 
 
 def get_employees_with_same_day_different_shit(user=None, date=None):
-    UserModel = get_user_model()
     DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
     if date:
         selected_date = get_date_object_from_date_str(date)
-        department = user.userdetails.department
-        shifts = DailyShiftRecordModel.objects.get(
-            department=department, date=selected_date
-        ).shifts.all()
-        user_shift = shifts.get(user=user).shift
-        swappable_shifts = shifts.exclude(shift=user_shift)
-        return swappable_shifts
-    else:
-        return DailyShiftRecordModel.objects.none()
+        has_record_on_date = DailyShiftRecordModel.objects.filter(date=selected_date)
+        if has_record_on_date:
+            department = user.userdetails.department
+            shifts = DailyShiftRecordModel.objects.get(
+                department=department, date=selected_date
+            ).shifts.all()
+            user_shift = shifts.filter(user=user).first()
+            if user_shift:
+                selected_shift = user_shift.shift
+                swappable_shifts = shifts.exclude(shift=selected_shift)
+                return swappable_shifts
+
+    return DailyShiftRecordModel.objects.none()

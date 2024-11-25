@@ -241,3 +241,44 @@ class OverTime(models.Model):
 
     def get_approver_display(self):
         return self.approver.userdetails.get_user_fullname().title()
+
+
+class ShiftSwap(models.Model):
+    requested_by = models.ForeignKey(
+        User, on_delete=models.RESTRICT, related_name="shift_swap_requests"
+    )
+
+    requested_for = models.ForeignKey(
+        User, on_delete=models.RESTRICT, related_name="shift_swap_target"
+    )
+
+    current_shift = models.ForeignKey(
+        DailyShiftSchedule,
+        on_delete=models.RESTRICT,
+        related_name="current_shift_swap_request",
+        null=True,
+        blank=True,
+    )
+
+    requested_shift = models.ForeignKey(
+        DailyShiftSchedule,
+        on_delete=models.RESTRICT,
+        related_name="requested_shift_swap_request",
+        null=True,
+        blank=True,
+    )
+
+    approver = models.ForeignKey(
+        User, on_delete=models.RESTRICT, related_name="shift_swaps_as_approver"
+    )
+
+    is_approved = models.BooleanField(_("Is Shift Swap Approved"), default=False)
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Shift Swaps"
+
+    def __str__(self):
+        return f"Shift swap request from {self.requested_by.userdetails.get_user_fullname()} to {self.requested_for.userdetails.get_user_fullname()} for the shift on {self.requested_shift.date}"

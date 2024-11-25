@@ -31,6 +31,7 @@ from attendance.actions import (
     process_removing_shift,
     process_respond_to_overtime_request,
     process_update_clocked_time,
+    process_adding_shift_swap_request,
 )
 from attendance.models import (
     AttendanceRecord,
@@ -53,6 +54,7 @@ from attendance.utils.date_utils import (
     get_list_of_months,
     get_number_of_days_in_a_month,
     get_readable_date,
+    get_current_local_date,
 )
 from attendance.utils.holiday_utils import (
     get_holiday_for_specific_day,
@@ -81,8 +83,13 @@ from core.decorators import hr_required
 from core.models import BiometricDetail, Department
 from core.notification import create_notification
 from hris.utils import create_global_alert_instance
-from leave.utils import check_user_has_approved_leave_on_specific_date
+from leave.utils import (
+    check_user_has_approved_leave_on_specific_date,
+    get_department_heads,
+)
 from payroll.utils import get_department_list
+
+from attendance.utils.swap_utils import get_user_shift_swap_request
 
 
 ### Attendance Management ###
@@ -264,6 +271,16 @@ def request_swap(request):
                 response = reswap(response, "none")
                 return response
 
+        department_heads = get_department_heads(
+            selected_department=user.userdetails.department
+        )
+
+        swap_requests = get_user_shift_swap_request(user=user)
+
+        context.update(
+            {"department_heads": department_heads, "swap_requests": swap_requests}
+        )
+
         response.content = render_block_to_string(
             "attendance/attendance_management.html",
             "request_swap_modal_container",
@@ -287,11 +304,11 @@ def reload_request_swap_user_list(request):
         context.update({"shifts": shifts})
         response.content = render_block_to_string(
             "attendance/attendance_management.html",
-            "request_swap_user_selection",
+            "request_swap_user_shift_selection",
             context,
         )
         response = trigger_client_event(response, "openRequestSwapModal", after="swap")
-        response = retarget(response, "#request_swap_user_selection")
+        response = retarget(response, "#request_swap_user_shift_selection")
         response = reswap(response, "outerHTML")
         return response
 
@@ -300,9 +317,27 @@ def reload_request_swap_user_list(request):
 def submit_request_swap(request):
     context = {}
     if request.htmx and request.method == "POST":
-        response = HttpResponse()
-        data = request.POST
-        breakpoint()
+        try:
+            user = request.user
+            response = HttpResponse()
+            data = request.POST
+            process_adding_shift_swap_request(requestor=user, payload=data)
+            response = create_global_alert_instance(
+                response,
+                "Your shift swap request has been successfully submitted.",
+                "SUCCESS",
+            )
+            response = reswap(response, "none")
+            return response
+
+        except Exception as error:
+            response = create_global_alert_instance(
+                response,
+                f"An error occurred while processing your shift swap request. Please try again later. Details: {error}.",
+                "DANGER",
+            )
+            response = reswap(response, "none")
+            return response
 
 
 @login_required(login_url="/login")

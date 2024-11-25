@@ -453,7 +453,7 @@
                         </div>
                         <div class="p-4 md:p-5">
                             <div class="flex flex-col md:flex-row gap-2">
-                                <form class="w-full md:w-[30rem] p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                <div class="w-full md:w-[30rem] p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                                     <form hx-post="{% url 'attendance:submit_request_swap' %}">
                                         <div class="flex flex-col gap-2">
                                             <div>
@@ -468,30 +468,49 @@
                                                        hx-trigger="change"
                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                        placeholder="Flowbite"
-                                                       required />
+                                                       required 
+                                                       onfocus="this.min = new Date().toISOString().split('T')[0];"/>
                                             </div>
-                                            {% block request_swap_user_selection %}
-                                                <div id="request_swap_user_selection">
-                                                    <label for="request_swap_users_selection_id"
+                                            {% block request_swap_user_shift_selection %}
+                                                <div id="request_swap_user_shift_selection">
+                                                    <label for="shift_list"
                                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                                         User:
                                                     </label>
-                                                    <select id="request_swap_users_selection_id"
-                                                            name="selected_user"
-                                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                                    <select id="shift_list"
+                                                            name="selected_shift"
+                                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                            required>
                                                         {% if shifts %}
-                                                            <option selected value="">Choose a user</option>
+                                                            <option selected value="">Choose a user and shift</option>
                                                             {% for shift in shifts %}
-                                                                <option value="{{ shift.user.id }}">
+                                                                <option value="{{ shift.id }}">
                                                                     {{ shift.user.userdetails.get_user_fullname|title }} - ({{ shift.shift.get_twelve_hour_format_shift_range }} {{ shift.shift.get_twelve_hour_format_second_shift_range }})
                                                                 </option>
                                                             {% endfor %}
                                                         {% else %}
-                                                            <option selected value="">Select a date</option>
+                                                            <option selected value="">No shifts available to swap</option>
                                                         {% endif %}
                                                     </select>
                                                 </div>
                                             {% endblock %}
+                                            <div>
+                                                <label for="request_approver_id"
+                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                    User:
+                                                </label>
+                                                <select id="request_approver_id"
+                                                        name="selected_approver"
+                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                        required>
+                                                        <option selected value="">Choose an approver</option>
+                                                        {% for department_head in department_heads %}
+                                                            <option value="{{ department_head.id }}">
+                                                                {{ department_head.userdetails.get_user_fullname|title }}
+                                                            </option>
+                                                        {% endfor %}
+                                                </select>
+                                            </div>
                                             <div class="flex justify-center mt-2">
                                                 <button type="submit"
                                                         class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
@@ -501,7 +520,50 @@
                                         </div>
                                     </form>
                                 </div>
-                                <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700"></div>
+                                    <div class="w-full h-[30rem] relative overflow-y-auto overflow-x-auto shadow-md sm:rounded-lg">
+                                        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                <tr>
+                                                    <th scope="col" class="px-6 py-3">
+                                                        Product name
+                                                    </th>
+                                                    <th scope="col" class="px-6 py-3">
+                                                        Color
+                                                    </th>
+                                                    <th scope="col" class="px-6 py-3">
+                                                        Category
+                                                    </th>
+                                                    <th scope="col" class="px-6 py-3">
+                                                        Price
+                                                    </th>
+                                                    <th scope="col" class="px-6 py-3">
+                                                        <span class="sr-only">Edit</span>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                        Apple MacBook Pro 17"
+                                                    </th>
+                                                    <td class="px-6 py-4">
+                                                        Silver
+                                                    </td>
+                                                    <td class="px-6 py-4">
+                                                        Laptop
+                                                    </td>
+                                                    <td class="px-6 py-4">
+                                                        $2999
+                                                    </td>
+                                                    <td class="px-6 py-4 text-right">
+                                                        <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                            </div>
+                            <div class="w-full mt-2 p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                             </div>
                         </div>
                     </div>
