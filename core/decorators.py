@@ -19,3 +19,19 @@ def hr_required(redirect_url):
         return _wrapped_view
 
     return decorator
+
+
+def hr_or_dept_head_required(redirect_url):
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            if getattr(request.user.userdetails, "role", None) not in [
+                UserDetails.Role.HR.value,
+                UserDetails.Role.DEPARTMENT_HEAD.value,
+            ]:
+                return redirect(redirect_url)
+            return view_func(request, *args, **kwargs)
+
+        return _wrapped_view
+
+    return decorator

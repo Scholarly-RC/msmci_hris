@@ -88,7 +88,7 @@ from attendance.validations import (
     create_new_shift_validation,
     request_swap_validation,
 )
-from core.decorators import hr_required
+from core.decorators import hr_or_dept_head_required, hr_required
 from core.models import BiometricDetail, Department
 from core.notification import create_notification
 from hris.utils import create_global_alert_instance
@@ -1137,9 +1137,10 @@ def edit_user_clocked_time(request):
 
 ### Shift Management ###
 @login_required(login_url="/login")
-@hr_required("/")
+@hr_or_dept_head_required("/")
 def shift_management(request, department="", year="", month=""):
-    context = {"list_of_months": get_list_of_months()}
+    current_user = request.user
+    context = {"list_of_months": get_list_of_months(), "current_user": current_user}
     now = datetime.now()
     shift_year = request.POST.get("shift_year") or year or now.year
     shift_month = request.POST.get("shift_month") or month or now.month
@@ -1154,6 +1155,10 @@ def shift_management(request, department="", year="", month=""):
     calendar.setfirstweekday(calendar.SUNDAY)
     list_of_days = calendar.monthcalendar(shift_year, shift_month)
     list_of_departments = Department.objects.filter(is_active=True).order_by("name")
+    if not current_user.userdetails.is_hr():
+        list_of_departments = list_of_departments.filter(
+            id=current_user.userdetails.department.id
+        )
     selected_department = (
         list_of_departments.get(id=shift_department)
         if shift_department
