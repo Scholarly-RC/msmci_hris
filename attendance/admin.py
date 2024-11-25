@@ -7,7 +7,7 @@ from attendance.models import (
     Holiday,
     OverTime,
     Shift,
-    ShiftSwap
+    ShiftSwap,
 )
 
 admin.site.register(AttendanceRecord)
@@ -17,4 +17,3 @@ admin.site.register(Holiday)
 admin.site.register(OverTime)
 admin.site.register(Shift)
 admin.site.register(ShiftSwap)
-

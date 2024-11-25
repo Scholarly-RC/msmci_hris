@@ -3,18 +3,18 @@ import logging
 from datetime import datetime, timedelta
 
 from django.apps import apps
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils.timezone import make_aware
-from django.contrib.auth import get_user_model
 
 from attendance.utils.assign_shift_utils import get_employee_assignments
 from attendance.utils.date_utils import (
+    get_current_local_date,
     get_date_object,
     get_date_object_from_date_str,
     get_day_name_from_date,
     get_number_of_days_in_a_month,
     get_time_object,
-    get_current_local_date,
 )
 from hris.exceptions import InvalidApproverPermission, InvalidApproverResponse
 
@@ -452,13 +452,14 @@ def process_adding_shift_swap_request(requestor, payload):
             user=requestor
         )
 
-        ShiftSwapModel.objects.create(
+        shift_swap = ShiftSwapModel.objects.create(
             requested_by=requestor,
             requested_for=selected_shift.user,
             current_shift=current_shift,
             requested_shift=selected_shift,
             approver=approver,
         )
+        return shift_swap
     except Exception:
         logger.error(
             "An error occurred while adding a shift swap record",
@@ -468,32 +469,53 @@ def process_adding_shift_swap_request(requestor, payload):
 
 
 @transaction.atomic
-def process_deleting_shift_swap_request(payload):
+def process_approving_swap_request(swap_request_id):
     try:
         ShiftSwapModel = apps.get_model("attendance", "ShiftSwap")
-        selected_shift_swap_id = payload.get("request_swap")
-        shift_swap = ShiftSwapModel.objects.get(id=selected_shift_swap_id)
-        shift_swap.delete()
+        DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
+
+        shift_swap = ShiftSwapModel.objects.get(id=swap_request_id)
+
+        target_shift_record = shift_swap.requested_shift.daily_shift_records.first()
+
+        requested_by_new_schedule = DailyShiftScheduleModel.objects.filter(
+            user=shift_swap.requested_by,
+            date=shift_swap.requested_shift.date,
+            shift=shift_swap.requested_shift.shift,
+        ).first()
+        requested_for_new_schedule = DailyShiftScheduleModel.objects.filter(
+            user=shift_swap.requested_for,
+            date=shift_swap.requested_shift.date,
+            shift=shift_swap.current_shift.shift,
+        ).first()
+        target_shift_record.shifts.remove(shift_swap.current_shift)
+        target_shift_record.shifts.add(requested_by_new_schedule)
+        target_shift_record.shifts.remove(shift_swap.requested_shift)
+        target_shift_record.shifts.add(requested_for_new_schedule)
+
+        shift_swap.is_approved = True
+        shift_swap.save()
+
+        return shift_swap
     except Exception:
         logger.error(
-            "An error occurred while deleting a shift swap record",
+            "An error occurred while approving a shift swap record",
             exc_info=True,
         )
         raise
 
 
 @transaction.atomic
-def process_approving_swap_request(swap_request_id):
-    ShiftSwapModel = apps.get_model("attendance", "ShiftSwap")
-    DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
-
-    shift_swap = ShiftSwapModel.objects.get(id=swap_request_id)
-
-    target_shift_record = shift_swap.requested_shift.daily_shift_records.first()
-
-    new_requestor_schedeule = DailyShiftScheduleModel.objects.filter(user=shift_swap.requested_by, date=shift_swap.requested_shift.date, shift=shift_swap.requested_shift.shift).first()
-    # target_shift_record.shifts.remove(shift_swap.current_shift)
-    # target_shift_record.shifts.add(new_requestor_schedeule)
-
-
-    breakpoint()
+def process_rejecting_swap_request(swap_request_id):
+    try:
+        ShiftSwapModel = apps.get_model("attendance", "ShiftSwap")
+        shift_swap = ShiftSwapModel.objects.get(id=swap_request_id)
+        shift_swap.is_rejected = True
+        shift_swap.save()
+        return shift_swap
+    except Exception:
+        logger.error(
+            "An error occurred while rejecting a shift swap record",
+            exc_info=True,
+        )
+        raise

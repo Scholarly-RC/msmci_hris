@@ -1140,10 +1140,6 @@ select {
   margin-top: 2rem;
 }
 
-.mt-auto {
-  margin-top: auto;
-}
-
 .block {
   display: block;
 }
@@ -1342,10 +1338,6 @@ select {
 
 .h-screen {
   height: 100vh;
-}
-
-.h-\[130rem\] {
-  height: 130rem;
 }
 
 .max-h-10 {
@@ -1674,6 +1666,10 @@ select {
 
 .content-start {
   align-content: flex-start;
+}
+
+.content-end {
+  align-content: flex-end;
 }
 
 .items-start {

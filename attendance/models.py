@@ -283,3 +283,14 @@ class ShiftSwap(models.Model):
 
     def __str__(self):
         return f"Shift swap request from {self.requested_by.userdetails.get_user_fullname()} to {self.requested_for.userdetails.get_user_fullname()} for the shift on {self.requested_shift.date}"
+
+    def has_approved_responded(self):
+        return self.is_approved or self.is_rejected
+
+    def get_status(self):
+        if self.is_approved:
+            return "Approved"
+        elif self.is_rejected:
+            return "Rejected"
+        else:
+            return "Pending"
