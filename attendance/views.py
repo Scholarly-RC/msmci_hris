@@ -32,6 +32,8 @@ from attendance.actions import (
     process_respond_to_overtime_request,
     process_update_clocked_time,
     process_adding_shift_swap_request,
+    process_deleting_shift_swap_request,
+    process_approving_swap_request
 )
 from attendance.models import (
     AttendanceRecord,
@@ -39,6 +41,7 @@ from attendance.models import (
     Holiday,
     OverTime,
     Shift,
+    ShiftSwap,
 )
 from attendance.utils.assign_shift_utils import get_employee_assignments
 from attendance.utils.attendance_utils import (
@@ -89,7 +92,10 @@ from leave.utils import (
 )
 from payroll.utils import get_department_list
 
-from attendance.utils.swap_utils import get_user_shift_swap_request
+from attendance.utils.swap_utils import (
+    get_user_shift_swap_request,
+    get_pending_swap_requests,
+)
 
 
 ### Attendance Management ###
@@ -260,6 +266,7 @@ def sync_user_attendance(request, year="", month=""):
 def request_swap(request):
     context = {}
     if request.htmx and request.method == "GET":
+        data = request.GET
         user = request.user
         response = HttpResponse()
         errors = request_swap_validation(user=user)
@@ -271,15 +278,22 @@ def request_swap(request):
                 response = reswap(response, "none")
                 return response
 
-        department_heads = get_department_heads(
-            selected_department=user.userdetails.department
-        )
+        context["current_user"] = user
 
-        swap_requests = get_user_shift_swap_request(user=user)
+        if not "review_pending" in data:
+            swap_requests = get_pending_swap_requests(approver=user)
+            context.update({"for_review_pending": True, "swap_requests": swap_requests})
 
-        context.update(
-            {"department_heads": department_heads, "swap_requests": swap_requests}
-        )
+        else:
+            department_heads = get_department_heads(
+                selected_department=user.userdetails.department
+            ).exclude(id=user.id)
+
+            swap_requests = get_user_shift_swap_request(user=user)
+
+            context.update(
+                {"department_heads": department_heads, "swap_requests": swap_requests}
+            )
 
         response.content = render_block_to_string(
             "attendance/attendance_management.html",
@@ -322,6 +336,9 @@ def submit_request_swap(request):
             response = HttpResponse()
             data = request.POST
             process_adding_shift_swap_request(requestor=user, payload=data)
+            response = trigger_client_event(
+                response, "reloadRequestSwapContent", after="swap"
+            )
             response = create_global_alert_instance(
                 response,
                 "Your shift swap request has been successfully submitted.",
@@ -338,6 +355,77 @@ def submit_request_swap(request):
             )
             response = reswap(response, "none")
             return response
+
+
+@login_required(login_url="/login")
+def delete_request_swap(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "POST":
+            data = request.POST
+            request_swap_id = data.get("request_swap")
+            context["swap_data"] = ShiftSwap.objects.get(id=request_swap_id)
+            context["for_confirmation"] = "cancel" not in data
+            response.content = render_block_to_string(
+                "attendance/attendance_management.html",
+                "delete_swap_request_button_section",
+                context,
+            )
+
+            response = retarget(response, "closest td")
+            response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "DELETE":
+            data = QueryDict(request.body)
+            try:
+                process_deleting_shift_swap_request(payload=data)
+                response = retarget(response, "closest tr")
+                response = reswap(response, "delete")
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while deleting your shift swap request. Please try again later. Details: {error}.",
+                    "DANGER",
+                )
+                response = reswap(response, "none")
+                return response
+
+
+@login_required(login_url="/login")
+def respond_to_swap_request(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "GET":
+            data = request.GET
+            request_swap_id = data.get("request_swap")
+            context["swap_data"] = ShiftSwap.objects.get(id=request_swap_id)
+            if 'cancel' not in data:
+                context["for_confirmation"] = True
+
+                if 'approve' in data:
+                    context['for_approve'] = True
+                elif 'reject' in data:
+                    context['for_reject'] = True
+
+            response.content = render_block_to_string(
+                "attendance/attendance_management.html",
+                "shift_review_action_section",
+                context,
+            )
+            response = retarget(response, "closest td")
+            response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "POST":
+            data = request.POST
+            if 'swap_approved' in data:
+                swap_request_id = data.get("request_swap")
+                process_approving_swap_request(swap_request_id=swap_request_id)
+            breakpoint()
 
 
 @login_required(login_url="/login")

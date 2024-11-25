@@ -1140,6 +1140,10 @@ select {
   margin-top: 2rem;
 }
 
+.mt-auto {
+  margin-top: auto;
+}
+
 .block {
   display: block;
 }
@@ -1338,6 +1342,10 @@ select {
 
 .h-screen {
   height: 100vh;
+}
+
+.h-\[130rem\] {
+  height: 130rem;
 }
 
 .max-h-10 {
@@ -2136,6 +2144,11 @@ select {
 .bg-yellow-50 {
   --tw-bg-opacity: 1;
   background-color: rgb(254 252 232 / var(--tw-bg-opacity));
+}
+
+.bg-red-200 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(254 202 202 / var(--tw-bg-opacity));
 }
 
 .bg-custom-scholarly-gradient {

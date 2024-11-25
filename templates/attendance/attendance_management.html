@@ -452,119 +452,266 @@
                             </button>
                         </div>
                         <div class="p-4 md:p-5">
-                            <div class="flex flex-col md:flex-row gap-2">
-                                <div class="w-full md:w-[30rem] p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                                    <form hx-post="{% url 'attendance:submit_request_swap' %}">
-                                        <div class="flex flex-col gap-2">
-                                            <div>
-                                                <label for="swap_date_id"
-                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                                    Date:
-                                                </label>
-                                                <input type="date"
-                                                       id="swap_date_id"
-                                                       name="swap_date"
-                                                       hx-get="{% url 'attendance:reload_request_swap_user_list' %}"
-                                                       hx-trigger="change"
-                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                       placeholder="Flowbite"
-                                                       required 
-                                                       onfocus="this.min = new Date().toISOString().split('T')[0];"/>
-                                            </div>
-                                            {% block request_swap_user_shift_selection %}
-                                                <div id="request_swap_user_shift_selection">
-                                                    <label for="shift_list"
-                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                                        User:
-                                                    </label>
-                                                    <select id="shift_list"
-                                                            name="selected_shift"
-                                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                            required>
-                                                        {% if shifts %}
-                                                            <option selected value="">Choose a user and shift</option>
-                                                            {% for shift in shifts %}
-                                                                <option value="{{ shift.id }}">
-                                                                    {{ shift.user.userdetails.get_user_fullname|title }} - ({{ shift.shift.get_twelve_hour_format_shift_range }} {{ shift.shift.get_twelve_hour_format_second_shift_range }})
-                                                                </option>
+                            {% if not for_review_pending %}
+                                <div>
+                                    <div class="flex flex-col md:flex-row gap-2">
+                                        <div class="w-full md:w-[30rem] p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                            <form hx-post="{% url 'attendance:submit_request_swap' %}">
+                                                <div class="flex flex-col gap-2">
+                                                    <div>
+                                                        <label for="swap_date_id"
+                                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                            Date:
+                                                        </label>
+                                                        <input type="date"
+                                                               id="swap_date_id"
+                                                               name="swap_date"
+                                                               hx-get="{% url 'attendance:reload_request_swap_user_list' %}"
+                                                               hx-trigger="change"
+                                                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                               placeholder="Flowbite"
+                                                               required
+                                                               onfocus="this.min = new Date().toISOString().split('T')[0];" />
+                                                    </div>
+                                                    {% block request_swap_user_shift_selection %}
+                                                        <div id="request_swap_user_shift_selection">
+                                                            <label for="shift_list"
+                                                                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                                User & Shift:
+                                                            </label>
+                                                            <select id="shift_list"
+                                                                    name="selected_shift"
+                                                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                                    required>
+                                                                {% if shifts %}
+                                                                    <option selected value="">Choose a user and shift</option>
+                                                                    {% for shift in shifts %}
+                                                                        <option value="{{ shift.id }}">
+                                                                            {{ shift.user.userdetails.get_user_fullname|title }} - ({{ shift.shift.get_twelve_hour_format_shift_range }} {{ shift.shift.get_twelve_hour_format_second_shift_range }})
+                                                                        </option>
+                                                                    {% endfor %}
+                                                                {% else %}
+                                                                    <option selected value="">No shifts available to swap</option>
+                                                                {% endif %}
+                                                            </select>
+                                                        </div>
+                                                    {% endblock %}
+                                                    <div>
+                                                        <label for="request_approver_id"
+                                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                            Approver:
+                                                        </label>
+                                                        <select id="request_approver_id"
+                                                                name="selected_approver"
+                                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                                required>
+                                                            <option selected value="">Choose an approver</option>
+                                                            {% for department_head in department_heads %}
+                                                                <option value="{{ department_head.id }}">{{ department_head.userdetails.get_user_fullname|title }}</option>
                                                             {% endfor %}
-                                                        {% else %}
-                                                            <option selected value="">No shifts available to swap</option>
-                                                        {% endif %}
-                                                    </select>
+                                                        </select>
+                                                    </div>
+                                                    <div class="flex justify-center mt-2">
+                                                        <button type="submit"
+                                                                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                                            Submit
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            {% endblock %}
-                                            <div>
-                                                <label for="request_approver_id"
-                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                                    User:
-                                                </label>
-                                                <select id="request_approver_id"
-                                                        name="selected_approver"
-                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                        required>
-                                                        <option selected value="">Choose an approver</option>
-                                                        {% for department_head in department_heads %}
-                                                            <option value="{{ department_head.id }}">
-                                                                {{ department_head.userdetails.get_user_fullname|title }}
-                                                            </option>
-                                                        {% endfor %}
-                                                </select>
-                                            </div>
-                                            <div class="flex justify-center mt-2">
-                                                <button type="submit"
-                                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-                                                    Submit
-                                                </button>
-                                            </div>
+                                            </form>
                                         </div>
-                                    </form>
-                                </div>
-                                    <div class="w-full h-[30rem] relative overflow-y-auto overflow-x-auto shadow-md sm:rounded-lg">
-                                        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                                <tr>
-                                                    <th scope="col" class="px-6 py-3">
-                                                        Product name
-                                                    </th>
-                                                    <th scope="col" class="px-6 py-3">
-                                                        Color
-                                                    </th>
-                                                    <th scope="col" class="px-6 py-3">
-                                                        Category
-                                                    </th>
-                                                    <th scope="col" class="px-6 py-3">
-                                                        Price
-                                                    </th>
-                                                    <th scope="col" class="px-6 py-3">
-                                                        <span class="sr-only">Edit</span>
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                        Apple MacBook Pro 17"
-                                                    </th>
-                                                    <td class="px-6 py-4">
-                                                        Silver
-                                                    </td>
-                                                    <td class="px-6 py-4">
-                                                        Laptop
-                                                    </td>
-                                                    <td class="px-6 py-4">
-                                                        $2999
-                                                    </td>
-                                                    <td class="px-6 py-4 text-right">
-                                                        <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                        <div class="w-full h-[30rem] relative overflow-y-auto overflow-x-auto shadow-md sm:rounded-lg">
+                                            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                    <tr>
+                                                        <th scope="col" class="px-6 py-3">Request To</th>
+                                                        <th scope="col" class="px-6 py-3 text-center">From Shift</th>
+                                                        <th scope="col" class="px-6 py-3 text-center">To Shift</th>
+                                                        <th scope="col" class="px-6 py-3 text-center">Date</th>
+                                                        <th scope="col" class="px-6 py-3 text-center">Status</th>
+                                                        <th scope="col" class="px-6 py-3"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for swap_data in swap_requests %}
+                                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                            <th scope="row"
+                                                                class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white ">
+                                                                {{ swap_data.requested_for.userdetails.get_user_fullname|title }}
+                                                            </th>
+                                                            <td class="px-6 py-4 text-center">{{ swap_data.current_shift.shift }}</td>
+                                                            <td class="px-6 py-4 text-center">{{ swap_data.requested_shift.shift }}</td>
+                                                            <td class="px-6 py-4 text-center">{{ swap_data.requested_shift.date }}</td>
+                                                            <td class="px-6 py-4 text-center">
+                                                                {% if swap_data.is_approved %}
+                                                                    Approved
+                                                                {% else %}
+                                                                    Pending
+                                                                {% endif %}
+                                                            </td>
+                                                            {% block delete_swap_request_button_section %}
+                                                                {% if for_confirmation %}
+                                                                    <td class="px-6 py-4 flex flex-col items-center">
+                                                                        <div>
+                                                                            <button hx-delete="{% url "attendance:delete_request_swap" %}"
+                                                                                    hx-vals='{"request_swap": {{ swap_data.id }}}'
+                                                                                    type="button"
+                                                                                    class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                                                                                Confirm
+                                                                            </button>
+                                                                        </div>
+                                                                        <div>
+                                                                            <button hx-post="{% url "attendance:delete_request_swap" %}"
+                                                                                    hx-vals='{"cancel": "True", "request_swap": {{ swap_data.id }}}'
+                                                                                    type="button"
+                                                                                    class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                                                                                Cancel
+                                                                            </button>
+                                                                        </div>
+                                                                    </td>
+                                                                {% else %}
+                                                                    <td class="px-6 py-4 text-right">
+                                                                        <button hx-post="{% url "attendance:delete_request_swap" %}"
+                                                                                hx-vals='{"request_swap": {{ swap_data.id }}}'
+                                                                                type="button"
+                                                                                class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                                                                            Delete
+                                                                        </button>
+                                                                    </td>
+                                                                {% endif %}
+                                                            {% endblock %}
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
-                            </div>
-                            <div class="w-full mt-2 p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                            </div>
+                                    {% if current_user.userdetails.is_department_head %}
+                                        <div class="flex justify-center w-full mt-2 p-2 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                            <button type="button"
+                                                    hx-get="{% url "attendance:request_swap" %}"
+                                                    hx-vals='{"review_pending": "True"}'
+                                                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                                Review Pending Swap Request
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div>
+                                    <div class="flex flex-col md:flex-row gap-2">
+                                        <div class="w-full h-[30rem] relative overflow-y-auto overflow-x-auto shadow-md sm:rounded-lg">
+                                            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                    <tr>
+                                                        <th scope="col" class="px-6 py-3">Requested By</th>
+                                                        <th scope="col" class="px-6 py-3">Requested To</th>
+                                                        <th scope="col" class="px-6 py-3 text-center">Date</th>
+                                                        <th scope="col" class="px-6 py-3 text-center">Status</th>
+                                                        <th scope="col" class="px-6 py-3"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for swap_data in swap_requests %}
+                                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                                            <th scope="row"
+                                                                class="px-6 py-4">
+                                                                <div>
+                                                                    <div class="text-base font-semibold">{{ swap_data.requested_by.userdetails.get_user_fullname|title }}</div>
+                                                                    <div class="font-normal text-gray-500">{{ swap_data.current_shift.shift }}</div>
+                                                                </div>  
+                                                            </th>
+                                                            <td class="px-6 py-4">
+                                                                <div>
+                                                                    <div class="text-base font-semibold">{{ swap_data.requested_for.userdetails.get_user_fullname|title }}</div>
+                                                                    <div class="font-normal text-gray-500">{{ swap_data.requested_shift.shift }}</div>
+                                                                </div>  
+                                                            </td>
+                                                            <td class="px-6 py-4 text-center">{{ swap_data.requested_shift.date }}</td>
+                                                            <td class="px-6 py-4 text-center">
+                                                                {% if swap_data.is_approved %}
+                                                                    Approved
+                                                                {% else %}
+                                                                    Pending
+                                                                {% endif %}
+                                                            </td>
+                                                            {% block shift_review_action_section %}
+                                                                {% if for_confirmation %}
+                                                                    <td class="px-6 py-4 flex flex-col items-center">
+                                                                        {% if for_approve %}
+                                                                            <div>
+                                                                                <button hx-post="{% url "attendance:respond_to_swap_request" %}"
+                                                                                        hx-vals='{"request_swap": {{ swap_data.id }}, "swap_approved": "True"}'
+                                                                                        type="button"
+                                                                                        class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                                                                                    Confirm Approval
+                                                                                </button>
+                                                                            </div>
+                                                                            <div>
+                                                                                <button hx-get="{% url "attendance:respond_to_swap_request" %}"
+                                                                                        hx-vals='{"cancel": "True", "request_swap": {{ swap_data.id }}}'
+                                                                                        type="button"
+                                                                                        class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                                                                                    Cancel
+                                                                                </button>
+                                                                            </div>
+                                                                        {% elif for_reject %}
+                                                                            <div>
+                                                                                <button hx-delete="{% url "attendance:delete_request_swap" %}"
+                                                                                        hx-vals='{"request_swap": {{ swap_data.id }}}'
+                                                                                        type="button"
+                                                                                        class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                                                                                    Confirm Rejection
+                                                                                </button>
+                                                                            </div>
+                                                                            <div>
+                                                                                <button hx-get="{% url "attendance:respond_to_swap_request" %}"
+                                                                                        hx-vals='{"cancel": "True", "request_swap": {{ swap_data.id }}}'
+                                                                                        type="button"
+                                                                                        class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                                                                                    Cancel
+                                                                                </button>
+                                                                            </div>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                {% else %}
+                                                                <td class="px-6 py-4 flex flex-col items-center">
+                                                                    <div>
+                                                                        <button hx-get="{% url "attendance:respond_to_swap_request" %}"
+                                                                                hx-vals='{"request_swap": {{ swap_data.id }}, "approve": "True"}'
+                                                                                type="button"
+                                                                                class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                                                                            Approve
+                                                                        </button>
+                                                                    </div>
+                                                                    <div>
+                                                                        <button hx-get="{% url "attendance:respond_to_swap_request" %}"
+                                                                        hx-vals='{"request_swap": {{ swap_data.id }}, "reject": "True"}'
+                                                                        type="button"
+                                                                                class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+                                                                            Reject
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                                {% endif %}
+                                                            {% endblock %}
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    {% if current_user.userdetails.is_department_head %}
+                                        <div class="flex justify-center w-full mt-2 p-2 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                            <button type="button"
+                                                hx-get="{% url "attendance:request_swap" %}"
+                                                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                                Return to Your Swap Requests
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -575,6 +722,12 @@
 {% block javascript %}
     <script>
         htmx.onLoad(function(content) {
+            const reloadRequestSwapContent = () => {
+                htmx.ajax('GET', '{% url "attendance:request_swap" %}', {
+                    values: {}
+                });
+            };
+
             // Initialize specific modals
             const initializeRequestOvertimeModal = () => initializeModal('request_overtime_modal');
             const closeRequestOvertimeModal = () => closeModal('request_overtime_modal');
@@ -590,6 +743,10 @@
             content.addEventListener('closeOvertimeRequestsToApproveModal', closeOvertimeRequestsToApproveModal);
             content.addEventListener('openRequestSwapModal', initializeRequestSwapModal);
             content.addEventListener('closeRequestSwapModal', closeRequestSwapModal);
+
+            document.addEventListener('reloadRequestSwapContent', () => {
+                reloadRequestSwapContent();
+            });
         });
     </script>
 {% endblock %}

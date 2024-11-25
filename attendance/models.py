@@ -273,6 +273,7 @@ class ShiftSwap(models.Model):
     )
 
     is_approved = models.BooleanField(_("Is Shift Swap Approved"), default=False)
+    is_rejected = models.BooleanField(_("Is Shift Swap Rejected"), default=False)
 
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated = models.DateTimeField(auto_now=True, null=True, blank=True)

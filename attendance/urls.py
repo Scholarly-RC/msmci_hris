@@ -18,6 +18,16 @@ urlpatterns = [
     ),
     ### SWAP URLS ###
     path(
+        "request-swap/respond",
+        attendance_views.respond_to_swap_request,
+        name="respond_to_swap_request",
+    ),
+    path(
+        "request-swap/delete-request",
+        attendance_views.delete_request_swap,
+        name="delete_request_swap",
+    ),
+    path(
         "request-swap/submit-request",
         attendance_views.submit_request_swap,
         name="submit_request_swap",

@@ -448,12 +448,52 @@ def process_adding_shift_swap_request(requestor, payload):
         approver_id = payload.get("selected_approver")
         approver = UserModel.objects.get(id=approver_id)
 
-        current_shift = selected_shift.daily_shift_records.first().shifts.get(user=requestor)
+        current_shift = selected_shift.daily_shift_records.first().shifts.get(
+            user=requestor
+        )
 
-        ShiftSwapModel.objects.create(requested_by=requestor, requested_for=selected_shift.user, current_shift=current_shift, requested_shift=selected_shift, approver=approver)
+        ShiftSwapModel.objects.create(
+            requested_by=requestor,
+            requested_for=selected_shift.user,
+            current_shift=current_shift,
+            requested_shift=selected_shift,
+            approver=approver,
+        )
     except Exception:
         logger.error(
             "An error occurred while adding a shift swap record",
             exc_info=True,
         )
         raise
+
+
+@transaction.atomic
+def process_deleting_shift_swap_request(payload):
+    try:
+        ShiftSwapModel = apps.get_model("attendance", "ShiftSwap")
+        selected_shift_swap_id = payload.get("request_swap")
+        shift_swap = ShiftSwapModel.objects.get(id=selected_shift_swap_id)
+        shift_swap.delete()
+    except Exception:
+        logger.error(
+            "An error occurred while deleting a shift swap record",
+            exc_info=True,
+        )
+        raise
+
+
+@transaction.atomic
+def process_approving_swap_request(swap_request_id):
+    ShiftSwapModel = apps.get_model("attendance", "ShiftSwap")
+    DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
+
+    shift_swap = ShiftSwapModel.objects.get(id=swap_request_id)
+
+    target_shift_record = shift_swap.requested_shift.daily_shift_records.first()
+
+    new_requestor_schedeule = DailyShiftScheduleModel.objects.filter(user=shift_swap.requested_by, date=shift_swap.requested_shift.date, shift=shift_swap.requested_shift.shift).first()
+    # target_shift_record.shifts.remove(shift_swap.current_shift)
+    # target_shift_record.shifts.add(new_requestor_schedeule)
+
+
+    breakpoint()
