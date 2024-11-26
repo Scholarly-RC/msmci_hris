@@ -1668,10 +1668,6 @@ select {
   align-content: flex-start;
 }
 
-.content-end {
-  align-content: flex-end;
-}
-
 .items-start {
   align-items: flex-start;
 }
@@ -2142,11 +2138,6 @@ select {
   background-color: rgb(254 252 232 / var(--tw-bg-opacity));
 }
 
-.bg-red-200 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(254 202 202 / var(--tw-bg-opacity));
-}
-
 .bg-custom-scholarly-gradient {
   background-image: linear-gradient(to right, #005c47, #f5df59, #b3be55, #739c51, #387f4e);
 }
@@ -2348,10 +2339,6 @@ select {
 
 .text-center {
   text-align: center;
-}
-
-.text-right {
-  text-align: right;
 }
 
 .text-start {

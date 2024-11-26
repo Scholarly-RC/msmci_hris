@@ -61,47 +61,21 @@
                                     {% endif %}
                                     <!-- List of Reports -->
                                     <!-- ATTENDANCE REPORTS -->
-                                    {% if selected_report == "EMPLOYEE_PUNCTUALITY_RATE" %}
-                                        <form hx-post="{% url "reports_and_analytics:view_employee_punctuality_report" %}">
+                                    {% if selected_report == "DAILY_STAFFING_REPORT" %}
+                                        <form hx-post="{% url "reports_and_analytics:view_daily_staffing_report" %}">
                                             {% if is_user_hr %}
-                                                <div class="mb-1">
-                                                    <label for="selected_user_id"
-                                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                                        User
+                                                <div>
+                                                    <label for="date_from_id"
+                                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                        Date
                                                     </label>
-                                                    <select id="selected_user_id"
-                                                            name="selected_user"
-                                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                            required>
-                                                        <option selected value="">Choose a User</option>
-                                                        {% for user in users %}
-                                                            <option value="{{ user.id }}">{{ user.userdetails.get_user_fullname|title }}</option>
-                                                        {% endfor %}
-                                                    </select>
+                                                    <input type="date"
+                                                        id="date_from_id"
+                                                        name="selected_date"
+                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                        required />
                                                 </div>
                                             {% endif %}
-                                            <div>
-                                                <label for="date_from_id"
-                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                                    From
-                                                </label>
-                                                <input type="date"
-                                                       id="date_from_id"
-                                                       name="from_date"
-                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                       required />
-                                            </div>
-                                            <div>
-                                                <label for="date_to_id"
-                                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                                    To
-                                                </label>
-                                                <input type="date"
-                                                       id="date_to_id"
-                                                       name="to_date"
-                                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                                       required />
-                                            </div>
                                             <div class="flex justify-center mt-4">
                                                 <button type="submit"
                                                         class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">

@@ -12,7 +12,6 @@ from reports_and_analytics.utils import (
     get_education_level_report_data,
     get_employee_leave_summary_report_data,
     get_employee_performance_evaluation_summary_data,
-    get_employee_punctuality_report_data,
     get_employee_yearly_salary_salary_report_data,
     get_filter_contexts_for_specific_report,
     get_gender_demographics_report_data,
@@ -21,6 +20,7 @@ from reports_and_analytics.utils import (
     get_reports_for_specific_module,
     get_yearly_salary_expense_report_data,
     get_years_of_experience_report_data,
+    get_daily_staffing_report_data,
 )
 
 
@@ -63,9 +63,7 @@ def reports_and_analytics(request):
 
 ### Attendance Reports Views ###
 @login_required(login_url="/login")
-def view_employee_punctuality_report(
-    request, selected_user="", from_date="", to_date="", option="all"
-):
+def view_daily_staffing_report(request, selected_date="", option="all"):
     context = {}
     user = request.user
     is_user_hr = user.userdetails.is_hr()
@@ -73,17 +71,14 @@ def view_employee_punctuality_report(
         selected_user = user.id
         context["hide_print_download_button"] = True
 
-    selected_user = request.POST.get("selected_user") or selected_user
-    from_date = request.POST.get("from_date") or from_date
-    to_date = request.POST.get("to_date") or to_date
+    selected_date = request.POST.get("selected_date") or selected_date
+
     context["option"] = option
-    context.update(
-        get_employee_punctuality_report_data(selected_user, from_date, to_date)
-    )
+    context.update(get_daily_staffing_report_data(selected_date_str=selected_date))
     if request.htmx and request.method == "POST":
         response = HttpResponse()
         response.content = render_block_to_string(
-            "reports_and_analytics/components/employee_punctuality_report.html",
+            "reports_and_analytics/components/daily_staffing_report.html",
             "content",
             context,
         )
@@ -98,32 +93,27 @@ def view_employee_punctuality_report(
 
     return render(
         request,
-        "reports_and_analytics/components/employee_punctuality_report.html",
+        "reports_and_analytics/components/daily_staffing_report.html",
         context,
     )
 
 
 @login_required(login_url="/login")
-def popup_employee_punctuality_report(request):
+def popup_daily_staffing_report(request):
     if request.htmx and request.method == "POST":
         data = request.POST
-        selected_user = data.get("selected_user")
-        from_date = data.get("from_date")
-        to_date = data.get("to_date")
+        selected_date = data.get("selected_date")
         option = data.get("option")
-
         response = HttpResponse()
         response = trigger_client_event(
             response,
             "openSelectedReport",
             {
                 "report_url_view": reverse(
-                    "reports_and_analytics:view_employee_punctuality_report_with_data",
+                    "reports_and_analytics:view_daily_staffing_report_with_data",
                     kwargs={
-                        "selected_user": selected_user,
-                        "from_date": from_date,
-                        "to_date": to_date,
-                        "option": option,
+                        "selected_date": selected_date,
+                        "option":option,
                     },
                 )
             },

@@ -70,10 +70,8 @@ def get_filter_contexts_for_specific_report(
     The function checks the report type and, if applicable, adds relevant data based
     on the `for_hr` flag. If the report is not recognized, it returns an empty dictionary.
     """
-    if report == AttendanceReports.EMPLOYEE_PUNCTUALITY_RATE.value:
+    if report == AttendanceReports.DAILY_STAFFING_REPORT.value:
         context = {}
-        if for_hr:
-            context["users"] = get_employees_with_attendance_record()
         return context
     if report == PerformanceAndLearningReports.EMPLOYEE_PERFORMANCE_SUMMARY.value:
         context = {"years": get_finalized_user_evaluation_year_list()}
@@ -110,56 +108,32 @@ def get_attendancee_reports(for_hr: bool = False):
     ]
 
 
-def get_employee_punctuality_report_data(selected_user, from_date, to_date):
-    """
-    Generates punctuality report data for a specific employee within a date range.
-    It retrieves the user's clock-in data, calculates the number of on-time and late
-    arrivals, and returns a dictionary containing attendance status, values, and
-    formatted date information for reporting purposes.
-    """
-    UserModel = apps.get_model("auth", "User")
-    user = UserModel.objects.get(id=selected_user)
-    from_date = get_date_object_from_date_str(from_date)
-    to_date = get_date_object_from_date_str(to_date)
+def get_daily_staffing_report_data(selected_date_str):
+    DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
+    DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
+    DepartmentModel = apps.get_model("core", "Department")
+    selected_date = get_date_object_from_date_str(date_str=selected_date_str)
+    schedules = DailyShiftScheduleModel.objects.filter(
+        date=selected_date, daily_shift_records__isnull=False
+    ).order_by("user__first_name", "user__userdetails__department__name")
 
-    daily_shift_schedules = user.daily_shift_schedules.filter(
-        shift__isnull=False, clock_in__isnull=False
-    )
-    on_time_or_early = 0
-    late = 0
+    department_list = []
+    department_count_list = []
 
-    for daily_shift_schedule in daily_shift_schedules:
-        clock_in = daily_shift_schedule.get_clock_in_localtime()
-        clocked_time = get_user_clocked_time(
-            user,
-            clock_in.year,
-            clock_in.month,
-            clock_in.day,
-            daily_shift_schedule.shift,
-        )
-        if "-" in clocked_time["clock_in_time_diff_formatted"]:
-            late += 1
-        else:
-            on_time_or_early += 1
+    department_with_records = DepartmentModel.objects.filter(daily_shift_records__isnull=False, daily_shift_records__date=selected_date)
 
-    attendance_status = ["On Time / Early", "Late"]
-    attendance_values = [on_time_or_early, late]
+    for department in department_with_records:
+        department_list.append(department.name.title())
+        department_count_list.append(department.daily_shift_records.filter(date=selected_date).first().shifts.count())
+   
+    schedules_data = {"department_list": department_list, "department_count_list": department_count_list}
 
-    employee_punctuality_data = {
-        "attendance_status": attendance_status,
-        "attendance_values": attendance_values,
-    }
-
-    employee_punctuality_table_data = [(on_time_or_early, late)]
+    schedules_table_data = {"schedules": schedules}
 
     return {
-        "chart_option_data": json.dumps(employee_punctuality_data),
-        "employee_punctuality_table_data": employee_punctuality_table_data,
-        "from_date": str(from_date),
-        "to_date": str(to_date),
-        "from_date_display": get_readable_date_from_date_object(from_date),
-        "to_date_display": get_readable_date_from_date_object(to_date),
-        "selected_user": user,
+        "chart_option_data": json.dumps(schedules_data),
+        "schedules_table_data": schedules_table_data,
+        "selected_date": selected_date_str,
     }
 
 
@@ -556,11 +530,11 @@ def get_years_of_experience_report_data(as_of_date=""):
         "years_of_experience_count_group_list": years_of_experience_count_group_list,
     }
 
-    years_of_expernce_tabe_data = {"users": user_details_list}
+    years_of_expernce_table_data = {"users": user_details_list}
 
     return {
         "chart_option_data": json.dumps(years_of_expernce_data),
-        "years_of_expernce_tabe_data": years_of_expernce_tabe_data,
+        "years_of_expernce_table_data": years_of_expernce_table_data,
         "years_of_experience_average": round(years_of_experience_average, 2),
         "as_of_date": str(as_of_date),
     }

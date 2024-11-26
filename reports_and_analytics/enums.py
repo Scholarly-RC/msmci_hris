@@ -15,11 +15,11 @@ class Modules(Enum):
 
 
 class AttendanceReports(Enum):
-    EMPLOYEE_PUNCTUALITY_RATE = "EMPLOYEE_PUNCTUALITY_RATE"
+    DAILY_STAFFING_REPORT = "DAILY_STAFFING_REPORT"
 
     def get_display_name(self):
-        if self.value == AttendanceReports.EMPLOYEE_PUNCTUALITY_RATE.value:
-            return "Employee Punctuality Rate"
+        if self.value == AttendanceReports.DAILY_STAFFING_REPORT.value:
+            return "Daily Staffing Report"
         return self.value
 
 

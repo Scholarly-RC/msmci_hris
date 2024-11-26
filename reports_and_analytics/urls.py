@@ -7,19 +7,19 @@ app_name = "reports_and_analytics"
 urlpatterns = [
     ### Attendance Reports Urls ###
     path(
-        "report/employee-punctuality/view/<str:selected_user>/<str:from_date>/<str:to_date>/<str:option>",
-        raa_views.view_employee_punctuality_report,
-        name="view_employee_punctuality_report_with_data",
+        "report/daily-staffing-report/view/<str:selected_date>/<str:option>",
+        raa_views.view_daily_staffing_report,
+        name="view_daily_staffing_report_with_data",
     ),
     path(
-        "report/employee-punctuality/popup",
-        raa_views.popup_employee_punctuality_report,
-        name="popup_employee_punctuality_report",
+        "report/daily-staffing-report/popup",
+        raa_views.popup_daily_staffing_report,
+        name="popup_daily_staffing_report",
     ),
     path(
-        "report/employee-punctuality/view",
-        raa_views.view_employee_punctuality_report,
-        name="view_employee_punctuality_report",
+        "report/daily-staffing-report/view",
+        raa_views.view_daily_staffing_report,
+        name="view_daily_staffing_report",
     ),
     ### Performance and Learning Reports Urls ###
     path(
