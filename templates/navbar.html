@@ -22,7 +22,7 @@
                     </svg>
                     <!-- SET TRIGGER -->
                     <div hx-post="{% url "core:notification_button_indicator" %}"
-                         hx-trigger="load, every 100s">
+                         hx-trigger="load, every 120s">
                         {% block userNotificationButtonIndicator %}
                             <div id="userNotificationButtonIndicator"
                                  class="{% if has_unread_notification %}block{% else %}hidden{% endif %} absolute w-3 h-3 bg-red-500 border-2 border-white rounded-full -top-0.5 start-2.5 dark:border-gray-900">

@@ -2,8 +2,8 @@ import json
 from collections import Counter
 
 from django.apps import apps
-from django.db.models import Q
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 
 from attendance.enums import Months
 from attendance.utils.date_utils import (
@@ -415,6 +415,33 @@ def get_all_employees_report_data(as_of_date=""):
     return {
         "chart_option_data": json.dumps(user_list),
         "users_table_data": users_table_data,
+        "as_of_date": str(as_of_date),
+    }
+
+
+def get_employees_per_department_report_data(as_of_date=""):
+    as_of_date = get_date_object_from_date_str(as_of_date)
+    DepartmentModel = apps.get_model("core", "Department")
+
+    department_list = []
+    department_count_list = []
+
+    departments = DepartmentModel.objects.all().order_by("name")
+
+    for department in departments:
+        department_list.append(department.name.title())
+        department_count_list.append(department.users.count())
+
+    departments_data = {
+        "department_list": department_list,
+        "department_count_list": department_count_list,
+    }
+
+    departments_table_data = {"departments": departments}
+
+    return {
+        "chart_option_data": json.dumps(departments_data),
+        "departments_table_data": departments_table_data,
         "as_of_date": str(as_of_date),
     }
 

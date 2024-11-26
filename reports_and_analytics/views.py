@@ -9,10 +9,13 @@ from render_block import render_block_to_string
 
 from reports_and_analytics.utils import (
     get_age_demographics_report_data,
+    get_all_employees_report_data,
+    get_daily_staffing_report_data,
     get_education_level_report_data,
     get_employee_leave_summary_report_data,
     get_employee_performance_evaluation_summary_data,
     get_employee_yearly_salary_salary_report_data,
+    get_employees_per_department_report_data,
     get_filter_contexts_for_specific_report,
     get_gender_demographics_report_data,
     get_list_of_modules,
@@ -20,8 +23,6 @@ from reports_and_analytics.utils import (
     get_reports_for_specific_module,
     get_yearly_salary_expense_report_data,
     get_years_of_experience_report_data,
-    get_daily_staffing_report_data,
-    get_all_employees_report_data
 )
 
 
@@ -114,7 +115,7 @@ def popup_daily_staffing_report(request):
                     "reports_and_analytics:view_daily_staffing_report_with_data",
                     kwargs={
                         "selected_date": selected_date,
-                        "option":option,
+                        "option": option,
                     },
                 )
             },
@@ -428,6 +429,56 @@ def popup_all_employees_report(request):
         response = reswap(response, "none")
         return response
 
+
+@login_required(login_url="/login")
+def view_employees_per_department_report(request, as_of_date="", option="all"):
+    context = {}
+    as_of_date = (
+        request.POST.get("selected_as_of_date")
+        or as_of_date
+        or str(datetime.now().date())
+    )
+    context["option"] = option
+    context.update(get_employees_per_department_report_data(as_of_date))
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "reports_and_analytics/components/employees_per_department_report.html",
+            "content",
+            context,
+        )
+        response = retarget(response, "#report_content_display")
+        response = reswap(response, "innerHTML")
+        return response
+
+    context["for_print_download"] = True
+    return render(
+        request,
+        "reports_and_analytics/components/employees_per_department_report.html",
+        context,
+    )
+
+
+@login_required(login_url="/login")
+def popup_employees_per_department_report(request):
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        as_of_date = data.get("as_of_date")
+        option = data.get("option")
+        response = HttpResponse()
+        response = trigger_client_event(
+            response,
+            "openSelectedReport",
+            {
+                "report_url_view": reverse(
+                    "reports_and_analytics:view_employees_per_department_report_with_data",
+                    kwargs={"as_of_date": as_of_date, "option": option},
+                )
+            },
+            after="swap",
+        )
+        response = reswap(response, "none")
+        return response
 
 
 @login_required(login_url="/login")

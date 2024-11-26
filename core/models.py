@@ -111,7 +111,11 @@ class UserDetails(models.Model):
     rank = models.CharField(_("User Rank"), max_length=500, null=True, blank=True)
 
     department = models.ForeignKey(
-        "Department", on_delete=models.RESTRICT, null=True, blank=True
+        "Department",
+        on_delete=models.RESTRICT,
+        null=True,
+        blank=True,
+        related_name="users",
     )
 
     role = models.CharField(

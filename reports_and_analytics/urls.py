@@ -101,6 +101,21 @@ urlpatterns = [
         name="view_all_employees_report",
     ),
     path(
+        "report/employees-per-department/view/<str:as_of_date>/<str:option>",
+        raa_views.view_employees_per_department_report,
+        name="view_employees_per_department_report_with_data",
+    ),
+    path(
+        "report/employees-per-department/popup",
+        raa_views.popup_employees_per_department_report,
+        name="popup_employees_per_department_report",
+    ),
+    path(
+        "report/employees-per-department/view",
+        raa_views.view_employees_per_department_report,
+        name="view_employees_per_department_report",
+    ),
+    path(
         "report/religion/view/<str:as_of_date>/<str:option>",
         raa_views.view_religion_report,
         name="view_religion_report_with_data",

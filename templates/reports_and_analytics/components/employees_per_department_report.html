@@ -1,21 +1,18 @@
 {% extends "layout.html" %}
 {% block title %}
-    {{ selected_user.userdetails.get_user_fullname }} Punctuality Report - ({{ from_date_display }} - {{ to_date_display }})
+    Employees Per Department Report - ({{ as_of_date }})
 {% endblock title %}
 {% block content %}
     <div class="w-full md:w-[65rem] mx-auto p-6">
         <div>
             <input type="hidden"
-                   id="employee_punctuality_report_data"
+                   id="employees_per_department_report_data"
                    value="{{ chart_option_data }}">
             <div class="w-full bg-white rounded-lg border shadow dark:bg-gray-800 p-4 md:p-6">
                 <div class="flex justify-between items-start w-full">
                     <dl>
                         <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
-                            Name: <b>{{ selected_user.userdetails.get_user_fullname|title }}</b>
-                        </dt>
-                        <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
-                            Punctuality Report - <b>({{ from_date_display }} - {{ to_date_display }})</b>
+                            Employees Per Department Report as of <b>{{ as_of_date }}</b>
                         </dt>
                     </dl>
                 </div>
@@ -24,16 +21,21 @@
                         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr>
-                                    <th scope="col" class="w-1/2 px-6 py-3 text-center">On Time / Early</th>
-                                    <th scope="col" class="w-1/2 px-6 py-3 text-center">Late</th>
+                                    <th scope="col" class="px-6 py-3 text-start">Name</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for data in employee_punctuality_table_data %}
-                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                        <td class="px-6 py-4 text-center">{{ data.0 }}</td>
-                                        <td class="px-6 py-4 text-center">{{ data.1 }}</td>
-                                    </tr>
+                                {% for department in departments_table_data.departments %}
+                                    {% if department.users.all %}
+                                        <tr class="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white dark:text-white dark:bg-gray-800">
+                                            <td class="px-6 py-4 text-center">{{ department.name|title }}</td>
+                                        </tr>
+                                        {% for user in department.users.all %}
+                                            <tr class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                <td class="px-6 py-4 text-start">{{ user.get_user_fullname|title }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% endif %}
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -42,8 +44,8 @@
                 {% if option == "all" or option == "chart" %}
                     <div class="py-6" id="pie-chart"></div>
                     <script>
-                        var employeePunctualityReportChartOptions = () => {
-                            const inputElement = document.getElementById('employee_punctuality_report_data');
+                        var employeesPerDepartmentReportChartOptions = () => {
+                            const inputElement = document.getElementById('employees_per_department_report_data');
                             const inputValue = inputElement.value;
                             let parsedArray = {};
 
@@ -51,11 +53,11 @@
                                 parsedArray = JSON.parse(inputValue);
                             }
 
-                            const attendance_status = parsedArray.attendance_status;
-                            const attendance_values = parsedArray.attendance_values;
+                            const department_list = parsedArray.department_list;
+                            const department_count_list = parsedArray.department_count_list;
 
                             return {
-                                series: attendance_values,
+                                series: department_count_list,
                                 colors: ["#1C64F2", "#16BDCA", "#9061F9", "#FF6F61", "#D4AF37"],
                                 chart: {
                                     height: 420,
@@ -77,7 +79,7 @@
                                         }
                                     },
                                 },
-                                labels: attendance_status,
+                                labels: department_list,
                                 dataLabels: {
                                     enabled: true,
                                     style: {
@@ -117,11 +119,11 @@
                         }
 
                         if (document.getElementById("pie-chart") && typeof ApexCharts !== 'undefined') {
-                            if (window.employeePunctualityReportChart) {
-                                window.employeePunctualityReportChart.destroy()
+                            if (window.employeesPerDepartmentReportChart) {
+                                window.employeesPerDepartmentReportChart.destroy()
                             }
-                            window.employeePunctualityReportChart = new ApexCharts(document.getElementById("pie-chart"), employeePunctualityReportChartOptions());
-                            window.employeePunctualityReportChart.render();
+                            window.employeesPerDepartmentReportChart = new ApexCharts(document.getElementById("pie-chart"), employeesPerDepartmentReportChartOptions());
+                            window.employeesPerDepartmentReportChart.render();
                         }
                     </script>
                 {% endif %}
@@ -131,20 +133,20 @@
                     <p class="text-xl text-gray-900 whitespace-nowrap dark:text-white">Print/Download</p>
                     <div class="inline-flex rounded-md shadow-sm" role="group">
                         <button type="button"
-                                hx-post="{% url "reports_and_analytics:popup_employee_punctuality_report" %}"
-                                hx-vals='{"selected_user": {{ selected_user.id }}, "from_date": "{{ from_date }}", "to_date": "{{ to_date }}", "option": "all"}'
+                                hx-post="{% url "reports_and_analytics:popup_employees_per_department_report" %}"
+                                hx-vals='{"as_of_date": "{{ as_of_date }}", "option": "all"}'
                                 class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-s-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
                             All
                         </button>
                         <button type="button"
-                                hx-post="{% url "reports_and_analytics:popup_employee_punctuality_report" %}"
-                                hx-vals='{"selected_user": {{ selected_user.id }}, "from_date": "{{ from_date }}", "to_date": "{{ to_date }}", "option": "table"}'
+                                hx-post="{% url "reports_and_analytics:popup_employees_per_department_report" %}"
+                                hx-vals='{"as_of_date": "{{ as_of_date }}", "option": "table"}'
                                 class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border-t border-b border-gray-900 hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
                             Table
                         </button>
                         <button type="button"
-                                hx-post="{% url "reports_and_analytics:popup_employee_punctuality_report" %}"
-                                hx-vals='{"selected_user": {{ selected_user.id }}, "from_date": "{{ from_date }}", "to_date": "{{ to_date }}", "option": "chart"}'
+                                hx-post="{% url "reports_and_analytics:popup_employees_per_department_report" %}"
+                                hx-vals='{"as_of_date": "{{ as_of_date }}", "option": "chart"}'
                                 class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-e-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
                             Chart
                         </button>

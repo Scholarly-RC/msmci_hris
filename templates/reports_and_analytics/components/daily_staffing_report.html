@@ -114,11 +114,11 @@
                         }
 
                         if (document.getElementById("pie-chart") && typeof ApexCharts !== 'undefined') {
-                            if (window.ageDemographicReportChart) {
-                                window.ageDemographicReportChart.destroy()
+                            if (window.dailyStaffingReportChart) {
+                                window.dailyStaffingReportChart.destroy()
                             }
-                            window.ageDemographicReportChart = new ApexCharts(document.getElementById("pie-chart"), dailyStaffingReportChartOptions());
-                            window.ageDemographicReportChart.render();
+                            window.dailyStaffingReportChart = new ApexCharts(document.getElementById("pie-chart"), dailyStaffingReportChartOptions());
+                            window.dailyStaffingReportChart.render();
                         }
                     </script>
                 {% endif %}
