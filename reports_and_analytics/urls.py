@@ -86,6 +86,21 @@ urlpatterns = [
     ),
     ### User Reports Urls ###
     path(
+        "report/all-employees/view/<str:as_of_date>/<str:option>",
+        raa_views.view_all_employees_report,
+        name="view_all_employees_report_with_data",
+    ),
+    path(
+        "report/all-employees/popup",
+        raa_views.popup_all_employees_report,
+        name="popup_all_employees_report",
+    ),
+    path(
+        "report/all-employees/view",
+        raa_views.view_all_employees_report,
+        name="view_all_employees_report",
+    ),
+    path(
         "report/religion/view/<str:as_of_date>/<str:option>",
         raa_views.view_religion_report,
         name="view_religion_report_with_data",

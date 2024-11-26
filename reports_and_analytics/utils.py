@@ -3,12 +3,9 @@ from collections import Counter
 
 from django.apps import apps
 from django.db.models import Q
+from django.contrib.auth import get_user_model
 
 from attendance.enums import Months
-from attendance.utils.attendance_utils import (
-    get_employees_with_attendance_record,
-    get_user_clocked_time,
-)
 from attendance.utils.date_utils import (
     get_date_object_from_date_str,
     get_readable_date_from_date_object,
@@ -70,9 +67,6 @@ def get_filter_contexts_for_specific_report(
     The function checks the report type and, if applicable, adds relevant data based
     on the `for_hr` flag. If the report is not recognized, it returns an empty dictionary.
     """
-    if report == AttendanceReports.DAILY_STAFFING_REPORT.value:
-        context = {}
-        return context
     if report == PerformanceAndLearningReports.EMPLOYEE_PERFORMANCE_SUMMARY.value:
         context = {"years": get_finalized_user_evaluation_year_list()}
         if for_hr:
@@ -105,12 +99,13 @@ def get_attendancee_reports(for_hr: bool = False):
             attendance_report.get_display_name(),
         )
         for attendance_report in AttendanceReports
+        if for_hr
+        or attendance_report.value != AttendanceReports.DAILY_STAFFING_REPORT.value
     ]
 
 
 def get_daily_staffing_report_data(selected_date_str):
     DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
-    DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
     DepartmentModel = apps.get_model("core", "Department")
     selected_date = get_date_object_from_date_str(date_str=selected_date_str)
     schedules = DailyShiftScheduleModel.objects.filter(
@@ -120,13 +115,22 @@ def get_daily_staffing_report_data(selected_date_str):
     department_list = []
     department_count_list = []
 
-    department_with_records = DepartmentModel.objects.filter(daily_shift_records__isnull=False, daily_shift_records__date=selected_date)
+    department_with_records = DepartmentModel.objects.filter(
+        daily_shift_records__isnull=False, daily_shift_records__date=selected_date
+    )
 
     for department in department_with_records:
         department_list.append(department.name.title())
-        department_count_list.append(department.daily_shift_records.filter(date=selected_date).first().shifts.count())
-   
-    schedules_data = {"department_list": department_list, "department_count_list": department_count_list}
+        department_count_list.append(
+            department.daily_shift_records.filter(date=selected_date)
+            .first()
+            .shifts.count()
+        )
+
+    schedules_data = {
+        "department_list": department_list,
+        "department_count_list": department_count_list,
+    }
 
     schedules_table_data = {"schedules": schedules}
 
@@ -159,7 +163,7 @@ def get_employee_performance_evaluation_summary_data(selected_year, selected_use
     and returns a dictionary containing the ratings data, quarter labels, and selected user information
     for reporting purposes.
     """
-    UserModel = apps.get_model("auth", "User")
+    UserModel = get_user_model()
     UserEvaluationModel = apps.get_model("performance", "UserEvaluation")
 
     user = UserModel.objects.get(id=selected_user)
@@ -275,7 +279,7 @@ def get_employee_yearly_salary_salary_report_data(selected_year, selected_user):
     constructs a data dictionary with monthly totals, and returns the data
     formatted for reporting, including total salary and month-wise breakdown.
     """
-    UserModel = apps.get_model("auth", "User")
+    UserModel = get_user_model()
     user = UserModel.objects.get(id=selected_user)
     payslips = user.payslips.filter(year=selected_year, released=True)
 
@@ -336,7 +340,7 @@ def get_employee_leave_summary_report_data(selected_user, from_date, to_date):
     It retrieves leave data, categorizes it into paid, unpaid, and work-related trip types,
     and returns a structured dictionary containing chart data and detailed leave records for reporting.
     """
-    UserModel = apps.get_model("auth", "User")
+    UserModel = get_user_model()
     LeaveModel = apps.get_model("leave", "Leave")
 
     paid_type = LeaveModel.LeaveType.PAID.value
@@ -384,6 +388,35 @@ def get_users_reports():
         (users_report.value, users_report.get_display_name())
         for users_report in UsersReports
     ]
+
+
+def get_all_employees_report_data(as_of_date=""):
+    as_of_date = get_date_object_from_date_str(as_of_date)
+    UserModel = get_user_model()
+    users = (
+        UserModel.objects.filter(
+            is_active=True,
+            is_superuser=False,
+            userdetails__date_of_hiring__lte=as_of_date,
+        )
+        .exclude(
+            Q(first_name__isnull=True)
+            | Q(first_name="")
+            | Q(last_name__isnull=True)
+            | Q(last_name="")
+        )
+        .order_by("first_name")
+    )
+
+    user_list = [user.userdetails.get_user_fullname() for user in users]
+
+    users_table_data = {"users": users}
+
+    return {
+        "chart_option_data": json.dumps(user_list),
+        "users_table_data": users_table_data,
+        "as_of_date": str(as_of_date),
+    }
 
 
 def get_age_demographics_report_data(as_of_date=""):

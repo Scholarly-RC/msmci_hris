@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+{% block title %}
+    All Employees Report - ({{ as_of_date }})
+{% endblock title %}
+{% block content %}
+    <div class="w-full md:w-[65rem] mx-auto p-6">
+        <div>
+            <input type="hidden"
+                   id="all_employees_report_data"
+                   value="{{ chart_option_data }}">
+            <div class="w-full bg-white rounded-lg border shadow dark:bg-gray-800 p-4 md:p-6">
+                <div class="flex justify-between items-start w-full">
+                    <dl>
+                        <dt class="text-xl font-normal text-gray-500 dark:text-gray-400 pb-1">
+                            All Employees Report as of <b>{{ as_of_date }}</b>
+                        </dt>
+                    </dl>
+                </div>
+                {% if option == "all" or option == "table" %}
+                    <div class="relative overflow-x-auto border-b-2">
+                        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-start">Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users_table_data.users %}
+                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                        <td class="px-6 py-4 text-start">{{ user.userdetails.get_user_fullname|title }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="w-full flex flex-col items-center justify-center mt-2 gap-2">
+                {% if not hide_print_download_button and not for_print_download %}
+                    <p class="text-xl text-gray-900 whitespace-nowrap dark:text-white">Print/Download</p>
+                    <div class="inline-flex rounded-md shadow-sm" role="group">
+                        <button type="button"
+                                hx-post="{% url "reports_and_analytics:popup_all_employees_report" %}"
+                                hx-vals='{"as_of_date": "{{ as_of_date }}", "option": "all"}'
+                                class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-s-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
+                            All
+                        </button>
+                        <button type="button"
+                                hx-post="{% url "reports_and_analytics:popup_all_employees_report" %}"
+                                hx-vals='{"as_of_date": "{{ as_of_date }}", "option": "table"}'
+                                class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-e-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
+                            Table
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

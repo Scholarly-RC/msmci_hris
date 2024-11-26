@@ -57,6 +57,8 @@ class LeaveReports(Enum):
 
 
 class UsersReports(Enum):
+    ALL_EMPLOYEES = "ALL_EMPLOYEES"
+    EMPLOYEES_PER_DEPARTMENT = "EMPLOYEES_PER_DEPARTMENT"
     AGE = "AGE"
     GENDER = "GENDER"
     YEARS_OF_EXPERIENCE = "YEARS_OF_EXPERIENCE"
@@ -64,6 +66,10 @@ class UsersReports(Enum):
     RELIGION = "RELIGION"
 
     def get_display_name(self):
+        if self.value == UsersReports.ALL_EMPLOYEES.value:
+            return "All Employees"
+        if self.value == UsersReports.EMPLOYEES_PER_DEPARTMENT.value:
+            return "Employees Per Department"
         if self.value == UsersReports.YEARS_OF_EXPERIENCE.value:
             return "Years of Experience"
         if self.value == UsersReports.EDUCATION_LEVEL.value:
