@@ -79,5 +79,8 @@ def get_number_of_days_in_a_month(year: int, month: int):
 
 
 def get_day_name_from_date(date: datetime.date):
+    """
+    Returns the name of the day (e.g., 'Monday', 'Tuesday') for the given date.
+    """
     weekday_number = date.weekday()
     return calendar.day_name[weekday_number]

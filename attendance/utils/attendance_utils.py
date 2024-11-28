@@ -104,6 +104,10 @@ def get_employees_list_per_department():
 
 
 def get_employees_with_attendance_record():
+    """
+    Retrieves a queryset of active employees who have at least one recorded attendance (clock-in).
+    The results are ordered by the employee's first name.
+    """
     return (
         get_user_model()
         .objects.filter(is_active=True, daily_shift_schedules__clock_in__isnull=False)
@@ -113,6 +117,11 @@ def get_employees_with_attendance_record():
 
 
 def get_employees_with_same_day_different_shit(user=None, date=None):
+    """
+    Retrieves shifts for other employees in the same department on a specified date,
+    excluding the shift of the given user. Returns a queryset of swappable shifts.
+    If no matching records are found, returns an empty queryset.
+    """
     DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
     if date:
         selected_date = get_date_object_from_date_str(date)

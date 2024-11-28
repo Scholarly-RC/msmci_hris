@@ -1,5 +1,5 @@
-from collections import defaultdict
 import uuid
+from collections import defaultdict
 from datetime import datetime
 
 from django.apps import apps

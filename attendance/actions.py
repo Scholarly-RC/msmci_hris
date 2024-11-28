@@ -190,6 +190,11 @@ def process_update_clocked_time(payload):
 
 @transaction.atomic
 def process_add_holiday(payload):
+    """
+    Adds a new holiday to the system based on the provided payload.
+    The holiday is created with a name, date, and regularity status.
+    Returns the created holiday instance.
+    """
     try:
         HolidayModel = apps.get_model("attendance", "Holiday")
         name = payload.get("holiday_name").strip()
@@ -213,6 +218,9 @@ def process_add_holiday(payload):
 
 @transaction.atomic
 def process_delete_holiday(payload):
+    """
+    Deletes a holiday from the system based on the provided holiday ID in the payload.
+    """
     try:
         HolidayModel = apps.get_model("attendance", "Holiday")
         holiday_id = payload.get("holiday")
@@ -225,6 +233,11 @@ def process_delete_holiday(payload):
 
 @transaction.atomic
 def process_create_overtime_request(user, payload):
+    """
+    Creates a new overtime request for the given user based on the provided payload.
+    The request is created with an approver, date, and pending status.
+    Returns the created overtime request instance.
+    """
     try:
         UserModel = apps.get_model("auth", "User")
         OvertimeModel = apps.get_model("attendance", "OverTime")
@@ -250,6 +263,11 @@ def process_create_overtime_request(user, payload):
 
 @transaction.atomic
 def process_respond_to_overtime_request(user, payload):
+    """
+    Processes the response (approve or reject) to an overtime request by the approver.
+    Updates the overtime request status based on the response and returns the updated request.
+    Raises an error if the user is not the assigned approver or if the response is invalid.
+    """
     try:
         OvertimeModel = apps.get_model("attendance", "OverTime")
         overtime_status = OvertimeModel.Status
@@ -283,6 +301,9 @@ def process_respond_to_overtime_request(user, payload):
 
 @transaction.atomic
 def process_deleting_overtime_request(payload):
+    """
+    Deletes an overtime request based on the provided request ID in the payload.
+    """
     try:
         OvertimeModel = apps.get_model("attendance", "OverTime")
         overtime_request_id = payload.get("overtime_request")
@@ -297,6 +318,10 @@ def process_deleting_overtime_request(payload):
 
 @transaction.atomic
 def process_create_new_shift(payload):
+    """
+    Creates a new shift based on the provided payload, including shift description, start and end times,
+    and optional second shift times. Returns the created shift instance.
+    """
     try:
         ShiftModel = apps.get_model("attendance", "Shift")
 
@@ -322,6 +347,9 @@ def process_create_new_shift(payload):
 
 @transaction.atomic
 def process_removing_shift(payload):
+    """
+    Removes a shift based on the provided shift ID in the payload.
+    """
     try:
         ShiftModel = apps.get_model("attendance", "Shift")
         shift_id = payload.get("shift")
@@ -334,6 +362,10 @@ def process_removing_shift(payload):
 
 @transaction.atomic
 def process_modify_department_shift(payload):
+    """
+    Modifies the shifts and workweek settings for a specific department based on the provided payload.
+    Returns the updated department instance.
+    """
     try:
         DepartmentModel = apps.get_model("core", "Department")
         ShiftModel = apps.get_model("attendance", "Shift")
@@ -360,6 +392,10 @@ def process_modify_department_shift(payload):
 
 @transaction.atomic
 def process_apply_department_fixed_or_dynamic_shift(department, month=None, year=None):
+    """
+    Applies fixed or dynamic shifts to all users in a department for the specified month and year.
+    If no month or year is provided, it defaults to the current month and year. Updates the daily shift records.
+    """
     try:
         current_date = get_current_local_date()
 
@@ -439,6 +475,11 @@ def process_apply_department_fixed_or_dynamic_shift(department, month=None, year
 
 @transaction.atomic
 def process_adding_shift_swap_request(requestor, payload):
+    """
+    Creates a shift swap request where one user requests to swap shifts with another user.
+    The request is created with the selected shift, the requestor, and the approver.
+    Returns the created shift swap instance.
+    """
     try:
         UserModel = get_user_model()
         DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
@@ -470,6 +511,10 @@ def process_adding_shift_swap_request(requestor, payload):
 
 @transaction.atomic
 def process_approving_swap_request(swap_request_id):
+    """
+    Approves a shift swap request, updating the affected shift records by swapping shifts between users.
+    Returns the approved shift swap instance.
+    """
     try:
         ShiftSwapModel = apps.get_model("attendance", "ShiftSwap")
         DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
@@ -507,6 +552,10 @@ def process_approving_swap_request(swap_request_id):
 
 @transaction.atomic
 def process_rejecting_swap_request(swap_request_id):
+    """
+    Rejects a shift swap request by updating its status to rejected.
+    Returns the updated shift swap instance.
+    """
     try:
         ShiftSwapModel = apps.get_model("attendance", "ShiftSwap")
         shift_swap = ShiftSwapModel.objects.get(id=swap_request_id)

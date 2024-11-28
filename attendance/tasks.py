@@ -15,6 +15,10 @@ logger = logging.getLogger(__name__)
 
 
 def get_biometric_data():
+    """
+    Captures live biometric attendance data from the device, processing each capture asynchronously.
+    It connects to the device, captures attendance for up to 30 seconds, and adds the records.
+    """
     try:
         conn = None
         zk = ZK(f"{DEVICE_IP}", port=4370, timeout=5)
@@ -44,7 +48,8 @@ def get_biometric_data():
 
 def add_user_attendance_record(attendance_data):
     """
-    Creates a new attendance record for a user based on the provided biometric data from the device.
+    Creates a new attendance record for a user based on biometric data from the device.
+    The record includes user details, timestamp, and punch type (IN/OUT).
     """
     AttendanceRecordModel = apps.get_model("attendance", "AttendanceRecord")
     try:
