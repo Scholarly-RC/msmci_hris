@@ -151,6 +151,11 @@ def process_add_personal_file(user, payload, file_data):
 
 @transaction.atomic
 def process_delete_personal_file(payload):
+    """
+    Deletes a personal file based on the provided file ID,
+    removes the associated file from storage, and returns the file's category.
+    If an error occurs during the process, it logs the exception and raises it.
+    """
     PersonalFileModel = apps.get_model("core", "PersonalFile")
     file_id = payload.get("file")
     try:

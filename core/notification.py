@@ -9,6 +9,10 @@ logger = logging.getLogger(__name__)
 def create_notification(
     content: str, date: datetime, sender_id: int, recipient_id: int, url: str = ""
 ):
+    """
+    Creates a new notification with the specified content, date, sender, recipient, and optional URL.
+    If an error occurs during creation, it logs the exception and raises it.
+    """
     try:
         NotificationModel = apps.get_model("core", "Notification")
         UserModel = apps.get_model("auth", "User")
@@ -24,6 +28,10 @@ def create_notification(
 
 
 def mark_notification_read(notification):
+    """
+    Marks the specified notification as read and saves the change.
+    If an error occurs, it logs the exception and raises it.
+    """
     try:
         notification.read = True
         notification.save()
@@ -35,4 +43,8 @@ def mark_notification_read(notification):
 
 
 def user_has_unread_notification(user):
+    """
+    Checks if the given user has any unread notifications.
+    Returns True if there are unread notifications, otherwise False.
+    """
     return user.notifications.filter(read=False).exists()
