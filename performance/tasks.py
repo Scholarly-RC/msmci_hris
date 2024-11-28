@@ -9,6 +9,13 @@ logger = logging.getLogger(__name__)
 
 
 def convert_document_to_pdf(uploaded_file_instance, file_name):
+    """
+    Converts the provided document file (e.g., Word, Excel) to a PDF using LibreOffice in headless mode.
+    The converted PDF is saved and linked to the provided file instance.
+
+    This function uses a file lock to prevent concurrent conversions and ensures the conversion 
+    completes successfully. If the conversion fails, it logs the error and raises an exception.
+    """
     lock_file = "/tmp/pdf_conversion.lock"
     lock = FileLock(lock_file, timeout=600)
 
