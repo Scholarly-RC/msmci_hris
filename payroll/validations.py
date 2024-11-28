@@ -41,6 +41,10 @@ def minimum_wage_update_validation(data, minimum_wage):
 
 
 def payslip_data_validation(payload):
+    """
+    Validates that the selected user has a rank assigned.
+    Returns a context with any validation errors related to the user's rank.
+    """
     context = {}
 
     UserModel = apps.get_model("auth", "User")
@@ -57,6 +61,11 @@ def payslip_data_validation(payload):
 
 
 def variable_payslip_deduction_validation(payload):
+    """
+    Validates the input for a variable payslip deduction.
+    Ensures the deduction name is provided and the deduction amount is greater than 0.
+    Returns a context with any validation errors.
+    """
     context = {}
 
     deduction_name = payload.get("deduction_name").strip()
@@ -72,6 +81,11 @@ def variable_payslip_deduction_validation(payload):
 
 
 def variable_payslip_compensation_validation(payload):
+    """
+    Validates the input for a variable payslip compensation.
+    Ensures the compensation name is provided and the compensation amount is greater than 0.
+    Returns a context with any validation errors.
+    """
     context = {}
 
     deduction_name = payload.get("compensation_name").strip()
@@ -89,6 +103,11 @@ def variable_payslip_compensation_validation(payload):
 
 
 def creating_thirteenth_month_pay_validation(payload):
+    """
+    Validates the creation of a thirteenth month pay record.
+    Ensures no existing record for the same user, month, and year, and that the pay amount is greater than zero.
+    Returns a context with any validation errors.
+    """
     context = {}
 
     UserModel = apps.get_model("auth", "User")
@@ -120,6 +139,11 @@ def creating_thirteenth_month_pay_validation(payload):
 
 
 def thirteenth_month_pay_variable_deduction_validation(payload):
+    """
+    Validates the input for a variable deduction on thirteenth month pay.
+    Ensures the deduction name is provided and the deduction amount is greater than 0.
+    Returns a context with any validation errors.
+    """
     context = {}
 
     deduction_name = payload.get("deduction_name").strip()

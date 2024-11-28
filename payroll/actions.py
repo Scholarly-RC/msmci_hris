@@ -18,6 +18,10 @@ logger = logging.getLogger(__name__)
 
 @transaction.atomic
 def process_adding_job(payload):
+    """
+    Adds a new job position to the payroll system. This includes creating a new job with the specified
+    title, job code, and salary grade, and associating it with the selected departments.
+    """
     try:
         JobModel = apps.get_model("payroll", "Job")
         DepartmentModel = apps.get_model("core", "Department")
@@ -41,6 +45,10 @@ def process_adding_job(payload):
 
 @transaction.atomic
 def process_modifying_job(payload):
+    """
+    Modifies an existing job position in the payroll system. This updates the job's title, job code, salary grade,
+    and associates it with the selected departments.
+    """
     try:
         JobModel = apps.get_model("payroll", "Job")
         DepartmentModel = apps.get_model("core", "Department")
@@ -66,6 +74,9 @@ def process_modifying_job(payload):
 
 @transaction.atomic
 def process_deleting_job(job_id):
+    """
+    Deletes a job position from the payroll system based on the provided job ID.
+    """
     try:
         JobModel = apps.get_model("payroll", "Job")
         job = JobModel.objects.get(id=job_id)
@@ -78,6 +89,10 @@ def process_deleting_job(job_id):
 
 @transaction.atomic
 def process_setting_minimum_wage_amount(amount):
+    """
+    Sets the minimum wage amount for the company. This updates the current minimum wage and logs its history
+    with the specified amount and the date it was set.
+    """
     try:
         minimum_wage = get_minimum_wage_object()
         minimum_wage.amount = amount
@@ -94,6 +109,10 @@ def process_setting_minimum_wage_amount(amount):
 
 @transaction.atomic
 def process_setting_deduction_config(payload):
+    """
+    Updates the deduction configuration based on the provided payload. This modifies the deduction settings
+    and logs the history of changes made.
+    """
     try:
         deduction_configuration = get_deduction_configuration_object()
         modified_payload = get_deduction_configuration_with_submitted_changes(
@@ -117,6 +136,10 @@ def process_setting_deduction_config(payload):
 
 @transaction.atomic
 def process_toggle_user_mp2_status(payload):
+    """
+    Toggles a user's MP2 status by adding or removing them from the MP2 group.
+    Returns the updated MP2 object, user, and a boolean indicating if the user was added or removed.
+    """
     try:
         UserModel = apps.get_model("auth", "User")
 
@@ -141,6 +164,10 @@ def process_toggle_user_mp2_status(payload):
 
 @transaction.atomic
 def process_setting_mp2_amount(payload):
+    """
+    Sets the MP2 amount to the specified value and saves the change.
+    Returns the updated MP2 object.
+    """
     try:
         amount = payload.get("mp2_amount", 0)
         mp2 = get_mp2_object()
@@ -158,6 +185,10 @@ def process_setting_mp2_amount(payload):
 def process_get_or_create_user_payslip(
     user_id: int, month: int, year: int, period: str
 ):
+    """
+    Retrieves or creates a payslip for a user based on the given month, year, and period.
+    Updates the payslip's salary and returns the user and the created/updated payslip.
+    """
     try:
         PayslipModel = apps.get_model("payroll", "Payslip")
         UserModel = apps.get_model("auth", "User")
@@ -184,6 +215,10 @@ def process_get_or_create_user_payslip(
 
 @transaction.atomic
 def process_add_or_create_fixed_compensation(name: str, month: int, year: int):
+    """
+    Creates or retrieves a fixed compensation entry for a specified month and year.
+    Returns the created or existing compensation object.
+    """
     try:
         FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
         name = name.strip().title()
@@ -198,6 +233,10 @@ def process_add_or_create_fixed_compensation(name: str, month: int, year: int):
 
 @transaction.atomic
 def process_modifying_fixed_compensation(payload):
+    """
+    Modifies an existing fixed compensation entry's amount based on the provided data.
+    Returns the updated compensation object.
+    """
     try:
         FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
         compensation = FixedCompensationModel.objects.get(
@@ -213,6 +252,9 @@ def process_modifying_fixed_compensation(payload):
 
 @transaction.atomic
 def process_removing_fixed_compensation(payload):
+    """
+    Deletes a specified fixed compensation entry.
+    """
     try:
         FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
         compensation = FixedCompensationModel.objects.get(
@@ -228,6 +270,10 @@ def process_removing_fixed_compensation(payload):
 def process_modifying_fixed_compensation_users(
     user_id: int, compensation_id: int, remove: bool = False
 ):
+    """
+    Adds or removes a user from a fixed compensation entry based on the remove flag.
+    Returns the updated compensation object and user.
+    """
     try:
         FixedCompensationModel = apps.get_model("payroll", "FixedCompensation")
         UserModel = apps.get_model("auth", "User")
@@ -248,6 +294,10 @@ def process_modifying_fixed_compensation_users(
 
 @transaction.atomic
 def process_adding_variable_payslip_deduction(payload):
+    """
+    Adds a variable deduction to a specified payslip with the given deduction name and amount.
+    Returns the newly created variable deduction object.
+    """
     try:
         VariableDeduction = apps.get_model("payroll", "VariableDeduction")
         PayslipModel = apps.get_model("payroll", "Payslip")
@@ -269,6 +319,9 @@ def process_adding_variable_payslip_deduction(payload):
 
 @transaction.atomic
 def process_removing_variable_payslip_deduction(payload):
+    """
+    Removes a specified variable deduction from a payslip.
+    """
     try:
         VariableDeductionModel = apps.get_model("payroll", "VariableDeduction")
         deduction_id = payload.get("deduction")
@@ -283,6 +336,10 @@ def process_removing_variable_payslip_deduction(payload):
 
 @transaction.atomic
 def process_adding_variable_payslip_compensation(payload):
+    """
+    Adds a variable compensation to a specified payslip with the given compensation name and amount.
+    Returns the newly created variable compensation object.
+    """
     try:
         VariableCompensationModel = apps.get_model("payroll", "VariableCompensation")
         PayslipModel = apps.get_model("payroll", "Payslip")
@@ -304,6 +361,9 @@ def process_adding_variable_payslip_compensation(payload):
 
 @transaction.atomic
 def process_removing_variable_payslip_compensation(payload):
+    """
+    Removes a specified variable compensation from a payslip.
+    """
     try:
         VariableCompensationModel = apps.get_model("payroll", "VariableCompensation")
         compensation_id = payload.get("compensation")
@@ -317,6 +377,10 @@ def process_removing_variable_payslip_compensation(payload):
 
 @transaction.atomic
 def process_toggle_payslip_release_status(payload):
+    """
+    Toggles the release status of a payslip. Sets the release date if released, or clears it if unreleased.
+    Returns the updated payslip object.
+    """
     try:
         PayslipModel = apps.get_model("payroll", "Payslip")
         payslip_id = payload.get("payslip")
@@ -340,6 +404,10 @@ def process_toggle_payslip_release_status(payload):
 
 @transaction.atomic
 def process_creating_thirteenth_month_pay(payload):
+    """
+    Creates a new thirteenth month pay record for a user, or retrieves an existing one if it already exists for the specified month and year.
+    Returns the created or retrieved thirteenth month pay object.
+    """
     try:
         ThirteenthMonthPayModel = apps.get_model("payroll", "ThirteenthMonthPay")
         UserModel = apps.get_model("auth", "User")
@@ -363,6 +431,10 @@ def process_creating_thirteenth_month_pay(payload):
 
 @transaction.atomic
 def process_updating_thirteenth_month_pay(payload):
+    """
+    Updates the amount of an existing thirteenth month pay record.
+    Returns the updated thirteenth month pay object.
+    """
     try:
         ThirteenthMonthPayModel = apps.get_model("payroll", "ThirteenthMonthPay")
         thirteenth_month_pay_id = payload.get("thirteenth_month_pay")
@@ -381,6 +453,10 @@ def process_updating_thirteenth_month_pay(payload):
 
 @transaction.atomic
 def process_toggling_thirteenth_month_pay_release(payload):
+    """
+    Toggles the release status of a thirteenth month pay record and updates its release date accordingly.
+    Returns the updated thirteenth month pay object.
+    """
     try:
         ThirteenthMonthPayModel = apps.get_model("payroll", "ThirteenthMonthPay")
         thirteenth_month_pay_id = payload.get("thirteenth_month_pay")
@@ -401,6 +477,9 @@ def process_toggling_thirteenth_month_pay_release(payload):
 
 @transaction.atomic
 def process_delete_thirteenth_month_pay(payload):
+    """
+    Deletes a specified thirteenth month pay record.
+    """
     try:
         ThirteenthMonthPayModel = apps.get_model("payroll", "ThirteenthMonthPay")
         thirteenth_month_pay_id = payload.get("thirteenth_month_pay")
@@ -416,6 +495,10 @@ def process_delete_thirteenth_month_pay(payload):
 
 @transaction.atomic
 def process_add_thirteenth_month_pay_variable_deduction(payload):
+    """
+    Adds a variable deduction to a specified thirteenth month pay record.
+    Returns the updated thirteenth month pay object.
+    """
     try:
         ThirteenthMonthPayVariableDeductionModel = apps.get_model(
             "payroll", "ThirteenthMonthPayVariableDeduction"
@@ -443,6 +526,10 @@ def process_add_thirteenth_month_pay_variable_deduction(payload):
 
 @transaction.atomic
 def process_remove_thirteenth_month_pay_variable_deduction(payload):
+    """
+    Removes a specified variable deduction from a thirteenth month pay record.
+    Returns the updated thirteenth month pay object.
+    """
     try:
         ThirteenthMonthPayVariableDeductionModel = apps.get_model(
             "payroll", "ThirteenthMonthPayVariableDeduction"
