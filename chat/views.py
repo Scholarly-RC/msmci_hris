@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponse
-from django.shortcuts import render
 from django_htmx.http import reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
 
