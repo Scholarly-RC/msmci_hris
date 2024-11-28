@@ -13,6 +13,11 @@ logger = logging.getLogger(__name__)
 
 @transaction.atomic
 def process_set_department_approver(payload):
+    """
+    Sets the department approvers (department head, director, president, and HR)
+    for a specified department based on the provided payload.
+    If an approver already exists, updates their data; otherwise, creates new approvers.
+    """
     try:
         UserModel = apps.get_model("auth", "User")
         DepartmentModel = apps.get_model("core", "Department")
@@ -56,6 +61,10 @@ def process_set_department_approver(payload):
 
 @transaction.atomic
 def process_set_user_leave_credit(payload):
+    """
+    Sets or updates the leave credit for a specified user based on the provided payload.
+    If a leave credit entry does not exist for the user, it creates a new one.
+    """
     try:
         UserModel = apps.get_model("auth", "User")
         LeaveCreditModel = apps.get_model("leave", "LeaveCredit")
@@ -81,6 +90,10 @@ def process_set_user_leave_credit(payload):
 
 @transaction.atomic
 def process_create_leave_request(user, payload):
+    """
+    Creates a new leave request for the given user with the specified leave type, date,
+    and additional information. Also determines and sets the approvers for the request.
+    """
     try:
         LeaveModel = apps.get_model("leave", "Leave")
         type = payload.get("leave_type")
@@ -108,6 +121,11 @@ def process_create_leave_request(user, payload):
 
 @transaction.atomic
 def process_submit_leave_request_response(user, payload):
+    """
+    Submits the response (approve/reject) for a leave request by an approver.
+    The function updates the status of the first or second approver's data.
+    """
+
     def _set_approver_data(data, choice):
         if choice == "APPROVE":
             data["status"] = LeaveRequestAction.APPROVED.value
@@ -145,6 +163,10 @@ def process_submit_leave_request_response(user, payload):
 
 @transaction.atomic
 def process_delete_submit_leave_request(leave):
+    """
+    Deletes the specified leave request. If the leave is approved and credits have been used,
+    it also adjusts the user's used leave credits.
+    """
     try:
         if (
             leave.get_status() == LeaveRequestAction.APPROVED.value
@@ -160,6 +182,9 @@ def process_delete_submit_leave_request(leave):
 
 @transaction.atomic
 def process_add_user_used_leave_credits(user):
+    """
+    Increments the used leave credits for a specified user by one.
+    """
     try:
         if not user.leavecredit.used_credits:
             user.leavecredit.used_credits = 1
@@ -176,6 +201,9 @@ def process_add_user_used_leave_credits(user):
 
 @transaction.atomic
 def process_reset_user_leave_credits(user_id):
+    """
+    Resets the used leave credits for a specified user, ensuring the user’s credit usage is set back to zero.
+    """
     try:
         LeaveCreditModel = apps.get_model("leave", "LeaveCredit")
 
