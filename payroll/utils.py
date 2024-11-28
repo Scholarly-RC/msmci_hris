@@ -16,7 +16,11 @@ def get_department_list():
     Retrieves a list of active departments from the database, ordered by their name.
     """
     DepartmentModel = apps.get_model("core", "Department")
-    return DepartmentModel.objects.filter(is_active=True).order_by("name")
+    return (
+        DepartmentModel.objects.prefetch_related("shifts")
+        .filter(is_active=True)
+        .order_by("name")
+    )
 
 
 def get_job_list(department: int):

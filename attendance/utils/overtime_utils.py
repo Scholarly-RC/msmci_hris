@@ -84,7 +84,10 @@ def get_all_overtime_request(filter_data: QueryDict = {}):
     Returns the filtered list of overtime requests, ordered by date in descending order.
     """
     OvertimeModel = apps.get_model("attendance", "Overtime")
-    overtime_requests = OvertimeModel.objects.order_by("-date")
+    overtime_requests = OvertimeModel.objects.select_related(
+        "user__userdetails__department",
+        "approver__userdetails__department",
+    ).order_by("-date")
 
     if not filter_data:
         return overtime_requests
@@ -134,7 +137,9 @@ def get_overtime_request_approvers():
     Returns a queryset of users who are eligible to approve overtime requests (i.e., have approved overtime).
     """
     UserModel = apps.get_model("auth", "User")
-    return UserModel.objects.exclude(approved_overtimes__isnull=True)
+    return UserModel.objects.select_related("userdetails").exclude(
+        approved_overtimes__isnull=True
+    )
 
 
 def check_user_has_approved_overtime_on_specific_date_range(

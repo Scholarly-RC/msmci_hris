@@ -4,7 +4,7 @@ from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from django.http import FileResponse, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -346,8 +346,10 @@ def switch_performance_management_section(request):
 def user_evaluation_management(request, year=""):
     context = {}
 
-    users = User.objects.filter(is_superuser=False, is_active=True).order_by(
-        "-userdetails__department"
+    users = (
+        User.objects.select_related("userdetails__department")
+        .filter(is_superuser=False, is_active=True)
+        .order_by("-userdetails__department")
     )
 
     user_search_query = request.POST.get("search_user")
@@ -366,20 +368,44 @@ def user_evaluation_management(request, year=""):
     first_quarter_value = UserEvaluation.Quarter.FIRST_QUARTER.value
     second_quarter_value = UserEvaluation.Quarter.SECOND_QUARTER.value
 
+    # Prefetch evaluations for the selected year and quarters to avoid querying them individually later
+    evaluations_qs = UserEvaluation.objects.filter(
+        year=selected_year, quarter__in=[first_quarter_value, second_quarter_value]
+    )
+    users = users.prefetch_related(
+        Prefetch("evaluatee_evaluations", queryset=evaluations_qs)
+    )
+
+    employee_details = []
+    for user in users:
+        first_quarter_evaluation = next(
+            (
+                eval
+                for eval in user.evaluatee_evaluations.all()
+                if eval.quarter == first_quarter_value
+            ),
+            None,
+        )
+        second_quarter_evaluation = next(
+            (
+                eval
+                for eval in user.evaluatee_evaluations.all()
+                if eval.quarter == second_quarter_value
+            ),
+            None,
+        )
+
+        employee_details.append(
+            {
+                "user": user,
+                "current_first_quarter_user_evaluation": first_quarter_evaluation,
+                "current_second_quarter_user_evaluation": second_quarter_evaluation,
+            }
+        )
+
     context.update(
         {
-            "employee_details": [
-                {
-                    "user": user,
-                    "current_first_quarter_user_evaluation": user.evaluatee_evaluations.filter(
-                        quarter=first_quarter_value, year=selected_year
-                    ).first(),
-                    "current_second_quarter_user_evaluation": user.evaluatee_evaluations.filter(
-                        quarter=second_quarter_value, year=selected_year
-                    ).first(),
-                }
-                for user in users
-            ],
+            "employee_details": employee_details,
             "selected_year": selected_year,
         }
     )

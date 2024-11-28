@@ -106,7 +106,7 @@ def get_attendancee_reports(for_hr: bool = False):
 
 def get_daily_staffing_report_data(selected_date_str):
     """
-    Retrieves the staffing report data for a given date, including department-wise shift data 
+    Retrieves the staffing report data for a given date, including department-wise shift data
     and individual schedules for that date.
     """
     DailyShiftScheduleModel = apps.get_model("attendance", "DailyShiftSchedule")
@@ -179,7 +179,6 @@ def get_employee_performance_evaluation_summary_data(selected_year, selected_use
 
     self_rating_value_list = []
     peer_rating_value_list = []
-
     for quarter in quarters_list:
         user_evaluation = user_evaluations.filter(quarter=quarter).first()
         if user_evaluation:
@@ -396,7 +395,7 @@ def get_users_reports():
 
 def get_all_employees_report_data(as_of_date=""):
     """
-    Retrieves a report of all active employees, excluding superusers, and who were hired on or before 
+    Retrieves a report of all active employees, excluding superusers, and who were hired on or before
     the specified `as_of_date`. The report includes the list of employee names and a table of user data.
     """
     as_of_date = get_date_object_from_date_str(as_of_date)
@@ -429,7 +428,7 @@ def get_all_employees_report_data(as_of_date=""):
 
 def get_employees_per_department_report_data(as_of_date=""):
     """
-    Retrieves a report of employees grouped by department, including the department names and the number 
+    Retrieves a report of employees grouped by department, including the department names and the number
     of employees in each department, as of the specified `as_of_date`.
     """
     as_of_date = get_date_object_from_date_str(as_of_date)

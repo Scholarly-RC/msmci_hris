@@ -1305,9 +1305,11 @@ def assign_shift(request, department="", year="", month="", day=""):
     shift_department = department
     shift_day = day
     selected_department = Department.objects.get(id=department)
-    employees = User.objects.filter(
-        is_active=True, userdetails__department=selected_department
-    ).order_by("first_name")
+    employees = (
+        User.objects.select_related("userdetails")
+        .filter(is_active=True, userdetails__department=selected_department)
+        .order_by("first_name")
+    )
 
     shifts = selected_department.shifts.order_by("start_time")
 
