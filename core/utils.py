@@ -1,3 +1,4 @@
+from collections import defaultdict
 import uuid
 from datetime import datetime
 
@@ -141,8 +142,8 @@ def get_users_sorted_by_department(user_query: str = "", selected_department: in
     UserDetailsModel = apps.get_model("core", "UserDetails")
     hr_role = UserDetailsModel.Role.HR.value
 
-    users = User.objects.exclude(userdetails__role=hr_role).order_by(
-        "userdetails__department__name", "first_name"
+    users = User.objects.exclude(userdetails__role=hr_role).select_related(
+        "userdetails__department"
     )
 
     if selected_department:
@@ -155,6 +156,8 @@ def get_users_sorted_by_department(user_query: str = "", selected_department: in
             | Q(email__icontains=user_query)
         )
         users = users.filter(user_filter)
+
+    users = users.order_by("userdetails__department__name", "first_name")
 
     return users
 
@@ -233,8 +236,14 @@ def get_personal_file_categories():
 
 
 def get_user_personal_files(user):
-    personal_files = {}
-    for category in get_personal_file_categories():
-        personal_files[category[0]] = user.personal_files.filter(category=category[0])
+    """
+    Retrieves the user's personal files, categorized by their file category.
+    Returns a dictionary with categories as keys and lists of files as values.
+    """
+    personal_files = user.personal_files.all()
 
-    return personal_files
+    categorized_files = defaultdict(list)
+    for file in personal_files:
+        categorized_files[file.category].append(file)
+
+    return categorized_files

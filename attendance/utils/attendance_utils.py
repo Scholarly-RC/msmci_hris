@@ -18,38 +18,69 @@ def get_user_daily_shift_record(department, year: int, month: int, day: int):
     return selected_daily_shift_record
 
 
-def get_user_daily_shift_record_shifts(user, year: int, month: int, day: int):
+def get_user_daily_shift_record_shifts(user, year: int, month: int, day_range):
     """
-    Retrieves the shift record for a specific user on a given date.
+    Retrieves the user's shift records for each day in the given date range.
+    Returns a dictionary with day as the key and the user's shift record as the value.
+    If no shift record is found for a day, the value will be None.
     """
-    user_daily_shift_record = get_user_daily_shift_record(
-        user.userdetails.department, year, month, day
+    DailyShiftRecordModel = apps.get_model("attendance", "DailyShiftRecord")
+
+    daily_shift_record_data = {}
+
+    selected_daily_shift_records = DailyShiftRecordModel.objects.filter(
+        department=user.userdetails.department, date__year=year, date__month=month
     )
 
-    if user_daily_shift_record:
-        return user_daily_shift_record.shifts.filter(user=user).first()
+    daily_shift_record_dict = {}
+
+    for record in selected_daily_shift_records:
+        daily_shift_record_dict[record.date.day] = record
+
+    for day in day_range:
+        daily_shift_record = daily_shift_record_dict.get(day, None)
+
+        if daily_shift_record:
+            shift_record = daily_shift_record.shifts.filter(user=user).first()
+            daily_shift_record_data[day] = shift_record
+        else:
+            daily_shift_record_data[day] = None
+
+    return daily_shift_record_data
 
 
-def get_user_clocked_time(user, year: int, month: int, day: int):
+def get_user_clocked_time(user, year: int, month: int, day_range):
     """
-    Retrieves the user's clock-in ("IN") and clock-out ("OUT") times for a specified date,
-    returning them as separate querysets within a dictionary. The date is determined by the
-    provided year, month, and day, and attendance records are fetched from the `AttendanceRecord` model.
+    Retrieves the user's clock-in ("IN") and clock-out ("OUT") times for each day in the specified date range.
+    Returns a dictionary with the day as the key and a sub-dictionary containing lists of "IN" and "OUT" records.
     """
-    selected_date = get_date_object(year=year, month=month, day=day)
+    start_date = get_date_object(year=year, month=month, day=min(day_range))
+    end_date = get_date_object(year=year, month=month, day=max(day_range))
 
     AttendanceRecordModel = apps.get_model("attendance", "AttendanceRecord")
-
-    clocked_time = AttendanceRecordModel.objects.filter(
-        user_biometric_detail=user.biometricdetail, timestamp__date=selected_date
+    clocked_time_records = AttendanceRecordModel.objects.filter(
+        user_biometric_detail=user.biometricdetail,
+        timestamp__date__range=[start_date, end_date],
     ).order_by("timestamp")
 
-    clocked_time_data = {
-        "IN": clocked_time.filter(punch="IN"),
-        "OUT": clocked_time.filter(punch="OUT"),
-    }
+    clocked_time_data_dict = {}
 
-    return clocked_time_data
+    for record in clocked_time_records:
+        day = record.get_localtime_timestamp().day
+
+        if day not in clocked_time_data_dict:
+            clocked_time_data_dict[day] = {"IN": [], "OUT": []}
+
+        if record.punch == "IN":
+            clocked_time_data_dict[day]["IN"].append(record)
+        elif record.punch == "OUT":
+            clocked_time_data_dict[day]["OUT"].append(record)
+
+    return {
+        day: clocked_time_data_dict[day]
+        for day in day_range
+        if day in clocked_time_data_dict
+    }
 
 
 def get_employees_list_per_department():
@@ -59,6 +90,7 @@ def get_employees_list_per_department():
     all_users = (
         get_user_model()
         .objects.filter(is_active=True)
+        .select_related("userdetails__department")
         .annotate(
             department_exists=Case(
                 When(userdetails__department__isnull=True, then=Value(False)),

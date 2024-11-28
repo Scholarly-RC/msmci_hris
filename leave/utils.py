@@ -221,18 +221,30 @@ def get_leave_year_list() -> list:
     return list(leave_years)
 
 
-def check_user_has_approved_leave_on_specific_date(
-    user, day: int, month: int, year: int
-) -> bool:
+def check_user_has_approved_leave_on_specific_date_range(
+    user, day_range, month: int, year: int
+):
     """
-    Checks if a user has any approved leave on a specified date.
-    Returns True if there is an approved leave record for that date; otherwise, returns False.
+    Checks if a user has approved leave on each day in the specified date range.
+    Returns a dictionary with the day as the key and a queryset of approved leave records as the value.
     """
-    selected_date = get_date_object(year=year, month=month, day=day)
+    selected_dates = [
+        get_date_object(year=year, month=month, day=day) for day in day_range
+    ]
+
     approved_status = LeaveRequestAction.APPROVED.value
 
-    return user.user_leaves.filter(
+    leave_queryset = user.user_leaves.filter(
         Q(first_approver_data__status=approved_status)
         | Q(second_approver_data__status=approved_status),
-        date=selected_date,
+        date__in=selected_dates,
     )
+
+    approved_leave_data = {day: [] for day in day_range}
+
+    for leave in leave_queryset:
+        leave_day = leave.date.day
+        if leave_day in approved_leave_data:
+            approved_leave_data[leave_day].append(leave)
+
+    return approved_leave_data

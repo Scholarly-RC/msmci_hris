@@ -1738,4 +1738,5 @@ def payroll_module_close_modals(request):
         event_name = data.get("event_name")
         response = HttpResponse()
         response = trigger_client_event(response, event_name, after="swap")
+        response = reswap(response, "none")
         return response

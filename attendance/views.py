@@ -60,13 +60,13 @@ from attendance.utils.date_utils import (
     get_readable_date,
 )
 from attendance.utils.holiday_utils import (
-    get_holiday_for_specific_day,
+    get_holiday_for_specific_date_range,
     get_holiday_for_specific_month_and_year,
     get_holidays,
     get_holidays_year_list,
 )
 from attendance.utils.overtime_utils import (
-    check_user_has_approved_overtime_on_specific_date,
+    check_user_has_approved_overtime_on_specific_date_range,
     get_all_overtime_request,
     get_overtime_request_approvers,
     get_overtime_request_status_list,
@@ -93,7 +93,7 @@ from core.models import BiometricDetail, Department
 from core.notification import create_notification
 from hris.utils import create_global_alert_instance
 from leave.utils import (
-    check_user_has_approved_leave_on_specific_date,
+    check_user_has_approved_leave_on_specific_date_range,
     get_department_heads,
 )
 from payroll.utils import get_department_list
@@ -114,22 +114,46 @@ def attendance_management(request, year="", month=""):
     number_of_days = get_number_of_days_in_a_month(
         year=selected_year, month=selected_month
     )[1]
+
     monthly_record_data = []
-    for day in range(1, number_of_days + 1):
-        daily_user_shift = get_user_daily_shift_record_shifts(
-            user=current_user,
-            year=selected_year,
-            month=selected_month,
-            day=day,
-        )
 
-        clocked_time_data = get_user_clocked_time(
-            user=current_user,
-            year=selected_year,
-            month=selected_month,
-            day=day,
-        )
+    day_range = range(1, number_of_days + 1)
 
+    daily_user_shift = get_user_daily_shift_record_shifts(
+        user=current_user,
+        year=selected_year,
+        month=selected_month,
+        day_range=day_range,
+    )
+
+    clocked_time_data = get_user_clocked_time(
+        user=current_user,
+        year=selected_year,
+        month=selected_month,
+        day_range=day_range,
+    )
+
+    holidays_data = get_holiday_for_specific_date_range(
+        day_range=day_range,
+        month=selected_month,
+        year=selected_year,
+    )
+
+    approved_overtime_data = check_user_has_approved_overtime_on_specific_date_range(
+        user=current_user,
+        day_range=day_range,
+        month=selected_month,
+        year=selected_year,
+    )
+
+    approved_leave_data = check_user_has_approved_leave_on_specific_date_range(
+        user=current_user,
+        day_range=day_range,
+        month=selected_month,
+        year=selected_year,
+    )
+
+    for day in day_range:
         day_name = get_day_name_from_date(
             date=get_date_object(year=selected_year, month=selected_month, day=day)
         )
@@ -138,20 +162,16 @@ def attendance_management(request, year="", month=""):
             {
                 "day": day,
                 "day_name": day_name,
-                "daily_user_shift": daily_user_shift,
-                "clocked_time_data": clocked_time_data,
-                "holidays": get_holiday_for_specific_day(
-                    day=day, month=selected_month, year=selected_year
-                ),
-                "approved_overtime": check_user_has_approved_overtime_on_specific_date(
-                    user=current_user, day=day, month=selected_month, year=selected_year
-                ),
-                "approved_leave": check_user_has_approved_leave_on_specific_date(
-                    user=current_user, day=day, month=selected_month, year=selected_year
-                ),
+                "daily_user_shift": daily_user_shift.get(day),
+                "clocked_time_data": clocked_time_data.get(day),
+                "holidays": holidays_data.get(day),
+                "approved_overtime": approved_overtime_data.get(day),
+                "approved_leave": approved_leave_data.get(day),
             }
         )
+
     context.update({"monthly_record_data": monthly_record_data})
+
     if request.htmx and request.method == "POST":
         response = HttpResponse()
         response.content = render_block_to_string(
@@ -191,22 +211,46 @@ def sync_user_attendance(request, year="", month=""):
     number_of_days = get_number_of_days_in_a_month(
         year=selected_year, month=selected_month
     )[1]
+
     monthly_record_data = []
-    for day in range(1, number_of_days + 1):
-        daily_user_shift = get_user_daily_shift_record_shifts(
-            user=current_user,
-            year=selected_year,
-            month=selected_month,
-            day=day,
-        )
 
-        clocked_time_data = get_user_clocked_time(
-            user=current_user,
-            year=selected_year,
-            month=selected_month,
-            day=day,
-        )
+    day_range = range(1, number_of_days + 1)
 
+    daily_user_shift = get_user_daily_shift_record_shifts(
+        user=current_user,
+        year=selected_year,
+        month=selected_month,
+        day_range=day_range,
+    )
+
+    clocked_time_data = get_user_clocked_time(
+        user=current_user,
+        year=selected_year,
+        month=selected_month,
+        day_range=day_range,
+    )
+
+    holidays_data = get_holiday_for_specific_date_range(
+        day_range=day_range,
+        month=selected_month,
+        year=selected_year,
+    )
+
+    approved_overtime_data = check_user_has_approved_overtime_on_specific_date_range(
+        user=current_user,
+        day_range=day_range,
+        month=selected_month,
+        year=selected_year,
+    )
+
+    approved_leave_data = check_user_has_approved_leave_on_specific_date_range(
+        user=current_user,
+        day_range=day_range,
+        month=selected_month,
+        year=selected_year,
+    )
+
+    for day in day_range:
         day_name = get_day_name_from_date(
             date=get_date_object(year=selected_year, month=selected_month, day=day)
         )
@@ -215,13 +259,14 @@ def sync_user_attendance(request, year="", month=""):
             {
                 "day": day,
                 "day_name": day_name,
-                "daily_user_shift": daily_user_shift,
-                "clocked_time_data": clocked_time_data,
-                "holidays": get_holiday_for_specific_day(
-                    day=day, month=selected_month, year=selected_year
-                ),
+                "daily_user_shift": daily_user_shift.get(day),
+                "clocked_time_data": clocked_time_data.get(day),
+                "holidays": holidays_data.get(day),
+                "approved_overtime": approved_overtime_data.get(day),
+                "approved_leave": approved_leave_data.get(day),
             }
         )
+
     context.update({"monthly_record_data": monthly_record_data})
 
     if request.htmx and request.method == "POST":
@@ -841,28 +886,53 @@ def user_attendance_management(request, user_id="", year="", month=""):
     )
 
     if selected_user_id and selected_user_id != "0":
-        selected_user = User.objects.get(id=selected_user_id)
+        selected_user = users.get(id=selected_user_id)
         context.update({"selected_user": selected_user})
 
         number_of_days = get_number_of_days_in_a_month(
             year=selected_year, month=selected_month
         )[1]
         monthly_record_data = []
-        for day in range(1, number_of_days + 1):
-            daily_user_shift = get_user_daily_shift_record_shifts(
-                user=selected_user,
-                year=selected_year,
-                month=selected_month,
-                day=day,
-            )
 
-            clocked_time_data = get_user_clocked_time(
-                user=selected_user,
-                year=selected_year,
-                month=selected_month,
-                day=day,
-            )
+        day_range = range(1, number_of_days + 1)
 
+        daily_user_shift = get_user_daily_shift_record_shifts(
+            user=selected_user,
+            year=selected_year,
+            month=selected_month,
+            day_range=day_range,
+        )
+
+        clocked_time_data = get_user_clocked_time(
+            user=selected_user,
+            year=selected_year,
+            month=selected_month,
+            day_range=day_range,
+        )
+
+        holidays_data = get_holiday_for_specific_date_range(
+            day_range=day_range,
+            month=selected_month,
+            year=selected_year,
+        )
+
+        approved_overtime_data = (
+            check_user_has_approved_overtime_on_specific_date_range(
+                user=selected_user,
+                day_range=day_range,
+                month=selected_month,
+                year=selected_year,
+            )
+        )
+
+        approved_leave_data = check_user_has_approved_leave_on_specific_date_range(
+            user=selected_user,
+            day_range=day_range,
+            month=selected_month,
+            year=selected_year,
+        )
+
+        for day in day_range:
             day_name = get_day_name_from_date(
                 date=get_date_object(year=selected_year, month=selected_month, day=day)
             )
@@ -871,23 +941,11 @@ def user_attendance_management(request, user_id="", year="", month=""):
                 {
                     "day": day,
                     "day_name": day_name,
-                    "daily_user_shift": daily_user_shift,
-                    "clocked_time_data": clocked_time_data,
-                    "holidays": get_holiday_for_specific_day(
-                        day=day, month=selected_month, year=selected_year
-                    ),
-                    "approved_overtime": check_user_has_approved_overtime_on_specific_date(
-                        user=selected_user,
-                        day=day,
-                        month=selected_month,
-                        year=selected_year,
-                    ),
-                    "approved_leave": check_user_has_approved_leave_on_specific_date(
-                        user=selected_user,
-                        day=day,
-                        month=selected_month,
-                        year=selected_year,
-                    ),
+                    "daily_user_shift": daily_user_shift.get(day),
+                    "clocked_time_data": clocked_time_data.get(day),
+                    "holidays": holidays_data.get(day),
+                    "approved_overtime": approved_overtime_data.get(day),
+                    "approved_leave": approved_leave_data.get(day),
                 }
             )
         context.update({"monthly_record_data": monthly_record_data})
@@ -1714,4 +1772,5 @@ def attendance_module_close_modals(request):
         event_name = data.get("event_name")
         response = HttpResponse()
         response = trigger_client_event(response, event_name, after="swap")
+        response = reswap(response, "none")
         return response

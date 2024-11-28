@@ -83,7 +83,7 @@ class Leave(models.Model):
 
     def get_type_display(self):
         if self.type:
-            return self.LeaveType(self.type).name
+            return self.LeaveType(self.type).label
         return None
 
     def get_status(self):

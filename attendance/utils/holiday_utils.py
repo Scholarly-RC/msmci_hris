@@ -54,16 +54,21 @@ def get_holiday_for_specific_month_and_year(month: int, year: int):
     return combined_holidays
 
 
-def get_holiday_for_specific_day(day: int, month: int, year: int):
+def get_holiday_for_specific_date_range(day_range, month: int, year: int):
     """
-    # Retrieves a list of holidays that occur on a specific day, month, and year.
+    Retrieves holidays (regular and special) for each day in the specified date range.
+    Returns a dictionary with the day as the key and a queryset of holidays as the value.
     """
-    regular_holidays = get_all_holidays_list().filter(
-        day=day, month=month, is_regular=True
-    )
-    special_holidays = get_all_holidays_list().filter(
-        day=day, month=month, year=year, is_regular=False
-    )
+    all_holidays = get_all_holidays_list().filter(month=month, year=year)
+    
+    holiday_data = {day: [] for day in day_range}
+    
+    days_set = set(day_range)
 
-    combined_holidays = special_holidays | regular_holidays
-    return combined_holidays
+    relevant_holidays = all_holidays.filter(day__in=days_set)
+    
+    for holiday in relevant_holidays:
+        if holiday.day in holiday_data:
+            holiday_data[holiday.day].append(holiday)
+    
+    return holiday_data
