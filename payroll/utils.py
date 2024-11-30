@@ -367,22 +367,45 @@ def get_user_payslips(user, month: int, year: int, released: bool = False):
 
 def get_users_with_payslip_data(users, month: int, year: int):
     """
-    Collects and organizes payslip data for a list of users for a specified
-    month and year. For each user, the function retrieves the payslip data
-    and adds entries for both the first and second period payslips,
-    returning a list of dictionaries that include the user and their
-    corresponding payslip information.
+    Retrieves payslip data for a list of users for a specific month and year.
+    For each user, it gets their payslip for the first and second periods if available.
     """
-    data = []
-    for user in users:
-        payslip_data = get_user_payslips(user=user, month=month, year=year)
-        data.append(
-            {
-                "user": user,
-                "1st_period_payslip": payslip_data.filter(period="1ST").first(),
-                "2nd_period_payslip": payslip_data.filter(period="2ND").first(),
+
+    PayslipModel = apps.get_model("payroll", "Payslip")
+    payslips = PayslipModel.objects.filter(month=month, year=year)
+
+    payslips_by_user = {}
+
+    for payslip in payslips:
+        user_id = payslip.user.id
+        if user_id not in payslips_by_user:
+            payslips_by_user[user_id] = {
+                "1st_period_payslip": None,
+                "2nd_period_payslip": None,
             }
-        )
+
+        if payslip.period == "1ST":
+            payslips_by_user[user_id]["1st_period_payslip"] = payslip
+        elif payslip.period == "2ND":
+            payslips_by_user[user_id]["2nd_period_payslip"] = payslip
+
+    data = [
+        {
+            "user": user,
+            "1st_period_payslip": (
+                payslips_by_user[user.id]["1st_period_payslip"]
+                if user.id in payslips_by_user
+                else None
+            ),
+            "2nd_period_payslip": (
+                payslips_by_user[user.id]["2nd_period_payslip"]
+                if user.id in payslips_by_user
+                else None
+            ),
+        }
+        for user in users
+    ]
+
     return data
 
 

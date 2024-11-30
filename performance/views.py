@@ -140,9 +140,10 @@ def performance_peer_evaluation(request, evaluation_id=""):
     context["user"] = current_user
 
     peer_evaluations = (
-        current_user.evaluator_evaluations.exclude(
-            user_evaluation__evaluatee=current_user
+        current_user.evaluator_evaluations.select_related(
+            "user_evaluation__evaluatee__userdetails"
         )
+        .exclude(user_evaluation__evaluatee=current_user)
         .filter(user_evaluation__is_finalized=True)
         .order_by("-user_evaluation__year")
     )
@@ -434,7 +435,7 @@ def user_evaluation_management(request, year=""):
 @login_required(login_url="/login")
 def modify_user_evaluation(request, pk, quarter, year=""):
     context = {}
-    selected_user = User.objects.get(id=pk)
+    selected_user = User.objects.select_related("userdetails").get(id=pk)
 
     evaluator_choices = get_user_evaluator_choices(selected_user)
 
@@ -455,14 +456,20 @@ def modify_user_evaluation(request, pk, quarter, year=""):
     if user_evaluation.is_finalized:
         evaluator_choices = evaluator_choices.filter(id__in=existing_evaluators)
 
-        existing_evaluations = user_evaluation.evaluations.all()
+        existing_evaluations = user_evaluation.evaluations.select_related(
+            "evaluator__userdetails", "questionnaire"
+        ).all()
         context.update({"existing_evaluation_data": existing_evaluations})
 
     context.update(
         {
             "selected_user": selected_user,
-            "evaluator_choices": evaluator_choices.exclude(pk__in=existing_evaluators),
-            "selected_choices": evaluator_choices.filter(pk__in=existing_evaluators),
+            "evaluator_choices": evaluator_choices.select_related(
+                "userdetails"
+            ).exclude(pk__in=existing_evaluators),
+            "selected_choices": evaluator_choices.select_related("userdetails").filter(
+                pk__in=existing_evaluators
+            ),
             "year_and_quarter": year_and_quarter,
             "user_evaluation": user_evaluation,
             "existing_evaluators": existing_evaluators,
@@ -518,14 +525,20 @@ def finalize_user_evaluation_toggle(request, user_evaluation_id):
                 url=reverse("performance:performance_peer_evaluation"),
             )
 
-        existing_evaluations = user_evaluation.evaluations.all()
+        existing_evaluations = user_evaluation.evaluations.select_related(
+            "evaluator__userdetails", "questionnaire"
+        ).all()
         context.update({"existing_evaluation_data": existing_evaluations})
 
     context.update(
         {
             "selected_user": selected_user,
-            "evaluator_choices": evaluator_choices.exclude(pk__in=existing_evaluators),
-            "selected_choices": evaluator_choices.filter(pk__in=existing_evaluators),
+            "evaluator_choices": evaluator_choices.select_related(
+                "userdetails"
+            ).exclude(pk__in=existing_evaluators),
+            "selected_choices": evaluator_choices.select_related("userdetails").filter(
+                pk__in=existing_evaluators
+            ),
             "year_and_quarter": year_and_quarter,
             "user_evaluation": user_evaluation,
             "existing_evaluators": existing_evaluators,
@@ -576,18 +589,20 @@ def modify_user_evaluation_evaluators(request, user_evaluation_id):
         if user_evaluation.is_finalized:
             evaluator_choices = evaluator_choices.filter(id__in=existing_evaluators)
 
-            existing_evaluations = user_evaluation.evaluations.all()
+            existing_evaluations = user_evaluation.evaluations.select_related(
+                "evaluator__userdetails", "questionnaire"
+            ).all()
             context.update({"existing_evaluation_data": existing_evaluations})
 
         context.update(
             {
                 "selected_user": selected_user,
-                "evaluator_choices": evaluator_choices.exclude(
-                    pk__in=existing_evaluators
-                ),
-                "selected_choices": evaluator_choices.filter(
-                    pk__in=existing_evaluators
-                ),
+                "evaluator_choices": evaluator_choices.select_related(
+                    "userdetails"
+                ).exclude(pk__in=existing_evaluators),
+                "selected_choices": evaluator_choices.select_related(
+                    "userdetails"
+                ).filter(pk__in=existing_evaluators),
                 "year_and_quarter": year_and_quarter,
                 "user_evaluation": user_evaluation,
                 "existing_evaluators": existing_evaluators,
@@ -1144,7 +1159,7 @@ def shared_resources(request, user_id=""):
             "current_user": user,
             "shared_files": shared_files,
             "resource_search": search_query,
-            "user_choices": user_choices,
+            "user_choices": user_choices.select_related("userdetails"),
             "selected_user": selected_user_id,
         }
     )
@@ -1314,7 +1329,7 @@ def resource_share_access(request, resource_id=""):
         context.update(
             {
                 "resource_to_share": resource_to_share,
-                "user_choices": user_choices,
+                "user_choices": user_choices.select_related("userdetails"),
                 "selected_users": selected_users,
             }
         )
@@ -1352,7 +1367,7 @@ def resource_modify_users_with_share_access(request, resource_id=""):
         context.update(
             {
                 "resource_to_share": resource_to_share,
-                "user_choices": user_choices,
+                "user_choices": user_choices.select_related("userdetails"),
                 "selected_users": selected_users,
             }
         )
@@ -1454,7 +1469,7 @@ def shared_resources_management(request, user_id=""):
             "current_user": user,
             "shared_files": shared_files,
             "search_query": "",
-            "user_choices": user_choices,
+            "user_choices": user_choices.select_related("userdetails"),
             "selected_user": selected_user_id,
             "search_query": search_query,
         }
@@ -1607,7 +1622,7 @@ def shared_resource_management_share_access(request, resource_id=""):
         context.update(
             {
                 "resource_to_share": resource_to_share,
-                "user_choices": user_choices,
+                "user_choices": user_choices.select_related("userdetails"),
                 "selected_users": selected_users,
             }
         )
@@ -1642,7 +1657,7 @@ def shared_resource_management_confidential_state_toggle(request, resource_id=""
         context.update(
             {
                 "resource_to_share": resource_to_toggle,
-                "user_choices": user_choices,
+                "user_choices": user_choices.select_related("userdetails"),
                 "selected_users": selected_users,
             }
         )
@@ -1702,7 +1717,7 @@ def shared_resource_management_modify_users_with_share_access(request, resource_
             {
                 "current_user": user,
                 "resource_to_share": resource_to_share,
-                "user_choices": user_choices,
+                "user_choices": user_choices.select_related("userdetails"),
                 "selected_users": selected_users,
             }
         )

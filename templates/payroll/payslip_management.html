@@ -117,7 +117,7 @@
                                                 <td class="px-6 py-4">{{ data.user.userdetails.rank }}</td>
                                                 <td class="px-6 py-4">
                                                     <div class="flex flex-col gap-1 items-center">
-                                                        {% if data.period_payslip %}
+                                                        {% if data.1st_period_payslip.released %}
                                                             <div>
                                                                 <span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">Finalized</span>
                                                             </div>
@@ -126,7 +126,7 @@
                                                                 <span class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">Draft</span>
                                                             </div>
                                                         {% endif %}
-                                                        {% if data.2st_period_payslip %}
+                                                        {% if data.2nd_period_payslip.released %}
                                                             <div>
                                                                 <span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">Finalized</span>
                                                             </div>
@@ -258,16 +258,16 @@
                                                 <input type="text"
                                                        id="base_pay_id"
                                                        name="base_pay"
-                                                       value="{{ payslip.get_data.salary|floatformat:"2g" }}"
+                                                       value="{{ payslip_data.salary|floatformat:"2g" }}"
                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                        readonly />
                                             </div>
                                         </div>
                                         <div>
                                             <hr class="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700">
-                                            {% if payslip.get_data.variable_compensations %}
+                                            {% if payslip_data.variable_compensations %}
                                                 <h2 class="text-xl font-extrabold dark:text-white text-center my-2">Variable Compensations</h2>
-                                                {% for compensation in payslip.get_data.variable_compensations %}
+                                                {% for compensation in payslip_data.variable_compensations %}
                                                     <div class="w-full">
                                                         <div class="w-full flex flex-row justify-between">
                                                             <label for="compensation_{{ compensation.id }}_id"
@@ -292,7 +292,7 @@
                                             {% endif %}
                                             <h2 class="text-xl font-extrabold dark:text-white text-center my-2">Compensations</h2>
                                             <div class="grid grid-cols-2 gap-2">
-                                                {% for compensation in payslip.get_data.compensations %}
+                                                {% for compensation in payslip_data.compensations %}
                                                     <div>
                                                         <label for="{{ compensation.type }}_id"
                                                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -316,14 +316,14 @@
                                             <input type="text"
                                                    id="salary_with_compensation_id"
                                                    name="salary_with_compensation"
-                                                   value="{{ payslip.get_data.gross_pay|floatformat:"2g" }}"
+                                                   value="{{ payslip_data.gross_pay|floatformat:"2g" }}"
                                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                    readonly />
                                         </div>
                                         <hr class="h-px my-2 bg-gray-200 border-0 dark:bg-gray-700">
-                                        {% if payslip.get_data.variable_deductions %}
+                                        {% if payslip_data.variable_deductions %}
                                             <h2 class="text-xl font-extrabold dark:text-white text-center">Variable Deductions</h2>
-                                            {% for deduction in payslip.get_data.variable_deductions %}
+                                            {% for deduction in payslip_data.variable_deductions %}
                                                 <div class="w-full">
                                                     <div class="w-full flex flex-row justify-between">
                                                         <label for="deduction_{{ deductions.id }}_id"
@@ -356,7 +356,7 @@
                                                 <input type="text"
                                                        id="sss_deduction_id"
                                                        name="sss_deduction"
-                                                       value="{{ payslip.get_data.sss_deduction|floatformat:"2g" }}"
+                                                       value="{{ payslip_data.sss_deduction|floatformat:"2g" }}"
                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                        readonly />
                                             </div>
@@ -368,7 +368,7 @@
                                                 <input type="text"
                                                        id="phihealth_deduction_id"
                                                        name="phihealth_deduction"
-                                                       value="{{ payslip.get_data.philhealth_deduction|floatformat:"2g" }}"
+                                                       value="{{ payslip_data.philhealth_deduction|floatformat:"2g" }}"
                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                        readonly />
                                             </div>
@@ -380,7 +380,7 @@
                                                 <input type="text"
                                                        id="pag_ibig_deduction_id"
                                                        name="pag_ibig_deduction"
-                                                       value="{{ payslip.get_data.pag_ibig_deduction|floatformat:"2g" }}"
+                                                       value="{{ payslip_data.pag_ibig_deduction|floatformat:"2g" }}"
                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                        readonly />
                                             </div>
@@ -392,7 +392,7 @@
                                                 <input type="text"
                                                        id="mp2_deduction_id"
                                                        name="mp2_deduction"
-                                                       value="{{ payslip.get_data.mp2_deduction|floatformat:"2g" }}"
+                                                       value="{{ payslip_data.mp2_deduction|floatformat:"2g" }}"
                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                        readonly />
                                             </div>
@@ -404,7 +404,7 @@
                                                 <input type="text"
                                                        id="tax_deduction_id"
                                                        name="tax_deduction"
-                                                       value="{{ payslip.get_data.tax_deduction|floatformat:"2g" }}"
+                                                       value="{{ payslip_data.tax_deduction|floatformat:"2g" }}"
                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                        readonly />
                                             </div>
@@ -417,7 +417,7 @@
                                             <input type="text"
                                                    id="total_deductions_id"
                                                    name="total_deductions"
-                                                   value="{{ payslip.get_data.total_deductions|floatformat:"2g" }}"
+                                                   value="{{ payslip_data.total_deductions|floatformat:"2g" }}"
                                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                    readonly />
                                         </div>
@@ -430,7 +430,7 @@
                                             <input type="text"
                                                    id="net_salary_id"
                                                    name="net_salary"
-                                                   value="{{ payslip.get_data.net_salary|floatformat:"2g" }}"
+                                                   value="{{ payslip_data.net_salary|floatformat:"2g" }}"
                                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                    readonly />
                                         </div>

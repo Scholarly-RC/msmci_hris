@@ -16,7 +16,7 @@ def get_department_heads(selected_department):
     UserDetailsModel = apps.get_model("core", "UserDetails")
     department_head = UserDetailsModel.Role.DEPARTMENT_HEAD.value
 
-    return User.objects.filter(
+    return User.objects.select_related("userdetails").filter(
         is_active=True,
         userdetails__department=selected_department,
         userdetails__role=department_head,
@@ -31,7 +31,9 @@ def get_directors():
     UserDetailsModel = apps.get_model("core", "UserDetails")
     director = UserDetailsModel.Role.DIRECTOR.value
 
-    return User.objects.filter(is_active=True, userdetails__role=director)
+    return User.objects.select_related("userdetails").filter(
+        is_active=True, userdetails__role=director
+    )
 
 
 def get_presidents():
@@ -42,7 +44,9 @@ def get_presidents():
     UserDetailsModel = apps.get_model("core", "UserDetails")
     president = UserDetailsModel.Role.PRESIDENT.value
 
-    return User.objects.filter(is_active=True, userdetails__role=president)
+    return User.objects.select_related("userdetails").filter(
+        is_active=True, userdetails__role=president
+    )
 
 
 def get_approvers_per_department(selected_department) -> dict:
@@ -179,7 +183,7 @@ def get_leave_to_review(
     """
     LeaveModel = apps.get_model("leave", "Leave")
 
-    leave = LeaveModel.objects.filter(
+    leave = LeaveModel.objects.select_related("user__userdetails__department").filter(
         Q(first_approver_data__approver=user.id)
         | Q(second_approver_data__approver=user.id)
     )

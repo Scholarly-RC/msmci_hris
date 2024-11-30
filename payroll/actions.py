@@ -193,7 +193,7 @@ def process_get_or_create_user_payslip(
         PayslipModel = apps.get_model("payroll", "Payslip")
         UserModel = apps.get_model("auth", "User")
 
-        user = UserModel.objects.get(id=user_id)
+        user = UserModel.objects.select_related("userdetails").get(id=user_id)
 
         payslip, _ = PayslipModel.objects.get_or_create(
             user=user,

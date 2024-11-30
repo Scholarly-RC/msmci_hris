@@ -177,7 +177,6 @@ def view_job(request):
         data = request.POST
         job_id = data.get("job")
         job = Job.objects.get(id=job_id)
-        job.get_salary_data()
         context.update({"job": job})
         response = HttpResponse()
         response.content = render_block_to_string(
@@ -199,7 +198,7 @@ def modify_job(request):
         if request.method == "POST":
             data = request.POST
             job_id = data.get("job")
-            job = Job.objects.get(id=job_id)
+            job = Job.objects.prefetch_related("department").get(id=job_id)
             departments = get_department_list()
             context.update({"departments": departments, "job": job})
             response.content = render_block_to_string(
@@ -862,7 +861,17 @@ def access_payslip(request):
                 int(selected_year),
                 selected_period,
             )
-            context.update({"selected_user": user, "payslip": payslip})
+
+            payslip_data = payslip.get_data()
+
+            context.update(
+                {
+                    "selected_user": user,
+                    "payslip": payslip,
+                    "payslip_data": payslip_data,
+                }
+            )
+
             response.content = render_block_to_string(
                 "payroll/payslip_management.html",
                 "access_payslip_modal_container",
@@ -1119,7 +1128,14 @@ def update_payslip_data(request):
         response = HttpResponse()
         data = request.POST
         payslip = Payslip.objects.get(id=data.get("selected_payslip"))
-        context.update({"selected_user": payslip.user, "payslip": payslip})
+        payslip_data = payslip.get_data()
+        context.update(
+            {
+                "selected_user": payslip.user,
+                "payslip": payslip,
+                "payslip_data": payslip_data,
+            }
+        )
         response.content = render_block_to_string(
             "payroll/payslip_management.html",
             "access_payslip_modal_container",

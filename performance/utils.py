@@ -253,7 +253,9 @@ def get_user_with_hr_role():
     UserDetailsModel = apps.get_model("core", "UserDetails")
 
     hr_role = UserDetailsModel.Role.HR.value
-    hr = UserModel.objects.filter(is_active=True, userdetails__role=hr_role)
+    hr = UserModel.objects.select_related("userdetails").filter(
+        is_active=True, userdetails__role=hr_role
+    )
     return hr
 
 

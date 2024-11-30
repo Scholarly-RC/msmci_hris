@@ -1,15 +1,12 @@
 from decimal import Decimal
 
-from payroll.utils import (
-    convert_string_to_decimal_list,
-    get_deduction_configuration_object,
-)
+from payroll.utils import convert_string_to_decimal_list
 
 
 class Sss:
-    def __init__(self, salary):
+    def __init__(self, deduction_config, salary):
         self.salary = salary
-        sss_deduction_configuration = get_deduction_configuration_object().sss_config()
+        sss_deduction_configuration = deduction_config.sss_config()
         sss_deduction_configuration_data = sss_deduction_configuration.get("data")
         self.min_compensation = Decimal(
             sss_deduction_configuration_data.get("min_compensation")
@@ -49,12 +46,10 @@ class Sss:
 
 
 class Philhealth:
-    def __init__(self, salary):
+    def __init__(self, deduction_config, salary):
         # INFO: Remove * 2 solving for monthly
         self.salary = salary * 2
-        philhealth_deduction_configuration = (
-            get_deduction_configuration_object().philhealth_config()
-        )
+        philhealth_deduction_configuration = deduction_config.philhealth_config()
         philhealth_deduction_configuration_data = (
             philhealth_deduction_configuration.get("data")
         )
@@ -83,9 +78,9 @@ class Philhealth:
 
 
 class Tax:
-    def __init__(self, salary):
+    def __init__(self, deduction_config, salary):
         self.salary = salary
-        tax_deduction_configuration = get_deduction_configuration_object().tax_config()
+        tax_deduction_configuration = deduction_config.tax_config()
         tax_deduction_configuration_data = tax_deduction_configuration.get("data")
         self.compensation_range = convert_string_to_decimal_list(
             tax_deduction_configuration_data.get("compensation_range", "")
@@ -122,10 +117,8 @@ class Tax:
 
 
 class PagIbig:
-    def __init__(self):
-        pagibig_deduction_configuration = (
-            get_deduction_configuration_object().pagibig_config()
-        )
+    def __init__(self, deduction_config):
+        pagibig_deduction_configuration = deduction_config.pagibig_config()
         pagibig_deduction_configuration_data = pagibig_deduction_configuration.get(
             "data"
         )

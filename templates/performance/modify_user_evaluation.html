@@ -145,7 +145,7 @@
                                                 </button>
                                             {% endif %}
                                         </div>
-                                        <div class="w-full h-96 overflow-y-scroll rounded-lg border shadow border border-gray-200 dark:border-gray-700">
+                                        <div class="w-full h-96 overflow-y-scroll rounded-lg border shadow border-gray-200 dark:border-gray-700">
                                             {% for content in evaluation.get_content_data_with_mean_per_domain %}
                                                 <div class="px-8 dark:bg-gray-800 {% if forloop.last %}pt-6{% else %}py-6{% endif %}">
                                                     <h2 class="mb-3 text-2xl font-extrabold text-gray-900 dark:text-white">Domain #{{ content.domain_number }}</h2>

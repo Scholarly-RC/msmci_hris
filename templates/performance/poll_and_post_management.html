@@ -196,7 +196,7 @@
                                                              class="flex flex-col md:flex-row mt-2 gap-2">
                                                             <button type="button"
                                                                     hx-post="{% url "performance:post_management_with_selected_poll" selected_post.id %}"
-                                                                    class="w-auto py-2 px-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                                    class="py-2 px-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                                                 Save
                                                             </button>
                                                             {% if for_delete_confirmation == True %}
@@ -209,7 +209,7 @@
                                                                     <button type="button"
                                                                             hx-post="{% url "performance:delete_selected_post" selected_post.id %}"
                                                                             hx-vals='{"cancel_delete": "True"}'
-                                                                            class="w-auto py-2 px-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                                            class="py-2 px-5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                                                         Cancel
                                                                     </button>
                                                                 </div>

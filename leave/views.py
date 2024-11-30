@@ -217,7 +217,7 @@ def leave_management(request):
         {
             "current_user": user,
             "leave_data": leave_to_review,
-            "users": users,
+            "users": users.select_related("leavecredit"),
             "months": months,
             "years": years,
             "selected_user_id": int(selected_user_id),
@@ -348,16 +348,16 @@ def approver_settings(request):
                 )
             else:
                 selected_department = departments.first()
-            department_heads = get_department_heads(
-                selected_department=selected_department
-            )
+
             approvers_context = get_approvers_per_department(selected_department)
             context.update(approvers_context)
             context.update(
                 {
                     "departments": departments,
                     "selected_department": selected_department,
-                    "department_heads": department_heads,
+                    "department_heads": get_department_heads(
+                        selected_department=selected_department
+                    ),
                     "directors": get_directors(),
                     "presidents": get_presidents(),
                     "hrs": get_user_with_hr_role(),
@@ -403,7 +403,7 @@ def leave_credit_settings(request):
         response = HttpResponse()
         if request.method == "GET":
             users = get_users_sorted_by_department()
-            context["users"] = users
+            context["users"] = users.select_related("leavecredit")
             response.content = render_block_to_string(
                 "leave/leave_management.html",
                 "leave_credit_settings_container",
@@ -424,7 +424,7 @@ def update_leave_credit_settings_list(request):
         response = HttpResponse()
         if request.method == "POST":
             users = get_users_sorted_by_department()
-            context["users"] = users
+            context["users"] = users.select_related("leavecredit")
             response.content = render_block_to_string(
                 "leave/leave_management.html",
                 "leave_credit_settings_container",

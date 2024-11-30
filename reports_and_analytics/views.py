@@ -70,7 +70,6 @@ def view_daily_staffing_report(request, selected_date="", option="all"):
     user = request.user
     is_user_hr = user.userdetails.is_hr()
     if not is_user_hr:
-        selected_user = user.id
         context["hide_print_download_button"] = True
 
     selected_date = request.POST.get("selected_date") or selected_date
