@@ -1,1 +1,1 @@
-web: gunicorn hris.wsgi --log-file -
+web: web: yes yes | python manage.py collectstatic & python manage.py migrate & gunicorn hris.wsgi --log-file -

@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ["...", "libreoffice"]
+
+[phases.build]
+cmds = [
+  "...",
+  "ln -s $(find /nix/store -name soffice | head -n 1) /usr/local/bin/soffice"
+]
