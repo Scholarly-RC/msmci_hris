@@ -159,6 +159,7 @@ Q_CLUSTER = {
     "ack_failures": True,
     "max_attempts": 3,
     "attempt_count": 1,
+    "redis": os.getenv("BROKER_URL"),
 }
 
 
