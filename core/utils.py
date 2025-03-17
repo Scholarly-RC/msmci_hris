@@ -24,7 +24,7 @@ def generate_username_from_employee_id(employee_id):
     """
     Generates a username based on the provided employee ID.
     """
-    user = User.objects.get(id=employee_id)
+    user = User.objects.get(userdetails__employee_number=employee_id)
 
     if user.is_superuser:
         return "admin"

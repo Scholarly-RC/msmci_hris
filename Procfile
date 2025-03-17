@@ -1,1 +1,1 @@
-web: yes yes | python manage.py collectstatic & python manage.py migrate & gunicorn hris.wsgi --log-file -
+web: python manage.py qcluster & yes yes | python manage.py collectstatic & python manage.py migrate & gunicorn hris.wsgi --log-file -

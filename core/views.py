@@ -636,7 +636,7 @@ def add_new_user(request):
                 defaults={
                     "first_name": first_name,
                     "last_name": last_name,
-                    "username": generate_username_from_employee_id(employee_id),
+                    "username": f"{first_name}{middle_name}{last_name}_temp",
                 },
             )
             if created:
@@ -646,13 +646,15 @@ def add_new_user(request):
                 user_details[0].middle_name = middle_name
                 user_details[0].employee_number = employee_id
                 user_details[0].save()
+                user.username = generate_username_from_employee_id(employee_id)
+                user.save()
                 response = HttpResponseClientRedirect(reverse("core:user_management"))
             else:
                 response = create_global_alert_instance(
                     response, "Email already exists.", "INFO"
                 )
                 response = reswap(response, "none")
-        except IntegrityError:
+        except IntegrityError as error:
             response = create_global_alert_instance(
                 response, "User credentials already exists.", "INFO"
             )

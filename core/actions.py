@@ -24,8 +24,9 @@ def process_update_username(user_id=None):
     UserModel = apps.get_model("auth", "User")
 
     def _update_user_username(user_id):
-        username = generate_username_from_employee_id(user_id)
         user = UserModel.objects.get(id=user_id)
+        employee_id = user.userdetails.employee_number
+        username = generate_username_from_employee_id(employee_id)
         user.username = username
         user.save()
 
