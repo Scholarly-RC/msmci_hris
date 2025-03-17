@@ -4,7 +4,5 @@ nixPkgs = ["...", "libreoffice"]
 [phases.build]
 cmds = [
   "...",
-  "echo "Looking for soffice..." && \
-  find / -name soffice 2>/dev/null && \
-  echo "Soffice search complete." && \"
+  "find / -name soffice 2>/dev/null"
 ]
