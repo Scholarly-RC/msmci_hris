@@ -1,6 +1,9 @@
+from datetime import datetime, time
+
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.db.models import BooleanField, Case, Value, When
+from django.utils.timezone import make_aware
 
 from attendance.utils.date_utils import get_date_object, get_date_object_from_date_str
 
@@ -54,13 +57,21 @@ def get_user_clocked_time(user, year: int, month: int, day_range):
     Retrieves the user's clock-in ("IN") and clock-out ("OUT") times for each day in the specified date range.
     Returns a dictionary with the day as the key and a sub-dictionary containing lists of "IN" and "OUT" records.
     """
-    start_date = get_date_object(year=year, month=month, day=min(day_range))
-    end_date = get_date_object(year=year, month=month, day=max(day_range))
+    start_date = make_aware(
+        datetime.combine(
+            get_date_object(year=year, month=month, day=min(day_range)), time.min
+        )
+    )
+    end_date = make_aware(
+        datetime.combine(
+            get_date_object(year=year, month=month, day=max(day_range)), time.max
+        )
+    )
 
     AttendanceRecordModel = apps.get_model("attendance", "AttendanceRecord")
     clocked_time_records = AttendanceRecordModel.objects.filter(
         user_biometric_detail=user.biometricdetail,
-        timestamp__date__range=[start_date, end_date],
+        timestamp__range=[start_date, end_date],
     ).order_by("timestamp")
 
     clocked_time_data_dict = {}

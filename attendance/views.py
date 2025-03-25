@@ -1015,15 +1015,18 @@ def reload_modify_clocked_time_list(request):
         selected_user = User.objects.get(id=user_id)
         selected_date = get_date_object_from_date_str(details.get("selectedDate"))
 
+        day_range = [selected_date.day]
+
         clocked_time_data = get_user_clocked_time(
-            user=selected_user.id,
+            user=selected_user,
             year=selected_date.year,
             month=selected_date.month,
-            day=selected_date.day,
+            day_range=day_range,
         )
+
         context.update(
             {
-                "clocked_time_data": clocked_time_data,
+                "clocked_time_data": clocked_time_data.get(selected_date.day),
                 "selected_user": selected_user,
                 "selected_date": selected_date,
                 "selected_date_str": str(selected_date),
