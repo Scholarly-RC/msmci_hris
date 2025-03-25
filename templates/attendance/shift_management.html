@@ -464,7 +464,9 @@
                                                             <div>
                                                                 <div class="text-base font-semibold">{{ shift.description }}</div>
                                                                 <div class="font-normal text-gray-500">{{ shift.get_twelve_hour_format_shift_range }}</div>
-                                                                <div class="font-normal text-gray-500">{{ shift.get_twelve_hour_format_second_shift_range }}</div>
+                                                                {% if shift.get_twelve_hour_format_second_shift_range %}
+                                                                    <div class="font-normal text-gray-500">{{ shift.get_twelve_hour_format_second_shift_range }}</div>
+                                                                {% endif %}
                                                             </div>
                                                             <div>
                                                                 <button type="button"
@@ -513,7 +515,9 @@
                                                                 <div class="block">
                                                                     <div class="w-full text-lg font-semibold">{{ shift.description }}</div>
                                                                     <div class="w-full text-sm">{{ shift.get_twelve_hour_format_shift_range }}</div>
-                                                                    <div class="w-full text-sm">{{ shift.get_twelve_hour_format_second_shift_range }}</div>
+                                                                    {% if shift.get_twelve_hour_format_second_shift_range %}
+                                                                        <div class="w-full text-sm">{{ shift.get_twelve_hour_format_second_shift_range }}</div>
+                                                                    {% endif %}
                                                                 </div>
                                                             </label>
                                                         </li>

@@ -138,9 +138,11 @@
                                                                     <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">
                                                                         {{ user_shift_data.daily_user_shift.shift.get_twelve_hour_format_shift_range }}
                                                                     </div>
-                                                                    <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">
-                                                                        {{ user_shift_data.daily_user_shift.shift.get_twelve_hour_format_second_shift_range }}
-                                                                    </div>
+                                                                    {% if user_shift_data.daily_user_shift.shift.get_twelve_hour_format_second_shift_range %}
+                                                                        <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">
+                                                                            {{ user_shift_data.daily_user_shift.shift.get_twelve_hour_format_second_shift_range }}
+                                                                        </div>
+                                                                    {% endif %}
                                                                 </div>
                                                             </td>
                                                             <td>

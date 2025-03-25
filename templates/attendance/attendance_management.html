@@ -134,9 +134,11 @@
                                                                 <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">
                                                                     {{ user_shift_data.daily_user_shift.shift.get_twelve_hour_format_shift_range }}
                                                                 </div>
-                                                                <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">
-                                                                    {{ user_shift_data.daily_user_shift.shift.get_twelve_hour_format_second_shift_range }}
-                                                                </div>
+                                                                {% if user_shift_data.daily_user_shift.shift.get_twelve_hour_format_second_shift_range %}
+                                                                    <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">
+                                                                        {{ user_shift_data.daily_user_shift.shift.get_twelve_hour_format_second_shift_range }}
+                                                                    </div>
+                                                                {% endif %}
                                                             </div>
                                                         </td>
                                                         <td>
@@ -490,7 +492,7 @@
                                                                     <option selected value="">Choose a user and shift</option>
                                                                     {% for shift in shifts %}
                                                                         <option value="{{ shift.id }}">
-                                                                            {{ shift.user.userdetails.get_user_fullname|title }} - ({{ shift.shift.get_twelve_hour_format_shift_range }} {{ shift.shift.get_twelve_hour_format_second_shift_range }})
+                                                                            {{ shift.user.userdetails.get_user_fullname|title }} - ({{ shift.shift.get_twelve_hour_format_shift_range }} {% if shift.shift.get_twelve_hour_format_second_shift_range %}{{ shift.shift.get_twelve_hour_format_second_shift_range }}{% endif %})
                                                                         </option>
                                                                     {% endfor %}
                                                                 {% else %}
