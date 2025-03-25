@@ -89,12 +89,14 @@ from attendance.validations import (
     request_swap_validation,
 )
 from core.decorators import hr_or_dept_head_required, hr_required
-from core.models import BiometricDetail, Department
+from core.models import BiometricDetail, Department, UserDetails
 from core.notification import create_notification
 from hris.utils import create_global_alert_instance
 from leave.utils import (
     check_user_has_approved_leave_on_specific_date_range,
     get_department_heads,
+    get_directors,
+    get_presidents,
 )
 from payroll.utils import get_department_list
 
@@ -356,15 +358,18 @@ def request_swap(request):
             )
 
         else:
-            department_heads = get_department_heads(
-                selected_department=user.userdetails.department
-            ).exclude(id=user.id)
+            if user.userdetails.role == UserDetails.Role.EMPLOYEE:
+                approvers = get_department_heads(
+                    selected_department=user.userdetails.department
+                ).exclude(id=user.id)
+            elif user.userdetails.role == UserDetails.Role.DEPARTMENT_HEAD:
+                approvers = get_directors()
+            elif user.userdetails.role == UserDetails.Role.DIRECTOR:
+                approvers = get_presidents()
 
             swap_requests = get_user_shift_swap_request(user=user)
 
-            context.update(
-                {"department_heads": department_heads, "swap_requests": swap_requests}
-            )
+            context.update({"approvers": approvers, "swap_requests": swap_requests})
 
         response.content = render_block_to_string(
             "attendance/attendance_management.html",

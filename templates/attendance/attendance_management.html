@@ -511,8 +511,8 @@
                                                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                                 required>
                                                             <option selected value="">Choose an approver</option>
-                                                            {% for department_head in department_heads %}
-                                                                <option value="{{ department_head.id }}">{{ department_head.userdetails.get_user_fullname|title }}</option>
+                                                            {% for approver in approvers %}
+                                                                <option value="{{ approver.id }}">{{ approver.userdetails.get_user_fullname|title }}</option>
                                                             {% endfor %}
                                                         </select>
                                                     </div>
@@ -554,7 +554,7 @@
                                             </table>
                                         </div>
                                     </div>
-                                    {% if current_user.userdetails.is_department_head %}
+                                    {% if not current_user.userdetails.is_employee %}
                                         <div class="flex justify-center w-full mt-2 p-2 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
                                             <button type="button"
                                                     hx-get="{% url "attendance:request_swap" %}"
