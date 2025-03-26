@@ -89,7 +89,7 @@ def user_login(request):
 
             context.update(
                 {
-                    "login_error_message": "Email or password is incorrect. Please try again.",
+                    "login_error_message": "Username or password is incorrect. Please try again.",
                 }
             )
             response.content = render_block_to_string(
