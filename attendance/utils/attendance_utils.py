@@ -2,10 +2,11 @@ from datetime import datetime, time
 
 from django.apps import apps
 from django.contrib.auth import get_user_model
-from django.db.models import BooleanField, Case, Value, When
+from django.db.models import BooleanField, Case, Q, Value, When
 from django.utils.timezone import make_aware
 
 from attendance.utils.date_utils import get_date_object, get_date_object_from_date_str
+from core.models import UserDetails
 
 
 def get_user_daily_shift_record(department, year: int, month: int, day: int):
@@ -101,6 +102,7 @@ def get_employees_list_per_department():
     all_users = (
         get_user_model()
         .objects.filter(is_active=True)
+        .exclude(Q(is_superuser=True) | Q(userdetails__role=UserDetails.Role.HR))
         .select_related("userdetails__department")
         .annotate(
             department_exists=Case(
