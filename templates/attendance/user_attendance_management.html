@@ -194,7 +194,7 @@
                                                                 {% endif %}
                                                             </td>
                                                             <td class="p-4 text-base font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                                {% if user_shift_data.clocked_time_data.IN or user_shift_data.clocked_time_data.OUT %}
+                                                                {% if user_shift_data.daily_user_shift.shift %}
                                                                     <div class="flex justify-center">
                                                                         <button type="button"
                                                                                 hx-get="{% url "attendance:modify_user_clocked_time" %}"
