@@ -240,8 +240,8 @@ def check_user_has_approved_leave_on_specific_date_range(
 
     leave_queryset = user.user_leaves.filter(
         Q(first_approver_data__status=approved_status)
-        | Q(second_approver_data__status=approved_status),
-        date__in=selected_dates,
+        & Q(second_approver_data__status=approved_status)
+        & Q(date__in=selected_dates),
     )
 
     approved_leave_data = {day: [] for day in day_range}

@@ -389,7 +389,7 @@ def approver_settings(request):
             except Exception as error:
                 response = create_global_alert_instance(
                     response,
-                    f"An error occurred while updating the selected department. Details: {error}",
+                    f"An error occurred while updating approvers for the selected department. Details: {error}",
                     "DANGER",
                 )
                 response = reswap(response, "none")
