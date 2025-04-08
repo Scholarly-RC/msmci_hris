@@ -11,6 +11,8 @@ urlpatterns = [
     path(
         "set-user-password", core_views.set_new_user_password, name="set_user_password"
     ),
+    # APP LOGS #
+    path("app-logs", core_views.app_logs, name="app_logs"),
     # USER PROFILE #
     path(
         "profile/preview-personal-file",

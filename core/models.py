@@ -346,3 +346,22 @@ class PersonalFile(models.Model):
 
     def is_file_pdf(self):
         return self.get_file_extension() == ".pdf"
+
+
+class AppLog(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.RESTRICT,
+        related_name="logs",
+    )
+
+    details = models.TextField(_("Log Details"))
+
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "App Logs"
+
+    def __str__(self):
+        return f"User #{self.user.id} - {self.created} - {self.details[:50]}"

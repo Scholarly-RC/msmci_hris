@@ -1,10 +1,11 @@
 import uuid
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.utils.timezone import get_current_timezone, make_aware
 
 
 def check_user_has_password(email):
@@ -249,3 +250,11 @@ def get_user_personal_files(user):
         categorized_files[file.category].append(file)
 
     return categorized_files
+
+
+def get_all_app_logs(date):
+    AppLogModel = apps.get_model("core", "AppLog")
+    tz = get_current_timezone()
+    start = make_aware(datetime.combine(date, datetime.min.time()), timezone=tz)
+    end = start + timedelta(days=1)
+    return AppLogModel.objects.filter(created__gte=start, created__lt=end)

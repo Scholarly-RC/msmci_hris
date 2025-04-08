@@ -168,3 +168,10 @@ def process_delete_personal_file(payload):
     except Exception:
         logger.error("An error occurred while deleting a Personal File", exc_info=True)
         raise
+
+
+
+@transaction.atomic
+def process_add_app_log_entry(user, details):
+    AppLogModel = apps.get_model("core", "AppLog")
+    AppLogModel.objects.create()

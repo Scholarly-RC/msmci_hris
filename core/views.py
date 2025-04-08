@@ -20,6 +20,10 @@ from django_htmx.http import (
 from openpyxl import load_workbook
 from render_block import render_block_to_string
 
+from attendance.utils.date_utils import (
+    get_current_local_date,
+    get_date_object_from_date_str,
+)
 from core.actions import (
     process_add_personal_file,
     process_change_profile_picture,
@@ -34,6 +38,7 @@ from core.utils import (
     check_if_biometric_uid_exists,
     check_user_has_password,
     generate_username_from_employee_id,
+    get_all_app_logs,
     get_civil_status_list,
     get_education_list,
     get_education_list_with_degrees_earned,
@@ -893,6 +898,28 @@ def open_notification(request):
             )
             response = reswap(response, "none")
             return response
+
+
+# App Log Views
+def app_logs(request):
+    context = {}
+    selected_date = request.POST.get("app_log_date", None) or get_current_local_date()
+    if type(selected_date) == str:
+        selected_date = get_date_object_from_date_str(selected_date)
+
+    logs = get_all_app_logs(selected_date)
+    context.update({"logs": logs, "selected_date": selected_date})
+
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "core/app_logs.html", "app_log_table", context
+        )
+        response = retarget(response, "#app_log_table")
+        response = reswap(response, "outerHTML")
+        return response
+
+    return render(request, "core/app_logs.html", context)
 
 
 # App Shared View

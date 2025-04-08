@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from core.models import (
+    AppLog,
     BiometricDetail,
     Department,
     Notification,
@@ -8,6 +9,7 @@ from core.models import (
     UserDetails,
 )
 
+admin.site.register(AppLog)
 admin.site.register(BiometricDetail)
 admin.site.register(Department)
 admin.site.register(UserDetails)
