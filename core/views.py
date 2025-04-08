@@ -25,6 +25,7 @@ from attendance.utils.date_utils import (
     get_date_object_from_date_str,
 )
 from core.actions import (
+    process_add_app_log_entry,
     process_add_personal_file,
     process_change_profile_picture,
     process_delete_personal_file,
@@ -38,7 +39,7 @@ from core.utils import (
     check_if_biometric_uid_exists,
     check_user_has_password,
     generate_username_from_employee_id,
-    get_all_app_logs,
+    get_app_logs,
     get_civil_status_list,
     get_education_list,
     get_education_list_with_degrees_earned,
@@ -47,6 +48,7 @@ from core.utils import (
     get_religion_list,
     get_role_list,
     get_user_personal_files,
+    get_user_with_logs,
     get_users_sorted_by_department,
     profile_picture_validation,
 )
@@ -77,6 +79,7 @@ def user_login(request):
         response = HttpResponse()
         if user is not None:
             login(request, user)
+            process_add_app_log_entry(request.user.id, "Logged in.")
             response = HttpResponseClientRedirect(reverse("core:main"))
             return response
         else:
@@ -135,6 +138,7 @@ def set_new_user_password(request):
             "password_successfully_set_message": "Your password has been set. Please login."
         }
     )
+    process_add_app_log_entry(request.user.id, "Changed account password.")
     response.content = render_block_to_string("core/login.html", "login_card", context)
     response = retarget(response, "#login_card")
     response = reswap(response, "outerHTML")
@@ -143,6 +147,7 @@ def set_new_user_password(request):
 
 def user_logout(request):
     logout(request)
+    process_add_app_log_entry(request.user.id, "Logged out.")
     response = HttpResponse()
     response = HttpResponseClientRedirect(reverse("core:login"))
     return response
@@ -253,12 +258,17 @@ def user_profile(request):
             )
             response = retarget(response, "#degrees_earned_section")
         else:
-            updated_user = process_update_user_and_user_details(
+            updated_user, full_user_details = process_update_user_and_user_details(
                 user_instance=user, querydict=data
             )
 
             if user.userdetails.education in get_education_list_with_degrees_earned():
                 context.update({"show_degrees_earned_section": True})
+
+            process_add_app_log_entry(
+                request.user.id,
+                f"Updated account profile information. Updated details: {full_user_details}.",
+            )
 
             response = create_global_alert_instance(
                 response, "Profile successfully updated.", "SUCCESS"
@@ -324,6 +334,14 @@ def change_user_password(request):
                 else:
                     user.set_password(confirm_password)
                     user.save()
+                    process_add_app_log_entry(
+                        request.user.id,
+                        (
+                            "Changed account password."
+                            if not modify_selected_user
+                            else f"Changed user #{user.id} password."
+                        ),
+                    )
                     response = create_global_alert_instance(
                         response,
                         (
@@ -371,6 +389,10 @@ def upload_user_profile_picture(request):
         if error is None:
             user_details = request.user.userdetails
             user_details = process_change_profile_picture(profile_picture, user_details)
+            process_add_app_log_entry(
+                request.user.id,
+                "Uploaded account profile picture.",
+            )
             response = create_global_alert_instance(
                 response, "Profile picture successfully uploaded.", "SUCCESS"
             )
@@ -422,6 +444,9 @@ def add_personal_files(request):
 
                 new_file = process_add_personal_file(
                     user=user, payload=data, file_data=file_data
+                )
+                process_add_app_log_entry(
+                    request.user.id, f"Added a personal file ({new_file.name})."
                 )
                 response = create_global_alert_instance(
                     response,
@@ -507,7 +532,10 @@ def delete_selected_personal_file(request):
         if request.method == "DELETE":
             data = QueryDict(request.body)
             try:
-                category = process_delete_personal_file(payload=data)
+                category, file_name = process_delete_personal_file(payload=data)
+                process_add_app_log_entry(
+                    request.user.id, f"Deleted a personal file ({file_name})."
+                )
                 response = create_global_alert_instance(
                     response, "Selected Personal File successfully deleted.", "SUCCESS"
                 )
@@ -653,6 +681,9 @@ def add_new_user(request):
                 user_details[0].save()
                 user.username = generate_username_from_employee_id(employee_id)
                 user.save()
+                process_add_app_log_entry(
+                    request.user.id, f"Added a new user (#{user.id})."
+                )
                 response = HttpResponseClientRedirect(reverse("core:user_management"))
             else:
                 response = create_global_alert_instance(
@@ -726,11 +757,16 @@ def modify_user_details(request, pk):
             )
             response = retarget(response, "#degrees_earned_section")
         else:
-            updated_user = process_update_user_and_user_details(
+            updated_user, full_user_details = process_update_user_and_user_details(
                 user_instance=user, querydict=data
             )
             if user.userdetails.education in get_education_list_with_degrees_earned():
                 context.update({"show_degrees_earned_section": True})
+
+            process_add_app_log_entry(
+                request.user.id,
+                f"Updated the profile of user #{user.id}. New details: {full_user_details}.",
+            )
 
             response = create_global_alert_instance(
                 response, "Selected user successfully updated.", "SUCCESS"
@@ -780,6 +816,10 @@ def modify_user_biometric_details(request, pk):
             biometric_details = user.biometricdetail
             biometric_details.user_id_in_device = data.get("user_id_in_device", None)
             biometric_details.save()
+
+            process_add_app_log_entry(
+                request.user.id, f"Updated user #{user.id} biometric configuration."
+            )
 
             response = create_global_alert_instance(
                 response,
@@ -833,6 +873,9 @@ def bulk_add_new_users(request):
                     process_get_or_create_intial_user_one_to_one_fields(user)
 
             if new_user_counter > 0:
+                process_add_app_log_entry(
+                    request.user.id, f"Bulk added {new_user_counter} new users."
+                )
                 messages.success(
                     request, message=f"{new_user_counter} users successfully added."
                 )
@@ -907,8 +950,13 @@ def app_logs(request):
     if type(selected_date) == str:
         selected_date = get_date_object_from_date_str(selected_date)
 
-    logs = get_all_app_logs(selected_date)
-    context.update({"logs": logs, "selected_date": selected_date})
+    user = request.POST.get("log_users", "0")
+
+    logs = get_app_logs(selected_date, user)
+
+    users = get_user_with_logs()
+
+    context.update({"logs": logs, "users": users, "selected_date": selected_date})
 
     if request.htmx and request.method == "POST":
         response = HttpResponse()

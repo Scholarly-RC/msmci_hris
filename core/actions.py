@@ -91,7 +91,7 @@ def process_update_user_and_user_details(user_instance, querydict):
 
         process_update_username(user_id=user_instance.id)
 
-        return user_instance
+        return user_instance, user_payload | user_details_payload
     except Exception:
         logger.error(
             "An error occurred while updating user and user details", exc_info=True
@@ -161,17 +161,21 @@ def process_delete_personal_file(payload):
     file_id = payload.get("file")
     try:
         file = PersonalFileModel.objects.get(id=file_id)
+        file_name = file.name
         category = file.category
         file.file.delete()
         file.delete()
-        return category
+        return category, file_name
     except Exception:
         logger.error("An error occurred while deleting a Personal File", exc_info=True)
         raise
 
 
-
 @transaction.atomic
-def process_add_app_log_entry(user, details):
+def process_add_app_log_entry(user_id, details):
     AppLogModel = apps.get_model("core", "AppLog")
-    AppLogModel.objects.create()
+    UserModel = apps.get_model("auth", "User")
+    new_log = AppLogModel.objects.create(
+        user=UserModel.objects.get(id=user_id), details=details
+    )
+    return new_log

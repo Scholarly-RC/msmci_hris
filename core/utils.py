@@ -252,9 +252,18 @@ def get_user_personal_files(user):
     return categorized_files
 
 
-def get_all_app_logs(date):
+def get_app_logs(date, user):
     AppLogModel = apps.get_model("core", "AppLog")
     tz = get_current_timezone()
     start = make_aware(datetime.combine(date, datetime.min.time()), timezone=tz)
     end = start + timedelta(days=1)
-    return AppLogModel.objects.filter(created__gte=start, created__lt=end)
+    logs = AppLogModel.objects.filter(created__gte=start, created__lt=end).order_by(
+        "-id"
+    )
+    if user != "0":
+        logs = logs.filter(user__id=user)
+    return logs
+
+
+def get_user_with_logs():
+    return User.objects.filter(logs__isnull=False).exclude(is_superuser=True).distinct()

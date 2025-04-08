@@ -11,19 +11,35 @@
                      class="h-[48rem] overflow-y-auto flex flex-col gap-6 p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                     <div class="flex flex-col md:flex-row gap-4 h-full">
                         <div class="w-full max-w-xs flex flex-col justify-between p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                            <div class="w-full mx-auto">
-                                <label for="app_log_date_id"
-                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Select a Date
-                                </label>
-                                <input type="date"
-                                       id="app_log_date_id"
-                                       name="app_log_date"
-                                        hx-post="{% url 'core:app_logs' %}"
-                                        hx-trigger="change"
-                                       value="{{ selected_date|date:"Y-m-d" }}"
-                                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
-                            </div>
+                            <form class="flex flex-col gap-2 w-full mx-auto">
+                                <div>
+                                    <label for="app_log_date_id"
+                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        Select a Date
+                                    </label>
+                                    <input type="date"
+                                           id="app_log_date_id"
+                                           name="app_log_date"
+                                           hx-post="{% url 'core:app_logs' %}"
+                                           hx-trigger="change"
+                                           value="{{ selected_date|date:"Y-m-d" }}"
+                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                                </div>
+                                <div>
+                                    <label for="log_users_id"
+                                           class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        Select a User
+                                    </label>
+                                    <select hx-post="{% url 'core:app_logs' %}"
+                                            hx-trigger="change"
+                                            id="log_users_id"
+                                            name="log_users"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                        <option value="0" selected>All</option>
+                                        {% for user in users %}<option value="{{ user.id }}">{{ user.userdetails.get_user_fullname }}</option>{% endfor %}
+                                    </select>
+                                </div>
+                            </form>
                         </div>
                         <div class="relative h-[45rem] overflow-y-auto overflow-x-auto shadow-md w-full sm:rounded-lg">
                             {% block app_log_table %}
