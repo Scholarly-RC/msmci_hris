@@ -640,6 +640,9 @@ def submit_overtime_request(request):
                     else reverse("attendance:overtime_management")
                 ),
             )
+            process_add_app_log_entry(
+                request.user.id, f"Requested an overtime on {overtime_request.date}."
+            )
             response = create_global_alert_instance(
                 response, "Overtime successfully submitted for review.", "SUCCESS"
             )
@@ -719,6 +722,10 @@ def respond_to_overtime_request(request):
                 "attendance/attendance_management.html",
                 "specific_overtime_request_to_respond",
                 context,
+            )
+            process_add_app_log_entry(
+                request.user.id,
+                f"{overtime_request.get_status_display().title()} {overtime_request.get_requestor_display()} overtime request on {overtime_request.date}.",
             )
             response = create_global_alert_instance(
                 response,

@@ -949,6 +949,8 @@ def open_notification(request):
 
 
 # App Log Views
+@login_required(login_url="/login")
+@hr_required("/")
 def app_logs(request):
     context = {}
     selected_date = request.POST.get("app_log_date", None) or get_current_local_date()
