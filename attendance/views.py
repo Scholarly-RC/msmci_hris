@@ -430,6 +430,10 @@ def submit_request_swap(request):
                 recipient_id=shift_swap.requested_for.id,
                 url=reverse("attendance:attendance_management"),
             )
+            process_add_app_log_entry(
+                request.user.id,
+                f"Requested shift swap with {shift_swap.requested_for.userdetails.get_user_fullname().title()} - ({shift_swap.get_requested_shift_swap_details()}).",
+            )
             response = create_global_alert_instance(
                 response,
                 "Your shift swap request has been successfully submitted.",
@@ -502,6 +506,10 @@ def respond_to_swap_request(request):
                         recipient_id=shift_swap.requested_for.id,
                         url=reverse("attendance:attendance_management"),
                     )
+                    process_add_app_log_entry(
+                        request.user.id,
+                        f"Approved {shift_swap.requested_by.userdetails.get_user_fullname().title()} shift swap request ({shift_swap.get_requested_shift_swap_details()}).",
+                    )
                     response = create_global_alert_instance(
                         response,
                         "Selected shift swap request has been successfully approved.",
@@ -535,7 +543,10 @@ def respond_to_swap_request(request):
                         recipient_id=shift_swap.requested_for.id,
                         url=reverse("attendance:attendance_management"),
                     )
-
+                    process_add_app_log_entry(
+                        request.user.id,
+                        f"Rejected {shift_swap.requested_by.userdetails.get_user_fullname().title()} shift swap request ({shift_swap.get_requested_shift_swap_details()}).",
+                    )
                     response = create_global_alert_instance(
                         response,
                         "The selected shift swap request has been successfully rejected.",

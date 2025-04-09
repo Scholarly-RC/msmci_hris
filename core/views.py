@@ -146,8 +146,8 @@ def set_new_user_password(request):
 
 
 def user_logout(request):
-    logout(request)
     process_add_app_log_entry(request.user.id, "Logged out.")
+    logout(request)
     response = HttpResponse()
     response = HttpResponseClientRedirect(reverse("core:login"))
     return response
@@ -917,7 +917,7 @@ def retrieve_notifications(request):
     if request.htmx and request.method == "POST":
         response = HttpResponse()
         user = request.user
-        notifications = user.notifications.order_by("-date")
+        notifications = user.notifications.order_by("-id")
         context["notifications"] = notifications
         response.content = render_block_to_string(
             "core/components/notifications.html", "userNotificationList", context

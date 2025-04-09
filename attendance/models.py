@@ -297,3 +297,6 @@ class ShiftSwap(models.Model):
             return "Rejected"
         else:
             return "Pending"
+
+    def get_requested_shift_swap_details(self):
+        return f"{self.current_shift} {self.requested_shift}"
