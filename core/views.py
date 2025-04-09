@@ -704,6 +704,8 @@ def toggle_user_status(request, pk):
     user.is_active = not user.is_active
     user.save()
 
+    process_add_app_log_entry(request.user.id, f"{"Disabled" if not user.is_active else "Enabled"} user #{user.id}.")
+
     context = {"user": user}
     response = HttpResponse()
     response.content = render_block_to_string(
