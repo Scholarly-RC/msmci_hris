@@ -225,7 +225,9 @@ def process_delete_holiday(payload):
         HolidayModel = apps.get_model("attendance", "Holiday")
         holiday_id = payload.get("holiday")
         holiday = HolidayModel.objects.get(id=holiday_id)
+        holiday_details = holiday.__str__()
         holiday.delete()
+        return holiday_details
     except Exception:
         logger.error("An error occurred while deleting a holiday", exc_info=True)
         raise

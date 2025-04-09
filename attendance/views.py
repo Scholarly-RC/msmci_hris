@@ -1684,7 +1684,7 @@ def holiday_settings(request):
                         response = reswap(response, "none")
                         return response
 
-                process_add_holiday(data)
+                holiday = process_add_holiday(data)
                 regular_holidays, special_holidays = get_holidays()
                 holiday_years = get_holidays_year_list()
                 context.update(
@@ -1698,6 +1698,9 @@ def holiday_settings(request):
                     "attendance/shift_management.html",
                     "holiday_settings_container",
                     context,
+                )
+                process_add_app_log_entry(
+                    request.user.id, f"Added a new holiday record ({holiday})."
                 )
                 response = create_global_alert_instance(
                     response, "Holiday added successfully!", "SUCCESS"
@@ -1726,7 +1729,10 @@ def remove_holiday(request):
         if request.method == "DELETE":
             try:
                 data = QueryDict(request.body)
-                process_delete_holiday(data)
+                holiday_details = process_delete_holiday(data)
+                process_add_app_log_entry(
+                    request.user.id, f"Removed {holiday_details} holiday record."
+                )
                 response = create_global_alert_instance(
                     response, "Holiday has been successfully deleted.", "SUCCESS"
                 )
