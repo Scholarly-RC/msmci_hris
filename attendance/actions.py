@@ -156,7 +156,10 @@ def process_delete_user_clocked_time(payload):
         attendance_record = AttendanceRecordModel.objects.get(
             id=payload.get("attendance_record")
         )
+        attendance_record_user_id = attendance_record.user_biometric_detail.user.id
+        attendance_record_details = attendance_record.get_timestamp_for_app_log()
         attendance_record.delete()
+        return attendance_record_user_id, attendance_record_details
     except Exception:
         logger.error(
             "An error occurred while deleting a user clocked time", exc_info=True
@@ -177,10 +180,15 @@ def process_update_clocked_time(payload):
         selected_date = get_date_object_from_date_str(payload.get("selected_date"))
         selected_time = get_time_object(payload.get("clocked_time"))
         selected_datetime = make_aware(datetime.combine(selected_date, selected_time))
+        selected_punch = payload.get("punch")
+
+        previous_timestamp = attendance_record.get_timestamp_for_app_log()
+
         attendance_record.timestamp = selected_datetime
+        attendance_record.punch = selected_punch
         attendance_record.save()
 
-        return attendance_record
+        return attendance_record, previous_timestamp
     except Exception:
         logger.error(
             "An error occurred while deleting a user clocked time", exc_info=True

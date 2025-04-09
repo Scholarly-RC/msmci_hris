@@ -1066,6 +1066,10 @@ def add_user_clocked_time(request):
                     return response
 
             attendance_record = manually_set_user_clocked_time(payload=data)
+            process_add_app_log_entry(
+                request.user.id,
+                f"Added user #{attendance_record.user_biometric_detail.user.id} {attendance_record.get_timestamp_for_app_log()} clocked time.",
+            )
             response = trigger_client_event(
                 response,
                 "reloadModifyClockedTimeList",
@@ -1124,7 +1128,13 @@ def delete_user_clocked_time(request):
         if request.method == "DELETE":
             try:
                 data = QueryDict(request.body)
-                process_delete_user_clocked_time(payload=data)
+                attendance_record_user_id, attendance_record_details = (
+                    process_delete_user_clocked_time(payload=data)
+                )
+                process_add_app_log_entry(
+                    request.user.id,
+                    f"Delete user #{attendance_record_user_id} {attendance_record_details} clocked time.",
+                )
                 response = create_global_alert_instance(
                     response,
                     f"Selected user's clocked time has been successfully deleted.",
@@ -1176,7 +1186,13 @@ def edit_user_clocked_time(request):
         if request.method == "POST":
             data = request.POST
             try:
-                attendance_record = process_update_clocked_time(payload=data)
+                attendance_record, previous_timestamp = process_update_clocked_time(
+                    payload=data
+                )
+                process_add_app_log_entry(
+                    request.user.id,
+                    f"Modified user #{attendance_record.user_biometric_detail.user.id} {previous_timestamp} to {attendance_record.get_timestamp_for_app_log()}.",
+                )
                 response = create_global_alert_instance(
                     response,
                     f"The clocked time for the selected user has been successfully updated.",

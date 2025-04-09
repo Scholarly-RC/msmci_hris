@@ -59,6 +59,9 @@ class AttendanceRecord(models.Model):
     def get_localtime_time_str(self):
         return self.get_localtime_time().strftime("%H:%M")
 
+    def get_timestamp_for_app_log(self):
+        return f"{self.get_localtime_timestamp().strftime('%b %d, %Y %-I:%M %p')} {self.punch}"
+
 
 class Shift(models.Model):
     description = models.TextField(_("Shift Description"), null=True, blank=True)
