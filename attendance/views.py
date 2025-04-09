@@ -88,6 +88,7 @@ from attendance.validations import (
     create_new_shift_validation,
     request_swap_validation,
 )
+from core.actions import process_add_app_log_entry
 from core.decorators import hr_or_dept_head_required, hr_required
 from core.models import BiometricDetail, Department, UserDetails
 from core.notification import create_notification
@@ -1523,7 +1524,7 @@ def create_new_shift(request):
                     )
                     response = reswap(response, "none")
                     return response
-            process_create_new_shift(data)
+            new_shift = process_create_new_shift(data)
             shifts = get_all_shifts()
             departments = get_department_list()
             context.update({"shifts": shifts, "departments": departments})
@@ -1531,6 +1532,9 @@ def create_new_shift(request):
                 "attendance/shift_management.html",
                 "shift_settings_container",
                 context,
+            )
+            process_add_app_log_entry(
+                request.user.id, f"Added a new shift ({new_shift})."
             )
             response = create_global_alert_instance(
                 response, "Shift added successfully!", "SUCCESS"
@@ -1555,7 +1559,7 @@ def remove_selected_shift(request):
         response = HttpResponse()
         try:
             data = request.POST
-            process_removing_shift(data)
+            deleted_shift = process_removing_shift(data)
             shifts = get_all_shifts()
             departments = get_department_list()
             context.update({"shifts": shifts, "departments": departments})
@@ -1563,6 +1567,9 @@ def remove_selected_shift(request):
                 "attendance/shift_management.html",
                 "shift_settings_container",
                 context,
+            )
+            process_add_app_log_entry(
+                request.user.id, f"Deleted a shift ({deleted_shift})."
             )
             response = create_global_alert_instance(
                 response, "Shift removed successfully!", "SUCCESS"
@@ -1603,6 +1610,10 @@ def modify_department_shift(request):
                 "attendance/shift_management.html",
                 "department_shift_settings_section",
                 context,
+            )
+            process_add_app_log_entry(
+                request.user.id,
+                f"Updated {department} shift settings. Current settings: {department.shift_details}.",
             )
             response = create_global_alert_instance(
                 response,

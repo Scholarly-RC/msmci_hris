@@ -331,7 +331,7 @@ def process_create_new_shift(payload):
         start_time_2 = payload.get("start_time_2")
         end_time_2 = payload.get("end_time_2")
 
-        shift_model = ShiftModel.objects.create(
+        new_shift = ShiftModel.objects.create(
             description=shift_description,
             start_time=start_time,
             end_time=end_time,
@@ -339,7 +339,7 @@ def process_create_new_shift(payload):
             end_time_2=end_time_2 if end_time_2 != "" else None,
         )
 
-        return shift_model
+        return new_shift
     except Exception:
         logger.error("An error occurred while creating a new shift", exc_info=True)
         raise
@@ -354,7 +354,9 @@ def process_removing_shift(payload):
         ShiftModel = apps.get_model("attendance", "Shift")
         shift_id = payload.get("shift")
         shift = ShiftModel.objects.get(id=shift_id)
+        shift_detail = shift.__str__()
         shift.delete()
+        return shift_detail
     except Exception:
         logger.error("An error occurred while removing a shift", exc_info=True)
         raise

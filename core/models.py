@@ -248,6 +248,10 @@ class Department(models.Model):
     def has_not_set_shift_schedule(self):
         return self.shifts.count() == 0
 
+    @property
+    def shift_details(self):
+        return f"Shift/s ({list(self.shifts.all())}) - Workweek ({self.workweek})"
+
 
 class Notification(models.Model):
     content = models.TextField(_("Notification Content"), null=True, blank=True)
