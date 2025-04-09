@@ -18,6 +18,7 @@ from django_htmx.http import (
 )
 from render_block import render_block_to_string
 
+from core.actions import process_add_app_log_entry
 from core.decorators import hr_required
 from core.notification import create_notification
 from performance.actions import (
@@ -257,6 +258,11 @@ def submit_self_evaluation(request):
         current_evaluation.date_submitted = make_aware(datetime.now())
         current_evaluation.save()
 
+        process_add_app_log_entry(
+            request.user.id,
+            f"Submitted self evaluation {current_evaluation}.",
+        )
+
         current_user_evaluation = current_evaluation.user_evaluation
 
         user_evaluations = (
@@ -299,6 +305,11 @@ def submit_peer_evaluation(request):
         current_evaluation = Evaluation.objects.get(id=current_evaluation_id)
         current_evaluation.date_submitted = make_aware(datetime.now())
         current_evaluation.save()
+
+        process_add_app_log_entry(
+            request.user.id,
+            f"Submitted peer evaluation {current_evaluation}.",
+        )
 
         current_user = current_evaluation.evaluator
 
@@ -505,6 +516,11 @@ def finalize_user_evaluation_toggle(request, user_evaluation_id):
     user_evaluation.is_finalized = not user_evaluation.is_finalized
     user_evaluation.save()
 
+    process_add_app_log_entry(
+        request.user.id,
+        f"{"Finalized" if user_evaluation.is_finalized else "Cancelled"} user evaluation of {user_evaluation.get_evaluatee_display()} {user_evaluation.get_year_and_quarter()}.",
+    )
+
     selected_user = user_evaluation.evaluatee
 
     evaluator_choices = get_user_evaluator_choices(selected_user)
@@ -514,6 +530,14 @@ def finalize_user_evaluation_toggle(request, user_evaluation_id):
     existing_evaluators = get_existing_evaluators_ids(user_evaluation)
 
     if user_evaluation.is_finalized:
+        create_notification(
+            content=f"Your self-evaluation form is now available.",
+            date=make_aware(datetime.now()),
+            sender_id=user.id,
+            recipient_id=user_evaluation.evaluatee.id,
+            url=reverse("performance:performance_evaluation"),
+        )
+
         evaluator_choices = evaluator_choices.filter(id__in=existing_evaluators)
 
         for evaluator_choice in evaluator_choices:
@@ -631,6 +655,10 @@ def reset_evaluation(request):
         selected_evaluation = Evaluation.objects.get(id=selected_evaluation_id)
 
         reset_selected_evaluation(selected_evaluation)
+
+        process_add_app_log_entry(
+            request.user.id, f"User evaluation reset ({selected_evaluation})."
+        )
 
         context.update({"evaluation": selected_evaluation})
 
