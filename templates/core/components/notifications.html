@@ -11,7 +11,7 @@
             {% for notification in notifications %}
                 <button hx-post="{% url "core:open_notification" %}"
                         hx-vals='{"notification": {{ notification.id }}}'
-                        class="flex flex-row items-center px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-start">
+                        class="w-full flex flex-row items-center justify-between px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-start">
                     <div class="flex flex-row me-1">
                         <div class="relative flex-shrink-0">
                             <img class="rounded-full w-11 h-11"

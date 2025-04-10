@@ -28,6 +28,7 @@ from performance.actions import (
     modify_qualitative_content_data,
     modify_user_file_confidentiality,
     process_evaluator_modification,
+    process_notify_all_user_for_new_post_or_poll,
     process_upload_resources,
     remove_poll_choice,
     reset_selected_evaluation,
@@ -837,6 +838,9 @@ def poll_management(request, poll_id=""):
                 current_poll = Poll.objects.create(
                     name=poll_name, description=poll_description
                 )
+                process_notify_all_user_for_new_post_or_poll(
+                    request.user.id, type="POLL"
+                )
                 process_add_app_log_entry(
                     request.user.id, f"Created {current_poll.name} poll."
                 )
@@ -907,9 +911,12 @@ def post_management(request, post_id=""):
                 current_post.save()
                 current_post.body.content = content
                 current_post.body.save()
+                if content != "":
+                    process_notify_all_user_for_new_post_or_poll(request.user.id)
+
                 process_add_app_log_entry(
                     request.user.id,
-                    f"Modified #{current_post.id} post. Current details: {{'title': {current_post.title}, 'description': {current_post.description}, 'content':{current_post.content}}}",
+                    f"Modified {current_post.title} post. Current details: {{'title': {current_post.title}, 'description': {current_post.description}, 'content':{current_post.body.content}}}",
                 )
         else:
             if not "for_redirect" in data:

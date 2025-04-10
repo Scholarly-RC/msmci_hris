@@ -1,7 +1,12 @@
+from datetime import datetime
+
 from django.apps import apps
 from django.db import transaction
+from django.urls import reverse
+from django.utils.timezone import make_aware
 from django_q.tasks import async_task
 
+from core.notification import create_notification
 from performance.utils import (
     extract_filename_and_extension,
     get_user_questionnaire,
@@ -235,3 +240,20 @@ def modify_user_file_confidentiality(resource_id, selected_user_id):
         resource.confidential_access_users.add(selected_user)
 
     return resource, selected_user
+
+
+@transaction.atomic
+def process_notify_all_user_for_new_post_or_poll(sender_id, type="POST"):
+    UserModel = apps.get_model("auth", "User")
+    UserDetailsModel = apps.get_model("core", "UserDetails")
+    all_users = UserModel.objects.filter(is_superuser=False).exclude(
+        userdetails__role=UserDetailsModel.Role("HR").value
+    )
+    for user in all_users:
+        create_notification(
+            content=f"A new {"post" if type == "POST" else "poll"} has been posted.",
+            date=make_aware(datetime.now()),
+            sender_id=sender_id,
+            recipient_id=user.id,
+            url=reverse("performance:poll_and_post_section"),
+        )
