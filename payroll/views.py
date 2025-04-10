@@ -1138,6 +1138,14 @@ def toggle_payslip_release_status(request):
                 "modify_payslip_section",
                 context,
             )
+            process_add_app_log_entry(
+                request.user.id,
+                (
+                    f"Marked payslip ({payslip}) as RELEASED. Data: {payslip.get_data()}."
+                    if payslip.released
+                    else f"Marked payslip ({payslip}) as DRAFT."
+                ),
+            )
             response = create_global_alert_instance(
                 response,
                 f"The status of the selected payslip has been successfully set to {'RELEASED' if payslip.released else 'DRAFT'}.",
@@ -1321,9 +1329,13 @@ def create_thirteenth_month_pay(request):
                     "user_thirteenth_month_pay_container",
                     context,
                 )
+                process_add_app_log_entry(
+                    request.user.id,
+                    f"Added a thirteenth month pay for user ({thirteenth_month_pay.get_app_log_details()} - Amount: {thirteenth_month_pay.amount}).",
+                )
                 response = create_global_alert_instance(
                     response,
-                    f"Thirteenth Month Pay for user {thirteenth_month_pay.user} has been successfully added.",
+                    f"Thirteenth Month Pay for {thirteenth_month_pay.user.userdetails.get_user_fullname()} has been successfully added.",
                     "SUCCESS",
                 )
                 response = retarget(response, "#user_thirteenth_month_pay_container")
@@ -1418,6 +1430,10 @@ def update_specific_thirteenth_month_pay(request):
             try:
                 data = request.POST
                 thirteenth_month_pay = process_updating_thirteenth_month_pay(data)
+                process_add_app_log_entry(
+                    request.user.id,
+                    f"Updated selected thirteenth month pay record ({thirteenth_month_pay.get_app_log_details()} - Amount: {thirteenth_month_pay.amount}).",
+                )
                 response = create_global_alert_instance(
                     response,
                     f"The Thirteenth Month Pay for user {thirteenth_month_pay.user} has been successfully updated.",
@@ -1469,6 +1485,10 @@ def toggle_specific_thirteenth_month_pay_release(request):
                     "specific_thirteenth_month_pay_container",
                     context,
                 )
+                process_add_app_log_entry(
+                    request.user.id,
+                    f"Set thirteenth month pay ({thirteenth_month_pay.get_app_log_details()}) to {'RELEASED' if thirteenth_month_pay.released else 'DRAFT'}.",
+                )
                 response = create_global_alert_instance(
                     response,
                     f"The Thirteenth Month Pay status has been successfully updated to {'RELEASED' if thirteenth_month_pay.released else 'DRAFT'}.",
@@ -1497,7 +1517,11 @@ def delete_specific_thirteenth_month_pay_release(request):
         if request.method == "DELETE":
             try:
                 data = QueryDict(request.body)
-                process_delete_thirteenth_month_pay(data)
+                thirteenth_month_pay_details = process_delete_thirteenth_month_pay(data)
+                process_add_app_log_entry(
+                    request.user.id,
+                    f"Deleted a thirteen month pay record ({thirteenth_month_pay_details}).",
+                )
                 response = create_global_alert_instance(
                     response,
                     f"The selected Thirteenth Month Pay record has been successfully deleted.",
@@ -1597,6 +1621,10 @@ def add_thirteenth_month_pay_variable_deduction(request):
                 thirteenth_month_pay_deductions = (
                     thirteenth_month_pay.variable_deductions.all()
                 )
+                process_add_app_log_entry(
+                    request.user.id,
+                    f"Added a variable deductions to thirteenth month pay ({thirteenth_month_pay.get_app_log_details()}). Deductions: {thirteenth_month_pay.get_variable_deductions_list()}.",
+                )
                 context.update(
                     {
                         "thirteenth_month_pay": thirteenth_month_pay,
@@ -1649,6 +1677,10 @@ def remove_thirteenth_month_pay_variable_deduction(request):
             )
             thirteenth_month_pay_deductions = (
                 thirteenth_month_pay.variable_deductions.all()
+            )
+            process_add_app_log_entry(
+                request.user.id,
+                f"Updated variable deductions of thirteenth month pay ({thirteenth_month_pay.get_app_log_details()}). Deductions: {thirteenth_month_pay.get_variable_deductions_list()}.",
             )
             context.update(
                 {

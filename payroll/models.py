@@ -438,7 +438,16 @@ class ThirteenthMonthPay(models.Model):
         return f"{self.user.username} - {self.amount} ({self.month}/{self.year}) - Released: {self.released}"
 
     def get_month_year_display(self):
-        return f"{Months(self.month).name} - {self.year}"
+        return f"{Months(int(self.month)).name} - {self.year}"
+
+    def get_app_log_details(self):
+        return f"{self.user.userdetails.get_user_fullname()} - {self.get_month_year_display()}"
+
+    def get_variable_deductions_list(self):
+        return [
+            f"{variable_deduction.name} - {variable_deduction.amount}"
+            for variable_deduction in self.variable_deductions.all()
+        ]
 
     def get_total_variable_deductions(self):
         total = self.variable_deductions.aggregate(total_amount=Sum("amount"))

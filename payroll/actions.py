@@ -489,8 +489,9 @@ def process_delete_thirteenth_month_pay(payload):
         thirteenth_month_pay = ThirteenthMonthPayModel.objects.get(
             id=thirteenth_month_pay_id
         )
-
+        thirteenth_month_pay_details = thirteenth_month_pay.get_app_log_details()
         thirteenth_month_pay.delete()
+        return thirteenth_month_pay_details
     except Exception as error:
         logger.error("Error deleting thirteenth month pay", exc_info=True)
         raise
