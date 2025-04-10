@@ -342,8 +342,6 @@ def submit_peer_evaluation(request):
 
 
 # Performance and Learning Management Section Switch View
-
-
 @login_required(login_url="/login")
 def switch_performance_management_section(request):
     if request.htmx and request.method == "POST":
@@ -746,13 +744,13 @@ def select_poll_content(request, content_id=""):
 @login_required(login_url="/login")
 def select_post_content(request, content_id=""):
     context = {}
-    user = request.user
     post = Post.objects.get(id=content_id)
     context.update(
         {
             "selected_post": post,
         }
     )
+    process_add_app_log_entry(request.user.id, f"Has viewed the {post.title} post.")
     if request.htmx and request.method == "POST":
         response = HttpResponse()
         response.content = render_block_to_string(
@@ -778,6 +776,9 @@ def submit_poll_vote(request, poll_id=""):
         choice = data.get("selected_choice")
         poll = submit_poll_choice(poll, choice, user)
         user_already_voted = check_if_user_already_voted(poll, user)
+        process_add_app_log_entry(
+            request.user.id, f"Submitted a vote on poll {poll.name}."
+        )
         context.update(
             {"selected_poll": poll, "user_already_voted": user_already_voted}
         )
@@ -835,6 +836,9 @@ def poll_management(request, poll_id=""):
             if not "for_redirect" in data:
                 current_poll = Poll.objects.create(
                     name=poll_name, description=poll_description
+                )
+                process_add_app_log_entry(
+                    request.user.id, f"Created {current_poll.name} poll."
                 )
 
         poll_and_post_combined_list = get_poll_and_post_combined_list()
@@ -903,12 +907,19 @@ def post_management(request, post_id=""):
                 current_post.save()
                 current_post.body.content = content
                 current_post.body.save()
+                process_add_app_log_entry(
+                    request.user.id,
+                    f"Modified #{current_post.id} post. Current details: {{'title': {current_post.title}, 'description': {current_post.description}, 'content':{current_post.content}}}",
+                )
         else:
             if not "for_redirect" in data:
                 current_post = Post.objects.create(
                     title=post_title,
                     description=post_description,
                     body=PostContent.objects.create(),
+                )
+                process_add_app_log_entry(
+                    request.user.id, f"Created {current_post.title} post."
                 )
 
         poll_and_post_combined_list = get_poll_and_post_combined_list()
@@ -1055,6 +1066,7 @@ def delete_selected_poll(request, poll_id=""):
     current_poll = Poll.objects.get(id=poll_id)
 
     if request.htmx and request.method == "DELETE":
+        process_add_app_log_entry(request.user.id, f"Deleted {current_poll.name} poll.")
         current_poll.delete()
         poll_and_post_combined_list = get_poll_and_post_combined_list()
         context.update({"poll_and_post_combined_list": poll_and_post_combined_list})
@@ -1100,6 +1112,9 @@ def delete_selected_post(request, post_id=""):
     current_post = Post.objects.get(id=post_id)
 
     if request.htmx and request.method == "DELETE":
+        process_add_app_log_entry(
+            request.user.id, f"Deleted {current_post.title} post."
+        )
         current_post.body.delete()
         current_post.delete()
         poll_and_post_combined_list = get_poll_and_post_combined_list()
@@ -1149,6 +1164,11 @@ def toggle_poll_status(request, poll_id=""):
         poll = Poll.objects.get(id=poll_id)
         poll.in_progress = not poll.in_progress
         poll.save()
+
+        process_add_app_log_entry(
+            request.user.id,
+            f"Marked {poll.name} poll as {"In Progress" if poll.in_progress else "Complete"}.",
+        )
 
         context.update({"selected_poll": poll})
         response = HttpResponse()
