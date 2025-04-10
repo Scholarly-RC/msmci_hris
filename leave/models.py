@@ -44,7 +44,7 @@ class LeaveApprover(models.Model):
         verbose_name_plural = "Leave Approvers"
 
     def __str__(self):
-        return f"Leave Approvers for {self.department.name} - Dept: {self.department_approver.username}, Director: {self.director_approver.username}, President: {self.president_approver.username}, HR: {self.hr_approver.username}"
+        return f"Leave Approvers for {self.department.name} - Dept: {self.department_approver.userdetails.get_user_fullname()}, Director: {self.director_approver.userdetails.get_user_fullname()}, President: {self.president_approver.userdetails.get_user_fullname()}, HR: {self.hr_approver.userdetails.get_user_fullname()}"
 
 
 class Leave(models.Model):

@@ -10,6 +10,7 @@ from django_htmx.http import reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
 
 from attendance.utils.date_utils import get_list_of_months
+from core.actions import process_add_app_log_entry
 from core.decorators import hr_required
 from core.notification import create_notification
 from core.utils import get_users_sorted_by_department
@@ -105,6 +106,9 @@ def user_leave_request(request):
                     "leave_list",
                     context,
                 )
+                process_add_app_log_entry(
+                    request.user.id, f"Created a leave request ({new_leave})."
+                )
                 response = create_global_alert_instance(
                     response, "Leave request created successfully.", "SUCCESS"
                 )
@@ -177,6 +181,9 @@ def user_review_leave_request(request):
                     "leave/user_leave.html",
                     "review_leave_request_card",
                     context,
+                )
+                process_add_app_log_entry(
+                    request.user.id, f"{user_response} a leave request ({leave})."
                 )
                 response = create_global_alert_instance(
                     response,
@@ -271,6 +278,9 @@ def review_leave_request(request):
                     "review_leave_request_card",
                     context,
                 )
+                process_add_app_log_entry(
+                    request.user.id, f"{user_response} a leave request ({leave})."
+                )
                 response = create_global_alert_instance(
                     response,
                     f"You have {user_response} the leave request submitted by {leave.user.userdetails.get_user_fullname()} on {leave.date}.",
@@ -299,7 +309,7 @@ def delete_leave_request(request, leave_id=""):
         if request.method == "DELETE":
             data = QueryDict(request.body)
             context.update(data)
-            process_delete_submit_leave_request(leave)
+            deleted_leave_details = process_delete_submit_leave_request(leave)
 
             selected_user = data.get("selected_user")
             selected_month = data.get("selected_month")
@@ -311,6 +321,9 @@ def delete_leave_request(request, leave_id=""):
                 year=selected_year,
             )
             context["leave_data"] = leave_to_review
+            process_add_app_log_entry(
+                request.user.id, f"Deleted a leave request ({deleted_leave_details})."
+            )
             response = create_global_alert_instance(
                 response,
                 "The selected leave request has been deleted successfully.",
@@ -379,6 +392,10 @@ def approver_settings(request):
             try:
                 data = request.POST
                 leave_approver = process_set_department_approver(data)
+                process_add_app_log_entry(
+                    request.user.id,
+                    f"Updated approver settings. Details: ({leave_approver})",
+                )
                 response = create_global_alert_instance(
                     response,
                     f"The leave approvers for the department '{leave_approver.department}' have been successfully set.",
@@ -479,6 +496,10 @@ def edit_leave_credit_settings(request):
                     "edit_user_leave_credit_settings_container",
                     context,
                 )
+                process_add_app_log_entry(
+                    request.user.id,
+                    f"Updated user ({user.userdetails.get_user_fullname()}) leave credit. Details: {leave_credit.credits}.",
+                )
                 response = create_global_alert_instance(
                     response,
                     f"Leave credit of selected user has been successfully updated.",
@@ -530,6 +551,10 @@ def reset_used_leave_credits(request):
                     "leave/leave_management.html",
                     "edit_user_leave_credit_settings_container",
                     context,
+                )
+                process_add_app_log_entry(
+                    request.user.id,
+                    f"Reset user ({user.userdetails.get_user_fullname()})'s leave credits.",
                 )
                 response = create_global_alert_instance(
                     response,

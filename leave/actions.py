@@ -174,7 +174,9 @@ def process_delete_submit_leave_request(leave):
         ):
             leave.user.leavecredit.used_credits -= 1
             leave.user.leavecredit.save()
+        deleted_leave_details = leave.__str__()
         leave.delete()
+        return deleted_leave_details
     except Exception:
         logger.error("An error occurred while deleting leave request", exc_info=True)
         raise
