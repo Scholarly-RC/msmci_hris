@@ -195,7 +195,7 @@ def process_upload_resources(user, file_data):
     user_shared_resources = SharedResourceModel.objects.filter(
         uploader=user, shared_to__isnull=True
     )
-    return user_shared_resources, errors
+    return user_shared_resources, errors, new_shared_resource
 
 
 @transaction.atomic

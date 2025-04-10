@@ -1244,7 +1244,9 @@ def upload_resources(request):
     user_choices = get_users_for_shared_resources(user)
     context["user_choices"] = user_choices
     if request.htmx and request.method == "POST":
-        shared_files, errors = process_upload_resources(user, request.FILES)
+        shared_files, errors, new_shared_resource = process_upload_resources(
+            user, request.FILES
+        )
         response = HttpResponse()
         if errors:
             context.update(
@@ -1262,6 +1264,10 @@ def upload_resources(request):
             response = retarget(response, "#file_upload_error_section")
             response = reswap(response, "outerHTML")
         else:
+            process_add_app_log_entry(
+                request.user.id,
+                f"Uploaded a resource ({new_shared_resource.get_full_filename()}).",
+            )
             context.update({"shared_files": shared_files})
             response.content = render_block_to_string(
                 "performance/shared_resources_section.html",
@@ -1322,6 +1328,10 @@ def delete_resource(request, resource_id=""):
     context["user_choices"] = user_choices
     if request.htmx and request.method == "DELETE":
         resource_to_delete = SharedResource.objects.get(id=resource_id)
+        process_add_app_log_entry(
+            request.user.id,
+            f"Deleted a resource ({resource_to_delete.get_full_filename()}).",
+        )
         resource_to_delete.resource.delete()
         resource_to_delete.resource_pdf.delete()
         resource_to_delete.delete()
@@ -1553,7 +1563,9 @@ def shared_resources_management_upload(request):
     context = {}
     user = request.user
     if request.htmx and request.method == "POST":
-        shared_files, errors = process_upload_resources(user, request.FILES)
+        shared_files, errors, new_shared_resource = process_upload_resources(
+            user, request.FILES
+        )
         user_choices = get_users_for_shared_resources(user)
         context["user_choices"] = user_choices
         response = HttpResponse()
@@ -1568,6 +1580,10 @@ def shared_resources_management_upload(request):
             response = retarget(response, "#file_upload_error_section")
             response = reswap(response, "outerHTML")
         else:
+            process_add_app_log_entry(
+                request.user.id,
+                f"Uploaded a resource ({new_shared_resource.get_full_filename()}).",
+            )
             context.update({"shared_files": shared_files})
             response.content = render_block_to_string(
                 "performance/shared_resources_management.html",
@@ -1613,6 +1629,10 @@ def shared_resource_management_delete(request, resource_id=""):
         user_choices = get_users_for_shared_resources(user)
         context["user_choices"] = user_choices
         resource_to_delete = SharedResource.objects.get(id=resource_id)
+        process_add_app_log_entry(
+            request.user.id,
+            f"Deleted a resource ({resource_to_delete.get_full_filename()}).",
+        )
         resource_to_delete.resource.delete()
         resource_to_delete.resource_pdf.delete()
         resource_to_delete.delete()
@@ -1699,6 +1719,11 @@ def shared_resource_management_confidential_state_toggle(request, resource_id=""
             resource_to_toggle.confidential_access_users.clear()
         resource_to_toggle.save()
 
+        process_add_app_log_entry(
+            request.user.id,
+            f"Marked {resource_to_toggle.get_full_filename()} as {"confidential" if resource_to_toggle.is_confidential else "nonconfidential"}.",
+        )
+
         user_choices = get_users_per_shared_resources(user, resource_to_toggle)
         selected_users = resource_to_toggle.shared_to.all()
 
@@ -1732,6 +1757,10 @@ def shared_resource_management_modify_user_confidential_access(request):
         resource, selected_user = modify_user_file_confidentiality(
             resource_id, selected_user_id
         )
+        process_add_app_log_entry(
+            request.user.id,
+            f"{"Granted" if selected_user in resource.confidential_access_users.all() else "Removed"} {selected_user.userdetails.get_user_fullname()} confidential access to {resource.get_full_filename()}.",
+        )
         context.update({"resource_to_share": resource, "user": selected_user})
         response = HttpResponse()
         response.content = render_block_to_string(
@@ -1761,6 +1790,17 @@ def shared_resource_management_modify_users_with_share_access(request, resource_
         )
         user_choices = get_users_per_shared_resources(user, resource_to_share)
         selected_users = resource_to_share.shared_to.all()
+        if to_remove:
+            process_add_app_log_entry(
+                request.user.id,
+                f"Removed {user_choices.get(id=selected_user_id).userdetails.get_user_fullname()} access to {resource_to_share.get_full_filename()}.",
+            )
+        else:
+            process_add_app_log_entry(
+                request.user.id,
+                f"Added {selected_users.get(id=selected_user_id).userdetails.get_user_fullname()} access to {resource_to_share.get_full_filename()}.",
+            )
+
         context.update(
             {
                 "current_user": user,

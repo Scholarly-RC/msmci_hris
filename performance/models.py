@@ -423,6 +423,9 @@ class SharedResource(models.Model):
         _, ext = extract_filename_and_extension(self.resource.name)
         return ext
 
+    def get_full_filename(self):
+        return f"{self.resource_name}{self.get_file_extension()}"
+
     def is_resource_pdf(self):
         return self.get_file_extension() == ".pdf"
 
