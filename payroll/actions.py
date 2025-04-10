@@ -62,7 +62,7 @@ def process_modifying_job(payload):
         job.code = payload.get("job_code")
         job.salary_grade = payload.get("salary_grade")
         job.save()
-
+        job.department.clear()
         job.department.add(*selected_department)
 
         return job
@@ -80,8 +80,9 @@ def process_deleting_job(job_id):
     try:
         JobModel = apps.get_model("payroll", "Job")
         job = JobModel.objects.get(id=job_id)
+        job_details = job.title
         job.delete()
-
+        return job_details
     except Exception as error:
         logger.error("Failed to delete job", exc_info=True)
         raise
@@ -260,7 +261,9 @@ def process_removing_fixed_compensation(payload):
         compensation = FixedCompensationModel.objects.get(
             id=payload.get("selected_compensation")
         )
+        fixed_compensation_details = compensation.__str__()
         compensation.delete()
+        return fixed_compensation_details
     except Exception as error:
         logger.error("Error removing fixed compensation ID", exc_info=True)
         raise

@@ -11,7 +11,8 @@ from django_htmx.http import push_url, reswap, retarget, trigger_client_event
 from render_block import render_block_to_string
 
 from attendance.enums import Months
-from attendance.utils.date_utils import get_list_of_months, get_months_dict
+from attendance.utils.date_utils import get_list_of_months
+from core.actions import process_add_app_log_entry
 from core.decorators import hr_required
 from core.notification import create_notification
 from core.utils import get_users_sorted_by_department
@@ -134,6 +135,9 @@ def add_job(request):
                 response = trigger_client_event(
                     response, "closeAddJobModal", after="swap"
                 )
+                process_add_app_log_entry(
+                    request.user.id, f"Added a job ({job.title})."
+                )
                 response = create_global_alert_instance(
                     response,
                     f"Job '{job.title}' has been successfully added to the job list.",
@@ -218,6 +222,10 @@ def modify_job(request):
                 data = QueryDict(request.body)
                 job = process_modifying_job(data)
                 response = trigger_client_event(response, "updateJobList", after="swap")
+                process_add_app_log_entry(
+                    request.user.id,
+                    f"Updated a job position. Details: {{'title': {job.title}, 'code': {job.code}, 'salary_grade: {job.salary_grade}, departments: {job.department.all()}}}",
+                )
                 response = create_global_alert_instance(
                     response,
                     f"Job #{job.id} has been successfully updated.",
@@ -260,10 +268,13 @@ def delete_job(request):
             try:
                 data = QueryDict(request.body)
                 job_id = data.get("job_to_delete", "")
-                process_deleting_job(job_id)
+                job_details = process_deleting_job(job_id)
                 response = trigger_client_event(response, "updateJobList", after="swap")
                 response = trigger_client_event(
                     response, "closeModifyJobModal", after="swap"
+                )
+                process_add_app_log_entry(
+                    request.user.id, f"Deleted a job ({job_details})."
                 )
                 response = create_global_alert_instance(
                     response, f"Job #{job_id} has been successfully deleted.", "SUCCESS"
@@ -308,6 +319,10 @@ def minimum_wage_settings(request):
                     data.get("minimum_wage_basic_salary")
                 )
                 context.update({"minimum_wage": minimum_wage})
+                process_add_app_log_entry(
+                    request.user.id,
+                    f"Updated minimum wage. Details: {minimum_wage.amount}.",
+                )
                 context["minimum_wage_update_success"] = (
                     "Minimum wage has been successfully updated."
                 )
@@ -345,7 +360,11 @@ def deductions_settings(request):
         if request.method == "POST":
             try:
                 data = request.POST
-                process_setting_deduction_config(data)
+                deduction_config = process_setting_deduction_config(data)
+                process_add_app_log_entry(
+                    request.user.id,
+                    f"Updated the mandatory deduction config. Details: ({deduction_config.config}).",
+                )
                 response = create_global_alert_instance(
                     response,
                     "Deduction settings have been successfully saved.",
@@ -570,7 +589,11 @@ def modify_fixed_compensation(request):
                     response, "Please enter a valid amount.", "WARNING"
                 )
                 return response
-            process_modifying_fixed_compensation(data)
+            fixed_compensation = process_modifying_fixed_compensation(data)
+            process_add_app_log_entry(
+                request.user.id,
+                f"Modified fixed compensation. Details: {{'Amount': {fixed_compensation.amount}}}.",
+            )
             response = create_global_alert_instance(
                 response,
                 "Fixed compensation details have been successfully updated.",
@@ -641,6 +664,10 @@ def add_fixed_compensation(request):
                 "fixed_compensations_settings_modal_container",
                 context,
             )
+            process_add_app_log_entry(
+                request.user.id,
+                f"Added fixed compensation ({compensation}).",
+            )
             response = create_global_alert_instance(
                 response,
                 f"{compensation.name} fixed compensation has been successfully added for {month_name} {compensation.year}.",
@@ -673,7 +700,7 @@ def remove_fixed_compensation(request):
             months = get_list_of_months()
             years = get_compensation_year_list()
             data = request.POST
-            process_removing_fixed_compensation(data)
+            fixed_compensation_details = process_removing_fixed_compensation(data)
             existent_compensation_types = get_existing_compensation(
                 selected_month, selected_year
             )
@@ -690,6 +717,10 @@ def remove_fixed_compensation(request):
                 "payroll/salary_and_rank_management.html",
                 "fixed_compensations_settings_modal_container",
                 context,
+            )
+            process_add_app_log_entry(
+                request.user.id,
+                f"Removed fixed compensation ({fixed_compensation_details}).",
             )
             response = create_global_alert_instance(
                 response, "Fixed compensation successfully removed.", "SUCCESS"
@@ -774,6 +805,10 @@ def modify_fixed_compensation_users(request):
                 "payroll/salary_and_rank_management.html",
                 "specific_user_section",
                 context,
+            )
+            process_add_app_log_entry(
+                request.user.id,
+                f"{'Removed' if to_remove else 'Added'} {user.userdetails.get_user_fullname()} to fixed compensation {compensation}.",
             )
             response = create_global_alert_instance(
                 response,
