@@ -26,13 +26,14 @@ def process_update_username(user_id=None):
     def _update_user_username(user_id):
         user = UserModel.objects.get(id=user_id)
         employee_id = user.userdetails.employee_number
-        username = generate_username_from_employee_id(employee_id)
-        user.username = username
-        user.save()
+        if employee_id:
+            username = generate_username_from_employee_id(employee_id)
+            user.username = username
+            user.save()
 
     try:
         if not user_id:
-            users = UserModel.objects.all()
+            users = UserModel.objects.exclude(is_superuser=True)
             for user in users:
                 _update_user_username(user_id=user.id)
         else:
