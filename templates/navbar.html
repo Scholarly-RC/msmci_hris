@@ -91,7 +91,7 @@
                                 </svg>
                                 <div class="text-sm text-gray-900 dark:text-white">Attendance</div>
                             </a>
-                            {% if user.userdetails.is_department_head %}
+                            {% if user.userdetails.can_modify_shift %}
                                 <a href="{% url "attendance:shift_management" %}"
                                    class="block p-4 text-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 group">
                                     <svg aria-hidden="true"

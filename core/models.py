@@ -127,6 +127,8 @@ class UserDetails(models.Model):
         blank=True,
     )
 
+    can_modify_shift = models.BooleanField(_("User Can Modify Shifts"), default=False)
+
     updated = models.DateField(auto_now=True, null=True, blank=True)
 
     class Meta:

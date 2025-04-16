@@ -654,33 +654,60 @@
                 </div>
             </div>
         {% endblock %}
-        {% block biometric_configuration_section %}
-            <div id="biometric_configuration_section"
-                 class="lg:w-[50%] p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 relative">
-                <h3 class="mb-4 text-xl font-semibold dark:text-white">Biometric Configuration</h3>
-                <form hx-post="{% url "core:modify_user_biometric_details" selected_user.id %}">
-                    <div class="grid grid-cols-6 gap-6">
-                        <div class="col-span-6 sm:col-span-3">
-                            <label for="user_id_in_device"
-                                   class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                Biometric Device User ID
-                            </label>
-                            <input type="text"
-                                   name="user_id_in_device"
-                                   id="user_id_in_device"
-                                   class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                   placeholder="UID In Biometric Device"
-                                   value="{% if selected_user.biometricdetail.user_id_in_device %}{{ selected_user.biometricdetail.user_id_in_device }}{% endif %}"
-                                   required>
+        <div class="flex flex-col md:flex-row gap-2">
+            {% block biometric_configuration_section %}
+                <div id="biometric_configuration_section"
+                     class="lg:w-[50%] p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 relative">
+                    <h3 class="mb-4 text-xl font-semibold dark:text-white">Biometric Configuration</h3>
+                    <form hx-post="{% url "core:modify_user_biometric_details" selected_user.id %}">
+                        <div class="grid grid-cols-6 gap-6">
+                            <div class="col-span-6 sm:col-span-3">
+                                <label for="user_id_in_device"
+                                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                    Biometric Device User ID
+                                </label>
+                                <input type="text"
+                                       name="user_id_in_device"
+                                       id="user_id_in_device"
+                                       class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                       placeholder="UID In Biometric Device"
+                                       value="{% if selected_user.biometricdetail.user_id_in_device %}{{ selected_user.biometricdetail.user_id_in_device }}{% endif %}"
+                                       required>
+                            </div>
+                            <div class="col-span-6 sm:col-full">
+                                <button class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                                        type="submit">Save</button>
+                            </div>
                         </div>
-                        <div class="col-span-6 sm:col-full">
-                            <button class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                                    type="submit">Save</button>
+                    </form>
+                </div>
+            {% endblock %}
+            {% block shift_modification_permision_section %}
+                <div id="shift_modification_permision_section"
+                     class="lg:w-[50%] p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 relative">
+                    <h3 class="mb-4 text-xl font-semibold dark:text-white">Shift Modification Permissions</h3>
+                    <form hx-post="{% url "core:shift_modification_permision" selected_user.id %}">
+                        <div class="w-full">
+                            <div class="w-full mb-4">
+                                <div class="flex">
+                                    <div class="flex items-center h-5">
+                                        <input id="can_modify_shift_id" name="can_modify_shift" type="checkbox" value="True" {% if selected_user.userdetails.can_modify_shift %}checked{% endif %} class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                    </div>
+                                    <div class="ms-2 text-sm">
+                                        <label for="can_modify_shift_id" class="font-medium text-gray-900 dark:text-gray-300">Allow</label>
+                                        <p id="can_modify_shift_description_id" class="text-xs font-normal text-gray-500 dark:text-gray-300">This will allow this user to modify department shifts.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-span-6 sm:col-full">
+                                <button class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                                        type="submit">Save</button>
+                            </div>
                         </div>
-                    </div>
-                </form>
-            </div>
-        {% endblock %}
+                    </form>
+                </div>
+            {% endblock %}
+        </div>
         {% block password_information_section %}
             <div id="password_information_section"
                  class="lg:w-[50%] p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 relative">

@@ -854,6 +854,51 @@ def modify_user_biometric_details(request, pk):
 
 
 @login_required(login_url="/login")
+def shift_modification_permision(request, pk):
+    """
+    Additional Info: This view is only used by Change User Profile.
+    """
+    context = {}
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        user = User.objects.get(id=pk)
+        user_details = user.userdetails
+        can_modify_shift = (
+            data.get("can_modify_shift", False) and user_details.department is not None
+        )
+        user_details.can_modify_shift = can_modify_shift
+        user_details.save()
+        context["selected_user"] = user
+
+        process_add_app_log_entry(
+            request.user.id,
+            f"{"Allowed" if can_modify_shift else "Removed"} shift modification access from user ({user_details.get_user_fullname()}).",
+        )
+
+        response = HttpResponse()
+        if user_details.department is not None:
+            response = create_global_alert_instance(
+                response,
+                "User shift modification permission successfully updated.",
+                "SUCCESS",
+            )
+        else:
+            response = create_global_alert_instance(
+                response,
+                "A department must be assigned to the user before modifying shift modification permission.",
+                "WARNING",
+            )
+        response.content = render_block_to_string(
+            "core/modify_user_profile.html",
+            "shift_modification_permision_section",
+            context,
+        )
+        response = retarget(response, "#shift_modification_permision_section")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+@login_required(login_url="/login")
 def bulk_add_new_users(request):
     context = {}
     if request.htmx and request.method == "POST" and request.FILES:

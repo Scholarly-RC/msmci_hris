@@ -52,6 +52,11 @@ urlpatterns = [
     path("profile", core_views.user_profile, name="profile"),
     # USER MANAGEMENT #
     path(
+        "user-management/modify-shift-modification-permision/<str:pk>",
+        core_views.shift_modification_permision,
+        name="shift_modification_permision",
+    ),
+    path(
         "user-management/modify-user-biometric-details/<str:pk>",
         core_views.modify_user_biometric_details,
         name="modify_user_biometric_details",
