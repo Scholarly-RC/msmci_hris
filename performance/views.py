@@ -1174,7 +1174,7 @@ def toggle_poll_status(request, poll_id=""):
 
         process_add_app_log_entry(
             request.user.id,
-            f"Marked {poll.name} poll as {"In Progress" if poll.in_progress else "Complete"}.",
+            f"Marked {poll.name} poll as {'In Progress' if poll.in_progress else 'Complete'}.",
         )
 
         context.update({"selected_poll": poll})
