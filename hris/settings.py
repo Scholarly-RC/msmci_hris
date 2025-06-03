@@ -155,7 +155,6 @@ Q_CLUSTER = {
     "retry": 90,
     "queue_limit": 50,
     "bulk": 10,
-    "orm": "default",
     "ack_failures": True,
     "max_attempts": 3,
     "attempt_count": 1,

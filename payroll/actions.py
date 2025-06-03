@@ -206,7 +206,9 @@ def process_get_or_create_user_payslip(
             },
         )
 
-        payslip.update_salary()
+        if not payslip.released:
+            payslip.update_rank()
+            payslip.update_salary()
 
         return user, payslip
     except Exception as error:

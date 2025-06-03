@@ -261,6 +261,10 @@ class Payslip(models.Model):
         self.salary = get_salary_from_rank(self.rank)
         self.save()
 
+    def update_rank(self):
+        self.rank = self.user.userdetails.rank
+        self.save()
+
     def get_data(self):
         salary_details = {}
 

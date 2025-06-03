@@ -13,3 +13,5 @@ fixtures/
 media/
 staticfiles/
 node_modules/
+
+dump.rdb
