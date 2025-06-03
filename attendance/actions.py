@@ -498,6 +498,7 @@ def process_adding_shift_swap_request(requestor, payload):
         ShiftSwapModel = apps.get_model("attendance", "ShiftSwap")
         selected_shift_id = payload.get("selected_shift")
         selected_shift = DailyShiftScheduleModel.objects.get(id=selected_shift_id)
+        swap_info = payload.get("swap_info")
         approver_id = payload.get("selected_approver")
         approver = UserModel.objects.get(id=approver_id)
 
@@ -508,6 +509,7 @@ def process_adding_shift_swap_request(requestor, payload):
         shift_swap = ShiftSwapModel.objects.create(
             requested_by=requestor,
             requested_for=selected_shift.user,
+            info=swap_info,
             current_shift=current_shift,
             requested_shift=selected_shift,
             approver=approver,

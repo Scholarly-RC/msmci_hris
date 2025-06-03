@@ -496,7 +496,8 @@
                                                                             {{ shift.user.userdetails.get_user_fullname|title }} - ({{ shift.shift.get_twelve_hour_format_shift_range }}
                                                                             {% if shift.shift.get_twelve_hour_format_second_shift_range %}
                                                                                 {{ shift.shift.get_twelve_hour_format_second_shift_range }}
-                                                                            {% endif %})
+                                                                            {% endif %}
+                                                                            )
                                                                         </option>
                                                                     {% endfor %}
                                                                 {% else %}
@@ -505,6 +506,18 @@
                                                             </select>
                                                         </div>
                                                     {% endblock %}
+                                                    <div>
+                                                        <label for="request_approver_id"
+                                                               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                            Info:
+                                                        </label>
+                                                        <textarea type="text"
+                                                                  name="swap_info"
+                                                                  id="swap_info"
+                                                                  required
+                                                                  class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                                                  placeholder="Enter Swap Info..."></textarea>
+                                                    </div>
                                                     <div>
                                                         <label for="request_approver_id"
                                                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -537,6 +550,7 @@
                                                         <th scope="col" class="px-6 py-3 text-center">From Shift</th>
                                                         <th scope="col" class="px-6 py-3 text-center">To Shift</th>
                                                         <th scope="col" class="px-6 py-3 text-center">Date</th>
+                                                        <th scope="col" class="px-6 py-3 text-center">Info</th>
                                                         <th scope="col" class="px-6 py-3 text-center">Status</th>
                                                         <th scope="col" class="px-6 py-3"></th>
                                                     </tr>
@@ -551,6 +565,7 @@
                                                             <td class="px-6 py-4 text-center">{{ swap_data.current_shift.shift }}</td>
                                                             <td class="px-6 py-4 text-center">{{ swap_data.requested_shift.shift }}</td>
                                                             <td class="px-6 py-4 text-center">{{ swap_data.requested_shift.date }}</td>
+                                                            <td class="px-6 py-4 text-center">{{ swap_data.info }}</td>
                                                             <td class="px-6 py-4 text-center">{{ swap_data.get_status }}</td>
                                                         </tr>
                                                     {% endfor %}
@@ -625,6 +640,7 @@
                                                         <th scope="col" class="px-6 py-3">Requested By</th>
                                                         <th scope="col" class="px-6 py-3">Requested To</th>
                                                         <th scope="col" class="px-6 py-3 text-center">Date</th>
+                                                        <th scope="col" class="px-6 py-3 text-center">Info</th>
                                                         <th scope="col" class="px-6 py-3 text-center">Status</th>
                                                         <th scope="col" class="px-6 py-3"></th>
                                                     </tr>
@@ -646,6 +662,7 @@
                                                                     </div>
                                                                 </td>
                                                                 <td class="px-6 py-4 text-center">{{ swap_data.requested_shift.date }}</td>
+                                                                <td class="px-6 py-4 text-center">{{ swap_data.info }}</td>
                                                                 <td class="px-6 py-4 text-center">{{ swap_data.get_status }}</td>
                                                                 {% if not swap_data.has_approved_responded %}
                                                                     {% block shift_review_action_section %}

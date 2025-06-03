@@ -255,6 +255,8 @@ class ShiftSwap(models.Model):
         User, on_delete=models.RESTRICT, related_name="shift_swap_target"
     )
 
+    info = models.TextField(_("Info"), blank=True, null=True)
+
     current_shift = models.ForeignKey(
         DailyShiftSchedule,
         on_delete=models.RESTRICT,
