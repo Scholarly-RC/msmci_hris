@@ -517,7 +517,7 @@ def finalize_user_evaluation_toggle(request, user_evaluation_id):
 
     process_add_app_log_entry(
         request.user.id,
-        f"{"Finalized" if user_evaluation.is_finalized else "Cancelled"} user evaluation of {user_evaluation.get_evaluatee_display()} {user_evaluation.get_year_and_quarter()}.",
+        f"{'Finalized' if user_evaluation.is_finalized else 'Cancelled'} user evaluation of {user_evaluation.get_evaluatee_display()} {user_evaluation.get_year_and_quarter()}.",
     )
 
     selected_user = user_evaluation.evaluatee
