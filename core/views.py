@@ -706,7 +706,7 @@ def toggle_user_status(request, pk):
 
     process_add_app_log_entry(
         request.user.id,
-        f"{"Disabled" if not user.is_active else "Enabled"} user #{user.id}.",
+        f"{'Disabled' if not user.is_active else 'Enabled'} user #{user.id}.",
     )
 
     context = {"user": user}
@@ -872,7 +872,7 @@ def shift_modification_permision(request, pk):
 
         process_add_app_log_entry(
             request.user.id,
-            f"{"Allowed" if can_modify_shift else "Removed"} shift modification access from user ({user_details.get_user_fullname()}).",
+            f"{'Allowed' if can_modify_shift else 'Removed'} shift modification access from user ({user_details.get_user_fullname()}).",
         )
 
         response = HttpResponse()
