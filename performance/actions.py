@@ -251,7 +251,7 @@ def process_notify_all_user_for_new_post_or_poll(sender_id, type="POST"):
     )
     for user in all_users:
         create_notification(
-            content=f"A new {"post" if type == "POST" else "poll"} has been posted.",
+            content=f"A new {'post' if type == "POST" else 'poll'} has been posted.",
             date=make_aware(datetime.now()),
             sender_id=sender_id,
             recipient_id=user.id,
