@@ -210,6 +210,9 @@ class OverTime(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.RESTRICT, related_name="overtime_requests"
     )
+
+    info = models.TextField(_("Info"), blank=True, null=True)
+
     approver = models.ForeignKey(
         User, on_delete=models.RESTRICT, related_name="approved_overtimes"
     )

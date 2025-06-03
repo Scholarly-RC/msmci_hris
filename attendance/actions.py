@@ -252,6 +252,7 @@ def process_create_overtime_request(user, payload):
         UserModel = apps.get_model("auth", "User")
         OvertimeModel = apps.get_model("attendance", "OverTime")
         pending_status = OvertimeModel.Status.PENDING.value
+        overtime_info = payload.get("overtime_info")
         selected_approver_id = payload.get("selected_approver")
         selected_approver = UserModel.objects.get(id=selected_approver_id)
         date_str = payload.get("overtime_date")
@@ -259,6 +260,7 @@ def process_create_overtime_request(user, payload):
 
         overtime = OvertimeModel.objects.create(
             user=user,
+            info=overtime_info,
             approver=selected_approver,
             date=overtime_date,
             status=pending_status,
