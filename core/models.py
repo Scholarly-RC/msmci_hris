@@ -129,6 +129,8 @@ class UserDetails(models.Model):
 
     can_modify_shift = models.BooleanField(_("User Can Modify Shifts"), default=False)
 
+    resignation_date = models.DateField(_("Resignation Date"), null=True, blank=True)
+
     updated = models.DateField(auto_now=True, null=True, blank=True)
 
     class Meta:
@@ -200,6 +202,10 @@ class UserDetails(models.Model):
 
     def is_employee(self):
         return self.role == self.Role.EMPLOYEE or self.role is None
+
+    @property
+    def is_resigned(self):
+        return self.resignation_date is not None
 
     def get_user_full_user_role(self):
         role = (

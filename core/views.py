@@ -854,7 +854,7 @@ def modify_user_biometric_details(request, pk):
 
 
 @login_required(login_url="/login")
-def shift_modification_permision(request, pk):
+def shift_modification_permission(request, pk):
     """
     Additional Info: This view is only used by Change User Profile.
     """
@@ -890,10 +890,51 @@ def shift_modification_permision(request, pk):
             )
         response.content = render_block_to_string(
             "core/modify_user_profile.html",
-            "shift_modification_permision_section",
+            "shift_modification_permission_section",
             context,
         )
-        response = retarget(response, "#shift_modification_permision_section")
+        response = retarget(response, "#shift_modification_permission_section")
+        response = reswap(response, "outerHTML")
+        return response
+
+
+@login_required(login_url="/login")
+def user_resignation(request, pk):
+    """
+    Additional Info: This view is only used by Change User Profile.
+    """
+    context = {}
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        user = User.objects.get(id=pk)
+        user_details = user.userdetails
+        resigned_date = data.get("resigned_date", None)
+
+        if resigned_date:
+            user_details.resignation_date = resigned_date
+        else:
+            user_details.resignation_date = None
+
+        user_details.save()
+        context["selected_user"] = user
+
+        process_add_app_log_entry(
+            request.user.id,
+            f"Has set {user_details.get_user_fullname()} resigned date to {resigned_date}.",
+        )
+
+        response = HttpResponse()
+        response = create_global_alert_instance(
+            response,
+            "User resignation successfully updated.",
+            "SUCCESS",
+        )
+        response.content = render_block_to_string(
+            "core/modify_user_profile.html",
+            "user_resignation_section",
+            context,
+        )
+        response = retarget(response, "#user_resignation_section")
         response = reswap(response, "outerHTML")
         return response
 
