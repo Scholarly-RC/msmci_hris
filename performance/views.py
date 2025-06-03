@@ -1728,7 +1728,7 @@ def shared_resource_management_confidential_state_toggle(request, resource_id=""
 
         process_add_app_log_entry(
             request.user.id,
-            f"Marked {resource_to_toggle.get_full_filename()} as {"confidential" if resource_to_toggle.is_confidential else "nonconfidential"}.",
+            f"Marked {resource_to_toggle.get_full_filename()} as {'confidential' if resource_to_toggle.is_confidential else 'nonconfidential'}.",
         )
 
         user_choices = get_users_per_shared_resources(user, resource_to_toggle)
@@ -1766,7 +1766,7 @@ def shared_resource_management_modify_user_confidential_access(request):
         )
         process_add_app_log_entry(
             request.user.id,
-            f"{"Granted" if selected_user in resource.confidential_access_users.all() else "Removed"} {selected_user.userdetails.get_user_fullname()} confidential access to {resource.get_full_filename()}.",
+            f"{'Granted' if selected_user in resource.confidential_access_users.all() else 'Removed'} {selected_user.userdetails.get_user_fullname()} confidential access to {resource.get_full_filename()}.",
         )
         context.update({"resource_to_share": resource, "user": selected_user})
         response = HttpResponse()
