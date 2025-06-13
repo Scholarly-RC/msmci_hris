@@ -11,6 +11,19 @@ urlpatterns = [
     path(
         "set-user-password", core_views.set_new_user_password, name="set_user_password"
     ),
+    # Settings #
+    path("settings/add-department", core_views.add_department, name="add_department"),
+    path(
+        "settings/edit-department",
+        core_views.edit_department,
+        name="edit_department",
+    ),
+    path(
+        "settings/delete-department",
+        core_views.delete_department,
+        name="delete_department",
+    ),
+    path("settings", core_views.settings, name="settings"),
     # APP LOGS #
     path("app-logs", core_views.app_logs, name="app_logs"),
     # USER PROFILE #

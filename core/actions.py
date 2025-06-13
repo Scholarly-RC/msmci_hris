@@ -173,6 +173,44 @@ def process_delete_personal_file(payload):
 
 
 @transaction.atomic
+def process_add_department(payload):
+    DepartmentModel = apps.get_model("core", "Department")
+    name = payload.get("name")
+    code = payload.get("code")
+    department = DepartmentModel.objects.create(name=name, code=code)
+    return department
+
+
+@transaction.atomic
+def process_edit_department(payload):
+    DepartmentModel = apps.get_model("core", "Department")
+    id = payload.get("department_id")
+    name = payload.get("name")
+    code = payload.get("code")
+    department = DepartmentModel.objects.get(pk=id)
+    department.name = name
+    department.code = code
+    department.save()
+
+    return department
+
+
+@transaction.atomic
+def process_delete_department(payload):
+    """ """
+    DepartmentModel = apps.get_model("core", "Department")
+    department_id = payload.get("department_id")
+    try:
+        department = DepartmentModel.objects.get(pk=department_id)
+        department_name = department.name
+        department.delete()
+        return department_name
+    except Exception:
+        logger.error("An error occurred while deleting a Department", exc_info=True)
+        raise
+
+
+@transaction.atomic
 def process_add_app_log_entry(user_id, details):
     AppLogModel = apps.get_model("core", "AppLog")
     UserModel = apps.get_model("auth", "User")

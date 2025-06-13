@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -26,9 +27,12 @@ from attendance.utils.date_utils import (
 )
 from core.actions import (
     process_add_app_log_entry,
+    process_add_department,
     process_add_personal_file,
     process_change_profile_picture,
+    process_delete_department,
     process_delete_personal_file,
+    process_edit_department,
     process_get_or_create_intial_user_one_to_one_fields,
     process_update_user_and_user_details,
 )
@@ -52,10 +56,15 @@ from core.utils import (
     get_users_sorted_by_department,
     profile_picture_validation,
 )
-from core.validations import password_validation, personal_file_validation
+from core.validations import (
+    department_validation,
+    edit_department_validation,
+    password_validation,
+    personal_file_validation,
+)
 from hris.exceptions import PersonalFilesBlockNotFound
 from hris.utils import create_global_alert_instance
-from payroll.utils import get_rank_choices
+from payroll.utils import get_department_list, get_rank_choices
 
 logger = logging.getLogger(__name__)
 
@@ -520,7 +529,7 @@ def delete_selected_personal_file(request):
             )
 
             response = trigger_client_event(
-                response, "initializePersonalFileDeleteConfigmationModal", after="swap"
+                response, "initializePersonalFileDeleteConfirmationModal", after="swap"
             )
 
             response = retarget(
@@ -911,7 +920,9 @@ def user_resignation(request, pk):
         resigned_date = data.get("resigned_date", None)
 
         if resigned_date:
-            user_details.resignation_date = resigned_date
+            user_details.resignation_date = datetime.strptime(
+                resigned_date, "%Y-%m-%d"
+            ).date()
         else:
             user_details.resignation_date = None
 
@@ -1032,6 +1043,194 @@ def open_notification(request):
             )
             response = reswap(response, "none")
             return response
+
+
+@login_required(login_url="/login")
+@hr_required("/")
+def settings(request):
+    context = {}
+    departments = get_department_list()
+    context.update({"departments": departments})
+    return render(request, "core/settings.html", context)
+
+
+@login_required(login_url="/login")
+def add_department(request):
+    context = {}
+    user = request.user
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "GET":
+            response.content = render_block_to_string(
+                "core/settings.html", "add_department_modal_content", context
+            )
+            response = trigger_client_event(
+                response, "initializeAddDepartmentModal", after="swap"
+            )
+            response = retarget(response, "#add_department_modal_content")
+            response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "POST":
+            data = request.POST
+            try:
+                errors = department_validation(department_data=data)
+                if errors:
+                    response = create_global_alert_instance(
+                        response,
+                        f"{errors[0]}",
+                        "WARNING",
+                    )
+                    response = reswap(response, "none")
+                    return response
+
+                new_department = process_add_department(payload=data)
+                context.update({"departments": get_department_list()})
+                process_add_app_log_entry(
+                    request.user.id,
+                    f"Added a new department has been added ({new_department.name}).",
+                )
+                response = create_global_alert_instance(
+                    response,
+                    "Department has been successfully added.",
+                    "SUCCESS",
+                )
+                response = trigger_client_event(
+                    response, "closeAddDepartmentModal", after="swap"
+                )
+                response.content = render_block_to_string(
+                    "core/settings.html", "department_table", context
+                )
+                response = retarget(response, "#department_table")
+                response = reswap(response, "outerHTML")
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while adding a new department. Error details: {error}.",
+                    "DANGER",
+                )
+                response = reswap(response, "none")
+                return response
+
+
+@login_required(login_url="/login")
+def edit_department(request):
+    context = {}
+    user = request.user
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "GET":
+            data = request.GET
+            department = Department.objects.get(pk=data.get("department_id"))
+            context["department"] = department
+            response.content = render_block_to_string(
+                "core/settings.html", "edit_department_modal_content", context
+            )
+            response = trigger_client_event(
+                response, "initializeEditDepartmentModal", after="swap"
+            )
+            response = retarget(response, "#edit_department_modal_content")
+            response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "POST":
+            data = request.POST
+            try:
+                errors = edit_department_validation(data)
+                if errors:
+                    response = create_global_alert_instance(
+                        response,
+                        f"{errors[0]}",
+                        "WARNING",
+                    )
+                    response = reswap(response, "none")
+                    return response
+                updated_department = process_edit_department(payload=data)
+                context.update({"departments": get_department_list()})
+                process_add_app_log_entry(
+                    request.user.id,
+                    f"Selected department has been updated ({updated_department.name}).",
+                )
+                response = create_global_alert_instance(
+                    response,
+                    "Department has been successfully updated.",
+                    "SUCCESS",
+                )
+                response = trigger_client_event(
+                    response, "closeEditDepartmentModal", after="swap"
+                )
+                response.content = render_block_to_string(
+                    "core/settings.html", "departments_table_content_container", context
+                )
+                response = retarget(response, "#departments_table_content_container")
+                response = reswap(response, "outerHTML")
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while updating a department. Error details: {error}.",
+                    "DANGER",
+                )
+                response = reswap(response, "none")
+                return response
+
+
+@login_required(login_url="/login")
+def delete_department(request):
+    context = {}
+    if request.htmx:
+        response = HttpResponse()
+        if request.method == "POST":
+            data = request.POST
+            department_id = data.get("department_id")
+            department = Department.objects.get(pk=department_id)
+            context["department"] = department
+
+            response.content = render_block_to_string(
+                "core/settings.html",
+                "department_delete_confirmation_modal_content",
+                context,
+            )
+
+            response = trigger_client_event(
+                response, "initializeDepartmentDeleteConfirmationModal", after="swap"
+            )
+
+            response = retarget(
+                response, "#department_delete_confirmation_modal_content"
+            )
+            response = reswap(response, "outerHTML")
+            return response
+
+        if request.method == "DELETE":
+            data = QueryDict(request.body)
+            try:
+                department_name = process_delete_department(payload=data)
+                context.update({"departments": get_department_list()})
+                process_add_app_log_entry(
+                    request.user.id, f"Deleted a department ({department_name})."
+                )
+                response = create_global_alert_instance(
+                    response, "Department successfully deleted.", "SUCCESS"
+                )
+                response = trigger_client_event(
+                    response, "closeDepartmentDeleteConfigmationModal", after="swap"
+                )
+                response.content = render_block_to_string(
+                    "core/settings.html", "department_table", context
+                )
+                response = retarget(response, "#department_table")
+                response = reswap(response, "outerHTML")
+                return response
+            except Exception as error:
+                response = create_global_alert_instance(
+                    response,
+                    f"An error occurred while deleting the department. Error details: {error}.",
+                    "DANGER",
+                )
+                response = reswap(response, "none")
+                return response
 
 
 # App Log Views
