@@ -174,6 +174,7 @@ def process_delete_personal_file(payload):
 
 @transaction.atomic
 def process_add_department(payload):
+    """Create a new department with the given payload data."""
     DepartmentModel = apps.get_model("core", "Department")
     name = payload.get("name")
     code = payload.get("code")
@@ -183,6 +184,7 @@ def process_add_department(payload):
 
 @transaction.atomic
 def process_edit_department(payload):
+    """Update an existing department with the given payload data."""
     DepartmentModel = apps.get_model("core", "Department")
     id = payload.get("department_id")
     name = payload.get("name")
@@ -191,13 +193,12 @@ def process_edit_department(payload):
     department.name = name
     department.code = code
     department.save()
-
     return department
 
 
 @transaction.atomic
 def process_delete_department(payload):
-    """ """
+    """Delete a department with the given ID from the payload."""
     DepartmentModel = apps.get_model("core", "Department")
     department_id = payload.get("department_id")
     try:
@@ -212,6 +213,7 @@ def process_delete_department(payload):
 
 @transaction.atomic
 def process_add_app_log_entry(user_id, details):
+    """Create a new application log entry for the specified user."""
     AppLogModel = apps.get_model("core", "AppLog")
     UserModel = apps.get_model("auth", "User")
     new_log = AppLogModel.objects.create(

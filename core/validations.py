@@ -38,6 +38,10 @@ def personal_file_validation(file_data):
 
 
 def department_validation(department_data):
+    """
+    Validate new department data by checking for duplicate names and codes.
+    Returns a list of error messages if any duplicates are found.
+    """
     Department = apps.get_model("core", "Department")
 
     name_exists = Department.objects.filter(
@@ -57,6 +61,11 @@ def department_validation(department_data):
 
 
 def edit_department_validation(department_data):
+    """
+    Validate department edit data by checking for duplicate names and codes,
+    excluding the current department being edited.
+    Returns a list of error messages if any duplicates are found.
+    """
     Department = apps.get_model("core", "Department")
 
     name_exists = (
