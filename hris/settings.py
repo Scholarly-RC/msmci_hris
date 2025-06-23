@@ -143,6 +143,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
 BIOMETRIC_DEVICE_IP = os.getenv("BIOMETRIC_DEVICE_IP")
+BIOMETRIC_DEVICE_PORT = os.getenv("BIOMETRIC_DEVICE_PORT")
 
 PROSE_ATTACHMENT_ALLOWED_FILE_SIZE = 10
 
@@ -159,6 +160,9 @@ Q_CLUSTER = {
     "max_attempts": 3,
     "attempt_count": 1,
     "redis": os.getenv("BROKER_URL"),
+    "guard_cycle": 5,
+    "catch_up": False,
+    "poll": 1,
 }
 
 
