@@ -712,3 +712,25 @@ def get_religion_report_data(as_of_date=""):
         "religion_data_table_data": religion_data_table_data,
         "as_of_date": str(as_of_date),
     }
+
+
+def get_resignation_report_data(from_date, to_date):
+    """ """
+    UserDetailsModel = apps.get_model("core", "UserDetails")
+
+    from_date = get_date_object_from_date_str(from_date)
+    to_date = get_date_object_from_date_str(to_date)
+
+    resgined_users = UserDetailsModel.objects.filter(
+        resignation_date__gte=from_date, resignation_date__lte=to_date
+    ).order_by("resignation_date")
+
+    employee_resignation_table_data = resgined_users
+
+    return {
+        "employee_resignation_table_data": employee_resignation_table_data,
+        "from_date_display": get_readable_date_from_date_object(from_date),
+        "to_date_display": get_readable_date_from_date_object(to_date),
+        "from_date": str(from_date),
+        "to_date": str(to_date),
+    }

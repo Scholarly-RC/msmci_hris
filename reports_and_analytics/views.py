@@ -21,6 +21,7 @@ from reports_and_analytics.utils import (
     get_list_of_modules,
     get_religion_report_data,
     get_reports_for_specific_module,
+    get_resignation_report_data,
     get_yearly_salary_expense_report_data,
     get_years_of_experience_report_data,
 )
@@ -727,6 +728,61 @@ def popup_religion_report(request):
                 "report_url_view": reverse(
                     "reports_and_analytics:view_religion_report_with_data",
                     kwargs={"as_of_date": as_of_date, "option": option},
+                )
+            },
+            after="swap",
+        )
+        response = reswap(response, "none")
+        return response
+
+
+@login_required(login_url="/login")
+def view_resignation_report(request, from_date="", to_date="", option="all"):
+    context = {}
+
+    from_date = request.POST.get("from_date") or from_date
+    to_date = request.POST.get("to_date") or to_date
+    context["option"] = option
+    context.update(get_resignation_report_data(from_date, to_date))
+    if request.htmx and request.method == "POST":
+        response = HttpResponse()
+        response.content = render_block_to_string(
+            "reports_and_analytics/components/resignation_report.html",
+            "content",
+            context,
+        )
+        response = retarget(response, "#report_content_display")
+        response = reswap(response, "innerHTML")
+        return response
+
+    context["for_print_download"] = True
+
+    return render(
+        request,
+        "reports_and_analytics/components/resignation_report.html",
+        context,
+    )
+
+
+@login_required(login_url="/login")
+def popup_resignation_report(request):
+    if request.htmx and request.method == "POST":
+        data = request.POST
+        from_date = data.get("from_date")
+        to_date = data.get("to_date")
+        option = data.get("option")
+        response = HttpResponse()
+        response = trigger_client_event(
+            response,
+            "openSelectedReport",
+            {
+                "report_url_view": reverse(
+                    "reports_and_analytics:view_resignation_report_with_data",
+                    kwargs={
+                        "from_date": from_date,
+                        "to_date": to_date,
+                        "option": option,
+                    },
                 )
             },
             after="swap",

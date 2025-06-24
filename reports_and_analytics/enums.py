@@ -11,7 +11,7 @@ class Modules(Enum):
     def get_display_name(self):
         if self.value == Modules.PERFORMANCE_AND_LEARNING.value:
             return "Performance and Learning"
-        return self.value
+        return self.value.title()
 
 
 class AttendanceReports(Enum):
@@ -64,6 +64,7 @@ class UsersReports(Enum):
     YEARS_OF_EXPERIENCE = "YEARS_OF_EXPERIENCE"
     EDUCATION_LEVEL = "EDUCATION_LEVEL"
     RELIGION = "RELIGION"
+    RESIGNATION = "RESIGNATION"
 
     def get_display_name(self):
         if self.value == UsersReports.ALL_EMPLOYEES.value:
@@ -74,4 +75,4 @@ class UsersReports(Enum):
             return "Years of Experience"
         if self.value == UsersReports.EDUCATION_LEVEL.value:
             return "Education Level"
-        return self.value
+        return self.value.title()
