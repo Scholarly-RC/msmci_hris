@@ -1815,7 +1815,6 @@ def remove_holiday(request):
 ### Biometric ###
 @csrf_exempt
 def get_attendance_request(request):
-    async_task("attendance.tasks.get_biometric_data", save=False)
     return HttpResponse("OK")
 
 
