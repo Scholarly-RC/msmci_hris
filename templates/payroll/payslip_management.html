@@ -493,12 +493,19 @@
                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                         Deduction Name
                                     </label>
-                                    <input type="text"
-                                           id="deduction_name_id"
-                                           name="deduction_name"
-                                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                           placeholder="Enter Deduction Name / Info"
-                                           required />
+                                    <select id="deduction_name_id"
+                                            name="deduction_name"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            required>
+                                            <option value="">
+                                                Select Deduction
+                                            </option>
+                                            {% for choice in choices %}
+                                            <option value="{{ choice }}">
+                                                {{ choice }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
                                 </div>
                                 <div class="mb-6">
                                     <label for="deduction_amount_id"
@@ -575,7 +582,7 @@
                                            id="compensation_name_id"
                                            name="compensation_name"
                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                           placeholder="Enter Deduction Name / Info"
+                                           placeholder="Enter Compensation Name / Info"
                                            required />
                                 </div>
                                 <div class="mb-6">
@@ -589,7 +596,7 @@
                                            step="0.01"
                                            min="0"
                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                           placeholder="Enter Deduction Amount"
+                                           placeholder="Enter Compensation Amount"
                                            required />
                                 </div>
                                 <button type="submit"

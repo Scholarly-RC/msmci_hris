@@ -1,4 +1,5 @@
 import copy
+import json
 import re
 from datetime import datetime
 from decimal import Decimal
@@ -447,6 +448,12 @@ def get_payslip_variable_deductions(payslip):
     total_amount = deductions.aggregate(total=Sum("amount"))["total"] or 0
 
     return deductions, total_amount
+
+
+def get_variable_deduction_choices():
+    with open("payroll/data/variable_deductions.json", "r") as file:
+        data = json.load(file)
+        return data
 
 
 def get_payslip_variable_compensations(payslip):

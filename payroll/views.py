@@ -58,6 +58,7 @@ from payroll.utils import (
     get_user_13th_month_pay_list,
     get_user_payslips,
     get_users_with_payslip_data,
+    get_variable_deduction_choices,
 )
 from payroll.validations import (
     creating_thirteenth_month_pay_validation,
@@ -937,8 +938,8 @@ def add_variable_payslip_deduction(request):
                     )
                     response = reswap(response, "none")
                     return response
-
-                context.update({"payslip": data.get("payslip")})
+                choices = get_variable_deduction_choices()
+                context.update({"payslip": data.get("payslip"), "choices": choices})
                 response.content = render_block_to_string(
                     "payroll/payslip_management.html",
                     "add_variable_payslip_deduction_modal_container",
