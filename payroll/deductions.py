@@ -47,8 +47,8 @@ class Sss:
 
 class Philhealth:
     def __init__(self, deduction_config, salary):
-        # INFO: Remove * 2 solving for monthly
-        self.salary = salary * 2
+        # INFO: Remove * 2 solving for monthly, add * 2 for semi monthly
+        self.salary = salary
         philhealth_deduction_configuration = deduction_config.philhealth_config()
         philhealth_deduction_configuration_data = (
             philhealth_deduction_configuration.get("data")
@@ -125,5 +125,5 @@ class PagIbig:
         self.amount = Decimal(pagibig_deduction_configuration_data.get("amount"))
 
     def get_employee_deduction(self):
-        # INFO: Remove / 2 solving for monthly
-        return self.amount / 2
+        # INFO: Remove / 2 solving for monthly, Add / 2 if semi monthly
+        return self.amount

@@ -294,10 +294,10 @@ class Payslip(models.Model):
         deduction_config = get_deduction_configuration_object()
 
         sss_employee_deduction = Sss(
-            deduction_config, gross_pay_after_variable_deduction
+            deduction_config, (gross_pay_after_variable_deduction + per_cutoff)
         ).get_employee_deduction()
         philhealth_employee_deduction = Philhealth(
-            deduction_config, gross_pay_after_variable_deduction
+            deduction_config, (gross_pay_after_variable_deduction + per_cutoff)
         ).get_employee_deduction()
         pag_ibig_employee_deduction = PagIbig(deduction_config).get_employee_deduction()
         mp2_employee_deduction = (
@@ -325,26 +325,36 @@ class Payslip(models.Model):
             + tax_employee_deduction
         )
 
-        total_deductions = mandatory_deductions + total_variable_deductions
+        total_deductions = (
+            total_variable_deductions
+            if self.period == "1ST"
+            else mandatory_deductions + total_variable_deductions
+        )
 
         final_net_salary = gross_pay - total_deductions
 
         salary_details.update(
             {
+                "period": self.period,
                 "salary": per_cutoff,
                 "compensations": fixed_compensations,
                 "variable_compensations": payslip_variable_compensation,
                 "gross_pay": gross_pay,
                 "variable_deductions": payslip_variable_deductions,
-                "sss_deduction": sss_employee_deduction,
-                "philhealth_deduction": philhealth_employee_deduction,
-                "pag_ibig_deduction": pag_ibig_employee_deduction,
-                "mp2_deduction": mp2_employee_deduction,
-                "tax_deduction": tax_employee_deduction,
                 "total_deductions": total_deductions,
                 "net_salary": final_net_salary,
             }
         )
+        if self.period == "2ND":
+            salary_details.update(
+                {
+                    "sss_deduction": sss_employee_deduction,
+                    "philhealth_deduction": philhealth_employee_deduction,
+                    "pag_ibig_deduction": pag_ibig_employee_deduction,
+                    "mp2_deduction": mp2_employee_deduction,
+                    "tax_deduction": tax_employee_deduction,
+                }
+            )
         return salary_details
 
     def get_data_for_template(self):
