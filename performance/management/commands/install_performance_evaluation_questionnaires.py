@@ -6,7 +6,7 @@ from performance.models import Questionnaire
 
 
 class Command(BaseCommand):
-    help = "Resets all of the attendance records."
+    help = "Install performance evaluation questionnaires."
 
     def handle(self, *args, **options):
         try:
