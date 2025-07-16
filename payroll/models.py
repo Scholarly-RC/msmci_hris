@@ -283,27 +283,23 @@ class Payslip(models.Model):
             get_payslip_variable_compensations(self)
         )
 
-        gross_pay = per_cutoff + total_fixed_compensation + total_variable_compensation
+        gross_pay = base_salary + total_fixed_compensation + total_variable_compensation
 
         payslip_variable_deductions, total_variable_deductions = (
             get_payslip_variable_deductions(self)
         )
 
-        gross_pay_after_variable_deduction = gross_pay - total_variable_deductions
-
         deduction_config = get_deduction_configuration_object()
 
         sss_employee_deduction = Sss(
-            deduction_config, (gross_pay_after_variable_deduction + per_cutoff)
+            deduction_config, gross_pay
         ).get_employee_deduction()
         philhealth_employee_deduction = Philhealth(
-            deduction_config, (gross_pay_after_variable_deduction + per_cutoff)
+            deduction_config, gross_pay
         ).get_employee_deduction()
         pag_ibig_employee_deduction = PagIbig(deduction_config).get_employee_deduction()
         mp2_employee_deduction = (
-            get_mp2_object().get_semi_monthly_amount()
-            if self.user.mp2.all()
-            else Decimal(0.00)
+            get_mp2_object().amount if self.user.mp2.all() else Decimal(0.00)
         )
 
         taxable_income = gross_pay - (
@@ -331,7 +327,9 @@ class Payslip(models.Model):
             else mandatory_deductions + total_variable_deductions
         )
 
-        final_net_salary = gross_pay - total_deductions
+        gross_pay_per_cut_off = gross_pay / 2
+
+        final_net_salary = gross_pay_per_cut_off - total_deductions
 
         salary_details.update(
             {
@@ -339,7 +337,7 @@ class Payslip(models.Model):
                 "salary": per_cutoff,
                 "compensations": fixed_compensations,
                 "variable_compensations": payslip_variable_compensation,
-                "gross_pay": gross_pay,
+                "gross_pay": gross_pay_per_cut_off,
                 "variable_deductions": payslip_variable_deductions,
                 "total_deductions": total_deductions,
                 "net_salary": final_net_salary,
