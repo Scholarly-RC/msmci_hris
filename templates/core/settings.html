@@ -269,4 +269,13 @@
     {% endblock %}
 </div>
 {% endblock %}
-
+{% block javascript %}
+    <script>
+        document.addEventListener('initializeAddDepartmentModal', () => initializeModal('add_department_modal'));
+        document.addEventListener('closeAddDepartmentModal', () => closeModal('add_department_modal'));
+        document.addEventListener('initializeEditDepartmentModal', () => initializeModal('edit_department_modal'));
+        document.addEventListener('closeEditDepartmentModal', () => closeModal('edit_department_modal'));
+        document.addEventListener('initializeDepartmentDeleteConfirmationModal', () => initializeModal('department_delete_confirmation_modal'));
+        document.addEventListener('closeDepartmentDeleteConfigmationModal', () => closeModal('department_delete_confirmation_modal'));
+    </script>
+{% endblock %}
