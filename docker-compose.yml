@@ -1,0 +1,74 @@
+# docker-compose.yml
+services:
+  web:
+    build: .
+    command: gunicorn --workers 3 --bind 0.0.0.0:5000 --access-logfile - --log-level info hris.wsgi:application
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+    restart: unless-stopped
+
+  qcluster:
+    build: .
+    command: python manage.py qcluster
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+    restart: unless-stopped
+
+  # biometrics:
+  #   build: .
+  #   command: python manage.py biometrics start
+  #   volumes:
+  #     - .:/app
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - db
+  #     - qcluster
+  #   restart: "no"
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: msmci_hris_db
+      MYSQL_USER: msmci_hris
+      MYSQL_PASSWORD: Msmcihris0!
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db_backups:/docker-entrypoint-initdb.d
+      - ./db_backups:/db_backups
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  redis_data:
+  static_volume:
+  media_volume:
